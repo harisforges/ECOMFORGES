@@ -1,0 +1,3 @@
+# Internal decision tool — reachable by URL, but not for search indexes.
+User-agent: *
+Disallow: /
