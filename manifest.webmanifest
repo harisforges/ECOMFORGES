@@ -1,0 +1,16 @@
+{
+  "name": "EcomForges Client Decision Tools",
+  "short_name": "Forge Tools",
+  "description": "Client qualification, Forge Track selection and engagement status review.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162840",
+  "theme_color": "#162840",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
