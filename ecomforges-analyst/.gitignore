@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+
+# The benchmark file is the most valuable asset this business owns, and committing it
+# publishes it. This repository may go public. The filled file's home is the Claude
+# Project's knowledge files, or an untracked local path — never git.
+benchmarks.md
+benchmarks.local.md
+
+# Real client data. Never committed. The directory itself is tracked so the path
+# exists on a fresh clone; everything inside it is excluded.
+fixtures/real/*
+!fixtures/real/.gitkeep
