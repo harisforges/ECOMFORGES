@@ -8,6 +8,20 @@ This file starts nearly empty. That is correct and intentional. It fills up from
 client data, one engagement at a time, and it is the part of the system a competitor
 cannot copy.
 
+> ### Keep the filled version out of this repository
+>
+> This repo is **public**. The empty template here is harmless, but a benchmark file
+> with two years of observed Malaysian category figures in it is the most valuable
+> thing EcomForges owns, and committing it publishes it.
+>
+> The filled file's home is the **Claude Project's knowledge files** — it does not need
+> to be in git at all. If you want a local copy tracked, name it `benchmarks.local.md`;
+> `.gitignore` already excludes that name. Do not commit it, and do not paste the filled
+> contents into a PR description or an issue.
+>
+> Client codes (`MY-PHARMA-01`) rather than client names are mandatory for the same
+> reason: a row that survives into a public place should not identify anyone.
+
 ---
 
 ## How to add a row

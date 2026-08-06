@@ -1,0 +1,9 @@
+# The filled benchmark file is EcomForges' own accumulated data. This repository is
+# public — keep it in the Claude Project's knowledge files, not in git.
+benchmarks.local.md
+analyst/benchmarks.local.md
+
+# Client data. Never commit an engagement's raw exports or briefs to a public repo.
+analyst/clients/
+*.xls
+*.xlsx
