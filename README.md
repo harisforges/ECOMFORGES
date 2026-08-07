@@ -2,6 +2,11 @@
 
 Internal client decision tools.
 
+| Page | Path | URL |
+|---|---|---|
+| Client Qualification & Forge Track Selector | `index.html` | [/ECOMFORGES/](https://harisforges.github.io/ECOMFORGES/) |
+| Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
+
 ## Client Qualification & Forge Track Selector
 
 `index.html` — a single self-contained page, no build step and no external
@@ -17,6 +22,20 @@ Three stages:
 
 State lives only in the page. Nothing is written to the browser or sent
 anywhere, so use **Save** to export an engagement file before closing the tab.
+
+## Client Portal (prototype)
+
+`app/index.html` — a phone-shaped walkthrough of the client-facing portal:
+login, dashboard, meeting booking, to-do list and KPI views. Installable to a
+home screen via `app/manifest.webmanifest`.
+
+It is a **prototype, not a product**. There is no backend and no persistence:
+the login screen accepts anything and advances, nothing typed into it is
+transmitted or stored, and every figure on screen is sample data. Reloading
+returns to the login screen.
+
+The page is a bundled export — React and the Inter web font are inlined, so it
+makes no network requests once loaded.
 
 ### Note on visibility
 
