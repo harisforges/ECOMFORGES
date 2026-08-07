@@ -7,3 +7,8 @@ analyst/benchmarks.local.md
 analyst/clients/
 *.xls
 *.xlsx
+
+# Node artifacts. The analyst project keeps its dependencies under
+# ecomforges-analyst/node_modules; nothing belongs at the repository root, and a stray
+# root-level node_modules means a command ran from the wrong directory.
+node_modules/
