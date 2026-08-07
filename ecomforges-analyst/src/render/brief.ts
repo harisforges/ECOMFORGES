@@ -23,6 +23,13 @@ import {
 import { isScored, LEVEL_NAME, TRACK, AREA_NAME, type AreaId } from '../engine/scoring.js';
 import type { Sizing } from '../engine/sizing.js';
 
+/** How to fill sections 6 and 8, phrased for wherever the brief is being read. */
+export interface RenderOptions {
+  readonly proseHint?: string;
+}
+
+const DEFAULT_HINT = 'this section is written by the model';
+
 export interface Prose {
   readonly finding: string;
   readonly sprint: {
@@ -400,18 +407,16 @@ function candidatesBlock(a: Analysis): string {
   return lines.join('\n');
 }
 
-function section6(prose?: Prose): string {
+function section6(prose?: Prose, hint = DEFAULT_HINT): string {
   if (prose === undefined) {
-    return ['## 6. THE FINDING', '', '_(not generated — run without `--no-llm` to fill this section)_'].join('\n');
+    return ['## 6. THE FINDING', '', `_(not generated — ${hint})_`].join('\n');
   }
   return ['## 6. THE FINDING', '', prose.finding].join('\n');
 }
 
-function section8(a: Analysis, prose?: Prose): string {
+function section8(a: Analysis, prose?: Prose, hint = DEFAULT_HINT): string {
   if (prose === undefined) {
-    return ['## 8. THE 30-DAY SPRINT', '', '_(not generated — run without `--no-llm` to fill this section)_'].join(
-      '\n',
-    );
+    return ['## 8. THE 30-DAY SPRINT', '', `_(not generated — ${hint})_`].join('\n');
   }
   const s = prose.sprint;
   const lines: string[] = ['## 8. THE 30-DAY SPRINT', ''];
@@ -436,7 +441,8 @@ function section8(a: Analysis, prose?: Prose): string {
   return lines.join('\n');
 }
 
-export function renderBrief(a: Analysis, prose?: Prose): string {
+export function renderBrief(a: Analysis, prose?: Prose, opts: RenderOptions = {}): string {
+  const hint = opts.proseHint ?? DEFAULT_HINT;
   return [
     header(a),
     '',
@@ -452,11 +458,11 @@ export function renderBrief(a: Analysis, prose?: Prose): string {
     '',
     section5(a),
     '',
-    section6(prose),
+    section6(prose, hint),
     '',
     section7(a),
     '',
-    section8(a, prose),
+    section8(a, prose, hint),
     '',
     section9(a),
     '',

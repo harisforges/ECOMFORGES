@@ -121,7 +121,9 @@ async function handle(req: IncomingMessage, res: ServerResponse, opts: ServerOpt
       }
     }
 
-    const brief = renderBrief(analysis, prose);
+    const brief = renderBrief(analysis, prose, {
+      proseHint: 'tick "Write the finding and sprint" and generate again',
+    });
 
     let queued = 0;
     if (opts.queuePath !== undefined) {

@@ -111,7 +111,9 @@ async function cmdGenerate(args: Args): Promise<number> {
     }
   }
 
-  const brief = renderBrief(analysis, prose);
+  const brief = renderBrief(analysis, prose, {
+    proseHint: 'run without `--no-llm` to fill this section',
+  });
   process.stdout.write(brief);
 
   const out = str(args.flags['out']);
