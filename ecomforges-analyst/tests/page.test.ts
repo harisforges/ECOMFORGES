@@ -64,11 +64,16 @@ describe('the built page', () => {
     expect(html).toContain("if (v === '') return;");
   });
 
-  it('defines its palette on bare :root, not only inside a media query', () => {
-    const bareRoot = html.indexOf(':root{');
-    const darkBlock = html.indexOf('prefers-color-scheme:dark');
-    expect(bareRoot).toBeGreaterThan(-1);
-    expect(bareRoot).toBeLessThan(darkBlock);
+  it('paints its own palette rather than borrowing the browser default', () => {
+    /*
+     * The calculator commits to a single dark look and has no prefers-color-scheme block, so
+     * this page inherits that. What matters then is that the colours are defined on bare
+     * :root and that body paints an explicit background — a transparent body would show
+     * white behind the navy cards in a light-mode browser.
+     */
+    expect(html).toMatch(/:root\s*\{[^}]*--navy:\s*#162840/);
+    expect(html).toMatch(/body\s*\{[^}]*background:\s*var\(--navy\)/);
+    expect(html).toMatch(/body\s*\{[^}]*color:\s*var\(--white\)/);
   });
 
   it('produces the same brief as the engine it was bundled from', () => {
@@ -89,6 +94,38 @@ describe('the built page', () => {
     ]) {
       expect(expected).toContain(probe);
       expect(html).toContain(probe);
+    }
+  });
+
+  it('renders the brief rather than showing raw markdown', () => {
+    // The calculator shows formatted output everywhere; raw pipe tables and ** markers
+    // would read as the tool being unfinished.
+    expect(html).toContain('renderMarkdown');
+    expect(html).toContain('id="brief-rendered"');
+    expect(html).toContain('.md table');
+  });
+
+  it('escapes cell content before adding markup', () => {
+    // A client code or category containing an angle bracket must not become HTML.
+    expect(html).toMatch(/function inline\(t\)\s*\{\s*return esc\(t\)/);
+  });
+
+  it('lets the [hidden] attribute win over the calculator\u2019s display rules', () => {
+    // .btn is inline-flex and .score-block is flex, both of which beat [hidden] — which
+    // left "Download brief" and an empty score block on screen before anything was run.
+    expect(html).toContain('[hidden] { display: none !important; }');
+  });
+
+  it('does not tell a browser user to pass a CLI flag', () => {
+    expect(html).not.toContain('--no-llm');
+    expect(html).toContain('press Copy for Claude below');
+  });
+
+  it('takes its theme from the calculator', () => {
+    // Not a copy — extracted at build time, so restyling index.html restyles this too.
+    expect(html).toContain('Extracted from index.html at build time');
+    for (const token of ['--navy:#162840', '--cyan:#20F6F8', '.site-header', '.brand-logo', '.tier-chip']) {
+      expect(html).toContain(token);
     }
   });
 

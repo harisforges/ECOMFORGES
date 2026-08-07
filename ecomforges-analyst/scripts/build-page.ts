@@ -1,8 +1,10 @@
 /**
  * Builds the single-file browser analyst.
  *
- * Bundles the engine with esbuild, inlines it and the page script into one HTML file, and
- * writes it to the repository root so GitHub Pages serves it beside the calculator.
+ * The theme is not written here — it is **extracted from index.html**, the calculator, along
+ * with its logo and favicon. Both pages therefore share one stylesheet: restyle the
+ * calculator and the analyst follows on the next build, and there is no second copy of the
+ * palette to drift.
  *
  * The output must be self-contained: no script src, no external stylesheet, no fetch. It is
  * opened from a phone home screen, sometimes with no signal, and it holds no credential
@@ -18,9 +20,135 @@ const here = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(here, '..');
 const repoRoot = join(projectRoot, '..');
 
+const CALCULATOR = join(repoRoot, 'index.html');
 const OUT = join(repoRoot, 'analyst.html');
 
+interface Theme {
+  readonly css: string;
+  readonly logo: string;
+  readonly favicon: string;
+}
+
+/**
+ * Pull the theme out of the calculator.
+ *
+ * Deliberately strict: if any piece is missing the build fails rather than silently shipping
+ * an unstyled page, because "it looks plain" is exactly the failure this is meant to prevent.
+ */
+function extractTheme(): Theme {
+  const src = readFileSync(CALCULATOR, 'utf8');
+
+  const style = /<style>([\s\S]*?)<\/style>/.exec(src);
+  if (style === null) throw new Error(`no <style> block found in ${CALCULATOR}`);
+  const css = style[1]!.trim();
+  if (!css.includes('--navy')) {
+    throw new Error('the calculator stylesheet has no --navy token; the theme has moved');
+  }
+
+  // The wordmark: the one large PNG data URI on the page.
+  const pngs = [...src.matchAll(/src="(data:image\/png;base64,[A-Za-z0-9+/=]+)"/g)].map((m) => m[1]!);
+  const logo = pngs.find((p) => p.length > 5000);
+  if (logo === undefined) throw new Error('no logo data URI found in the calculator');
+
+  const fav = /rel="icon"[^>]*href="(data:[^"]+)"/.exec(src);
+  if (fav === null) throw new Error('no favicon data URI found in the calculator');
+
+  return { css, logo, favicon: fav[1]! };
+}
+
+/**
+ * The only rules this page adds. Everything else is the calculator's.
+ *
+ * Kept to three elements the calculator has no need for — it has no long-form text output —
+ * and written with the calculator's own tokens so they cannot drift from the palette.
+ */
+const EXTRA_CSS = `
+/* The calculator's .btn and .score-block set an explicit display, which beats the [hidden]
+   attribute — so "Download brief" and the empty score block both stayed visible. The
+   attribute has to win for this page's show/hide to work at all. */
+[hidden] { display: none !important; }
+
+/* ── analyst-only: the calculator has no long-form text output ── */
+pre {
+  white-space: pre-wrap; overflow-wrap: anywhere; margin: 0;
+  background: var(--navy); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 14px 15px; font-size: 11.5px; line-height: 1.65; color: var(--white);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  max-height: 62vh; overflow: auto; -webkit-overflow-scrolling: touch;
+}
+textarea {
+  width: 100%; padding: 10px 13px; font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--r);
+  color: var(--white); outline: none; transition: border-color .15s; resize: vertical;
+  min-height: 92px;
+}
+textarea:focus { border-color: var(--cyan); }
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .92em; color: var(--cyan);
+}
+/* The rendered brief. The calculator has no long-form output, so it has no table, heading,
+   or list styling to inherit — these are written with its tokens so they cannot drift. */
+.md { font-size: 13px; line-height: 1.6; }
+.md > *:first-child { margin-top: 0; }
+.md h1 { font-size: 16px; font-weight: 700; letter-spacing: -.2px; margin: 0 0 4px; }
+.md h2 {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--cyan);
+  margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.md h3 { font-size: 13.5px; font-weight: 600; color: var(--white); margin: 18px 0 8px; }
+.md p { margin: 0 0 10px; color: var(--white); }
+.md strong { font-weight: 700; }
+.md em { font-style: normal; color: var(--blue-grey); }
+.md hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+.md ul, .md ol { margin: 0 0 12px; padding-left: 20px; }
+.md li { margin-bottom: 6px; }
+.md code {
+  background: var(--navy); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1px 5px; font-size: 11px; color: var(--cyan); white-space: nowrap;
+}
+.md .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 14px; }
+/* No min-width: a four-short-column table then fits a 390px phone rather than scrolling its
+   rightmost column — which on the Growth Pressure Score table is the score itself. Wide
+   tables still scroll inside .tw. */
+.md table { border-collapse: collapse; width: 100%; font-size: 12px; font-variant-numeric: tabular-nums; }
+.md .tw.wide table { min-width: 460px; }
+.md th {
+  text-align: left; padding: 8px 10px; background: var(--row-alt);
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--blue-grey); font-weight: 600; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.md td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.md tr:last-child td { border-bottom: 0; }
+.md tbody tr:nth-child(even) { background: rgba(19,34,56,.5); }
+.md .tag { font-size: 9.5px; letter-spacing: .04em; color: var(--dark-cyan); }
+.md .tag-ask { color: var(--amber); }
+
+/* The calculator's gauge scale is three short labels on one row; here it carries a sentence,
+   which was being truncated with an ellipsis. */
+.verdict .gauge-scale { display: block; }
+.verdict .gauge-scale .gs-c { white-space: normal; overflow: visible; text-overflow: clip; }
+.stage-btn small { display: block; font-size: 9px; font-weight: 500; opacity: .72; letter-spacing: .04em; }
+@media (pointer: coarse) {
+  /* Same touch floor the calculator uses: 44px targets, 16px text so iOS does not zoom. */
+  .btn, .tab, .stage-btn { min-height: 44px; }
+  .field input, .field select, textarea { font-size: 16px; }
+}
+@media (max-width: 680px) {
+  .details { grid-template-columns: 1fr !important; }
+  .stage-switch { margin-left: 0; width: 100%; }
+  /* nowrap on the parent is inherited by <small>, which then cannot wrap and pushes the
+     switch wider than the screen — the same defect the calculator hit. */
+  .stage-btn { flex: 1 1 0; min-width: 0; white-space: normal; padding: 8px 6px; font-size: 12px; }
+  pre { font-size: 11px; }
+}
+`.trim();
+
 async function main(): Promise<void> {
+  const theme = extractTheme();
+
   const result = await build({
     entryPoints: [join(projectRoot, 'src/browser/entry.ts')],
     bundle: true,
@@ -39,17 +167,37 @@ async function main(): Promise<void> {
   const engine = result.outputFiles?.[0]?.text;
   if (engine === undefined || engine.trim() === '') throw new Error('esbuild produced no output');
 
-  const shell = readFileSync(join(projectRoot, 'src/browser/shell.html'), 'utf8');
+  const body = readFileSync(join(projectRoot, 'src/browser/shell.html'), 'utf8')
+    .replaceAll('__LOGO__', theme.logo);
+  if (body.includes('__LOGO__')) {
+    throw new Error('the logo placeholder was left unreplaced in shell.html');
+  }
   const ui = readFileSync(join(projectRoot, 'src/browser/ui.js'), 'utf8');
 
   const html = [
     '<!doctype html>',
     '<html lang="en">',
     '<head>',
-    // The shell carries its own meta and style; keep it verbatim so View Source stays readable.
-    shell.trim(),
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
+    '<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">',
+    '<title>EcomForges Growth Analyst</title>',
+    `<link rel="icon" href="${theme.favicon}">`,
+    '<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">',
+    '<link rel="manifest" href="manifest.webmanifest">',
+    '<meta name="theme-color" content="#162840">',
+    '<meta name="apple-mobile-web-app-capable" content="yes">',
+    '<meta name="apple-mobile-web-app-title" content="Forge Analyst">',
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">',
+    '<meta name="mobile-web-app-capable" content="yes">',
+    '<style>',
+    '/* Extracted from index.html at build time. Do not edit here — edit the calculator. */',
+    theme.css,
+    EXTRA_CSS,
+    '</style>',
     '</head>',
     '<body>',
+    body.trim(),
     '<script>' + engine + '</script>',
     '<script>' + ui + '</script>',
     '</body>',
@@ -59,21 +207,26 @@ async function main(): Promise<void> {
 
   // A stray external reference would break the offline promise, so fail the build rather
   // than shipping a page that only works with signal.
-  const external = [
+  const forbidden = [
     [/<script[^>]+\bsrc=/i, 'an external <script src>'],
     [/<link[^>]+\bhref="https?:/i, 'an external stylesheet'],
+    [/@import\s+url\(/i, 'a CSS @import'],
     [/\bfetch\s*\(/i, 'a fetch() call'],
     [/XMLHttpRequest/i, 'an XMLHttpRequest'],
     [/https:\/\/api\.anthropic\.com/i, 'a call to the Anthropic API'],
     [/sk-ant-/i, 'something that looks like an API key'],
   ] as const;
-  for (const [re, what] of external) {
+  for (const [re, what] of forbidden) {
     if (re.test(html)) throw new Error(`built page contains ${what} — it must be self-contained`);
+  }
+  // The theme actually made it in, rather than the page falling back to browser defaults.
+  for (const token of ['--navy', '--cyan', '.site-header', '.brand-logo', '.tier-chip']) {
+    if (!html.includes(token)) throw new Error(`built page is missing ${token} from the theme`);
   }
 
   writeFileSync(OUT, html);
   const kb = (Buffer.byteLength(html) / 1024).toFixed(1);
-  console.log(`built ${OUT} (${kb} KB, self-contained)`);
+  console.log(`built ${OUT} (${kb} KB, self-contained, theme from index.html)`);
 }
 
 main().catch((err: unknown) => {

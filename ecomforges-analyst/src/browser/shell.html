@@ -1,140 +1,168 @@
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<title>EcomForges Growth Analyst</title>
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#162840">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Forge Analyst">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<style>
-  :root{
-    --bg:#f5f6f8;--card:#fff;--ink:#16202c;--muted:#5b6b7c;--line:#dde3ea;
-    --navy:#162840;--cyan:#0b7fa8;--amber:#a85f00;--red:#b3261e;--green:#1c6b3f;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{
-      --bg:#0f141b;--card:#161d26;--ink:#e6ecf2;--muted:#98a7b6;--line:#26303c;
-      --navy:#dbe6f2;--cyan:#4fc3e8;--amber:#e0a44a;--red:#ef7a70;--green:#5fce93;
-    }
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
-  .wrap{max-width:900px;margin:0 auto;padding:20px 14px 80px}
-  header{margin-bottom:20px}
-  h1{font-size:19px;margin:0 0 3px;letter-spacing:-.01em}
-  .sub{color:var(--muted);margin:0;font-size:13px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:16px;margin-bottom:14px}
-  .card>h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 13px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px 14px}
-  .f{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
-  .f span{color:var(--muted)}
-  .f em{display:block;font-style:normal;font-size:11px;opacity:.72}
-  input,select,textarea{
-    font:inherit;font-size:16px;padding:9px 10px;border-radius:8px;
-    border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;min-height:44px;
-  }
-  textarea{min-height:90px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--cyan);outline-offset:1px}
-  .plat{border-top:1px dashed var(--line);padding-top:15px;margin-top:15px}
-  .plat:first-child{border-top:0;padding-top:0;margin-top:0}
-  .ph{display:flex;align-items:center;gap:9px;margin-bottom:12px}
-  .ph select{width:auto;min-width:120px}
-  .rm{margin-left:auto;font-size:12px;color:var(--red);background:none;border:0;cursor:pointer;padding:8px;min-height:44px}
-  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
-  button.b{
-    font:inherit;font-weight:600;border:0;border-radius:9px;cursor:pointer;
-    padding:12px 18px;min-height:48px;background:var(--navy);color:var(--bg);
-  }
-  button.g{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .note{font-size:12.5px;color:var(--muted);margin:11px 0 0;line-height:1.5}
-  .note.err{color:var(--red)}
-  .note.ok{color:var(--green)}
-  pre{
-    white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);
-    border:1px solid var(--line);border-radius:9px;padding:13px;font-size:12px;
-    max-height:60vh;overflow:auto;margin:0;
-  }
-  details{border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:11px;background:var(--bg)}
-  summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:600}
-  details[open] summary{margin-bottom:10px}
-  ol{margin:8px 0 0;padding-left:20px;font-size:13px}
-  ol li{margin-bottom:7px}
-  .k{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11.5px;font-family:ui-monospace,monospace}
-  @media (max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:16px 12px 80px}}
-</style>
-<div class="wrap">
-  <header>
-    <h1>EcomForges Growth Analyst</h1>
-    <p class="sub">Runs entirely on this page. Nothing is uploaded anywhere. Leave anything you do not have blank — a blank field becomes a stated gap, a zero becomes a claim.</p>
-  </header>
+<!--
+  Body markup for the analyst page.
 
-  <div class="card">
-    <h2>Engagement</h2>
-    <div class="grid">
-      <label class="f"><span>Client code<em>never a brand name</em></span><input id="code" value="MY-" placeholder="MY-BTY-09" autocapitalize="characters"></label>
-      <label class="f"><span>Category</span><input id="cat" placeholder="Beauty — skincare"></label>
-      <label class="f"><span>Period start</span><input id="ps" type="date"></label>
-      <label class="f"><span>Period end</span><input id="pe" type="date"></label>
-    </div>
+  It uses the calculator's own class names — site-header, brand, page, file-bar, card,
+  card-head, card-body, field, details, btn, tabs, verdict — because the build extracts the
+  calculator's stylesheet and injects it above. Adding a style rule here would fork the
+  theme; the correct place for a shared change is index.html, and both pages pick it up on
+  the next build.
+
+  The logo placeholder below is replaced with the calculator's own data URI at build time.
+-->
+<header class="site-header">
+  <div class="brand">
+    <img class="brand-logo" alt="EcomForges" width="958" height="147" src="__LOGO__" />
+    <span class="brand-rule"></span>
+    <span class="brand-tag"><b>Growth Analyst</b>Internal use only</span>
+  </div>
+  <div class="stage-switch">
+    <button class="stage-btn active" type="button" id="sb-input" data-view="input">
+      Inputs<small>The client's figures</small>
+    </button>
+    <button class="stage-btn" type="button" id="sb-brief" data-view="brief">
+      Brief<small>What to run</small>
+    </button>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="file-bar">
+    <span class="fb-label">Runs entirely on this page &mdash; nothing is uploaded. Save keeps the figures on this device.</span>
+    <button class="btn btn-sm" type="button" id="dl" hidden>Download brief</button>
+    <button class="btn btn-sm" type="button" id="save">Save</button>
+    <button class="btn btn-sm btn-cyan" type="button" id="go">Generate brief</button>
   </div>
 
-  <div class="card">
-    <h2>Platforms</h2>
+  <!-- ══════════════ INPUTS ══════════════ -->
+  <div id="view-input">
+
+    <div class="verdict" id="verdict">
+      <div class="verdict-top">
+        <div>
+          <div class="score-label">Growth Pressure Score</div>
+          <div class="score-block" id="gps-block" hidden>
+            <span class="score-val num" id="gps-val"></span>
+            <span class="score-max num">of 3.00</span>
+          </div>
+        </div>
+        <div class="tier-chip" id="track-chip"><span class="dot"></span><span id="track-text">Not scored</span></div>
+      </div>
+      <div class="gauge-scale">
+        <span class="gs-c" id="v-note">Fill the figures below, then press Generate brief.</span>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="field">
+        <label for="code">Client code &mdash; never a brand name</label>
+        <input type="text" id="code" value="MY-" placeholder="MY-BTY-09" autocapitalize="characters" />
+      </div>
+      <div class="field">
+        <label for="ps">Period start</label>
+        <input type="date" id="ps" />
+      </div>
+      <div class="field">
+        <label for="pe">Period end</label>
+        <input type="date" id="pe" />
+      </div>
+    </div>
+
+    <div class="details" style="grid-template-columns:1fr">
+      <div class="field">
+        <label for="cat">Category</label>
+        <input type="text" id="cat" placeholder="Beauty &mdash; skincare" />
+      </div>
+    </div>
+
+    <div class="tabs" id="plat-tabs"></div>
+
     <div id="plats"></div>
-    <div class="row" style="margin-top:15px">
-      <button class="b g" id="add" type="button">Add a platform</button>
+
+    <div class="file-bar" style="margin-top:16px">
+      <span class="fb-label">Two or more platforms on one catalogue lets the strongest channel act as the benchmark</span>
+      <button class="btn btn-sm" type="button" id="add">Add a platform</button>
+      <button class="btn btn-sm" type="button" id="rm">Remove this platform</button>
     </div>
-    <p class="note">Two or more platforms selling the same catalogue lets the strongest channel act as the benchmark — which is how Conversion gets scored before you have a benchmark file.</p>
-  </div>
 
-  <div class="card">
-    <h2>Benchmark file (optional)</h2>
-    <p class="note" style="margin-top:0">Paste your <span class="k">benchmarks.md</span> here to score against your own recorded figures. Leave it empty and the strongest platform is used instead. Rows below n=3 are ignored, as are struck-through examples.</p>
-    <textarea id="bm" placeholder="Paste the contents of benchmarks.md, or leave empty"></textarea>
-  </div>
-
-  <div class="card">
-    <h2>Generate</h2>
-    <div class="row">
-      <button class="b" id="go" type="button">Generate brief</button>
-      <button class="b g" id="copy" type="button" hidden>Copy brief</button>
-      <button class="b g" id="dl" type="button" hidden>Download</button>
-      <button class="b g" id="save" type="button">Save inputs</button>
+    <div class="card">
+      <div class="card-head">
+        <div class="cat-num num">B</div>
+        <div class="cat-title">
+          <h3>Benchmark file</h3>
+          <p>Paste <code>benchmarks.md</code> to score against your own recorded figures. Leave it empty and the strongest platform is used instead. Rows below n=3 are ignored, as are struck-through examples.</p>
+        </div>
+        <div class="weight-pill">Optional</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <textarea id="bm" rows="4" placeholder="Paste the contents of benchmarks.md, or leave empty"></textarea>
+        </div>
+      </div>
     </div>
-    <p class="note" id="status"></p>
+
   </div>
 
-  <div class="card" id="out" hidden>
-    <h2>Brief</h2>
-    <pre id="brief"></pre>
+  <!-- ══════════════ BRIEF ══════════════ -->
+  <div id="view-brief" hidden>
 
-    <details id="prosebox">
-      <summary>Get the finding and the sprint (sections 6 and 8)</summary>
-      <ol>
-        <li>Open your <strong>EcomForges Growth Analyst</strong> Claude Project.</li>
-        <li>Press <strong>Copy for Claude</strong> below and paste it into a new chat there.</li>
-        <li>Paste the two sections it writes back into the brief above.</li>
-      </ol>
-      <p class="note">Those two sections are the only part that needs a model. An API key cannot live in this page — anyone could read it in View Source — so the figures are computed here and the Project only writes about them. It is told never to introduce a number that is not in what you paste.</p>
-      <div class="row" style="margin-top:11px">
-        <button class="b g" id="copypayload" type="button">Copy for Claude</button>
+    <div class="card">
+      <div class="card-head">
+        <div class="cat-num num">1</div>
+        <div class="cat-title">
+          <h3>Growth brief</h3>
+          <p id="brief-sub">Every figure is tagged with where it came from. <code>[ASK]</code> means nobody supplied it &mdash; it is a gap, not a zero.</p>
+        </div>
+        <div class="weight-pill" id="brief-pill">&mdash;</div>
       </div>
-    </details>
+      <div class="card-body">
+        <div id="brief-rendered" class="md"></div>
+        <pre id="brief" class="num" hidden></pre>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">
+          <button class="btn btn-sm" type="button" id="copy">Copy brief</button>
+          <button class="btn btn-sm" type="button" id="dl2">Download</button>
+          <button class="btn btn-sm" type="button" id="toggleraw">Show markdown</button>
+        </div>
+      </div>
+    </div>
 
-    <details id="candbox">
-      <summary>Benchmark candidates from this brief</summary>
-      <p class="note" style="margin-top:0">Observed in this one account, so <strong>n=1</strong>. One client is not a category — a figure needs three separate clients before it belongs in <span class="k">benchmarks.md</span>.</p>
-      <pre id="cands" style="max-height:30vh"></pre>
-      <div class="row" style="margin-top:11px">
-        <button class="b g" id="copycands" type="button">Copy candidates</button>
+    <div class="card">
+      <div class="card-head">
+        <div class="cat-num num">2</div>
+        <div class="cat-title">
+          <h3>The finding and the 30-day sprint</h3>
+          <p>Sections 6 and 8 are the only part that needs a model. Press Copy for Claude, paste into your Growth Analyst Project, then paste the two sections it writes back into the brief above.</p>
+        </div>
+        <div class="weight-pill">Sections 6 &amp; 8</div>
       </div>
-    </details>
+      <div class="card-body">
+        <p class="fb-label" style="margin:0 0 12px;display:block">Why it works this way</p>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--blue-grey);margin:0 0 14px">
+          An API key cannot live in this page &mdash; anyone could read it in View Source. So the
+          figures are computed here and the Project only writes about them. It is instructed never
+          to introduce a number that is not in what you paste.
+        </p>
+        <button class="btn btn-sm btn-cyan" type="button" id="copypayload">Copy for Claude</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="cat-num num">3</div>
+        <div class="cat-title">
+          <h3>Benchmark candidates</h3>
+          <p>Observed in this one account, so <b>n=1</b>. One client is not a category &mdash; a figure needs three separate clients before it belongs in <code>benchmarks.md</code>.</p>
+        </div>
+        <div class="weight-pill" id="cand-pill">n=1</div>
+      </div>
+      <div class="card-body">
+        <pre id="cands" class="num" style="max-height:34vh"></pre>
+        <button class="btn btn-sm" type="button" id="copycands" style="margin-top:12px">Copy candidates</button>
+      </div>
+    </div>
+
   </div>
+
+  <p class="fb-label" id="status" style="display:block;margin-top:18px"></p>
+
 </div>

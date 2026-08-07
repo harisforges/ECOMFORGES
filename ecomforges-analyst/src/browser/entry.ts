@@ -34,6 +34,10 @@ export interface RunOutput {
   readonly track: string | null;
   readonly platform: string | null;
   readonly blocked: string;
+  /** The blocker's title, for the panel when one fires. */
+  readonly blockerTitle: string;
+  /** The winning Growth Pressure Score, or null when nothing scored. */
+  readonly topScore: number | null;
   readonly candidates: readonly string[];
   readonly benchmarkRowsRead: number;
 }
@@ -53,12 +57,17 @@ export function run(input: RunInput): RunOutput {
   const analysis = analyse(engagement, benchmarks);
 
   return {
-    brief: renderBrief(analysis),
+    brief: renderBrief(analysis, undefined, {
+      // The CLI's phrasing names a flag that does not exist in a browser.
+      proseHint: 'press Copy for Claude below, then paste what the Project writes back here',
+    }),
     payload: JSON.stringify(buildPayload(analysis), null, 2),
     gaps: analysis.gaps.map((g) => g.question),
     track: analysis.track.activeTrack ? TRACK[analysis.track.activeTrack].name : null,
     platform: analysis.track.platform ?? null,
     blocked: String(analysis.blockers.blocked),
+    blockerTitle: analysis.blockers.title,
+    topScore: analysis.track.noPressure ? null : analysis.track.topScore,
     candidates: analysis.benchmarkCandidates.map(
       (c) =>
         `${c.platform} / ${c.category} / ${c.metric} / ${c.value} / observed ${c.observed} / ${c.clientCode} / n=1`,
