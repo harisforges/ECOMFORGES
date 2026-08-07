@@ -27,6 +27,47 @@ membership check, so a fabricated figure that happens to equal an unrelated payl
 — a ROAS of 5.20 quoted as a 5.20% conversion benchmark — passes. It catches figures that
 were never computed, not figures used in the wrong place.
 
+## What has and has not been tested against the API
+
+`tests/wire.test.ts` points the real `Anthropic` client at a local server speaking the
+Messages API wire format, captures what actually goes out, and asserts the shape. That
+covers serialisation, transport, response parsing, and error handling — the layer a stubbed
+client skips entirely, and where a parameter in the wrong place hides.
+
+It pins the request this model requires:
+
+```json
+{
+  "model": "claude-opus-5",
+  "max_tokens": 16000,
+  "system": "<prompts/analyst-v1.md + the per-call hard rule>",
+  "output_config": { "effort": "high", "format": { "type": "json_schema", "schema": {...} } },
+  "messages": [{ "role": "user", "content": "<engine-computed JSON>" }]
+}
+```
+
+and asserts the absences that matter, because each one is a 400 on Opus 5: no
+`temperature`, `top_p`, or `top_k`; no `thinking` block (thinking is on by default, so the
+parameter is omitted rather than configured); no trailing assistant turn; `effort` inside
+`output_config` rather than top-level; and no deprecated `output_format`. It also asserts
+`stop_reason: "refusal"` throws instead of reading an empty `content` array, and that a 401
+and a 400 surface as typed SDK errors carrying the API's own message.
+
+**No authenticated call has been made.** `api.anthropic.com` is reachable from this
+environment — it returns a well-formed `401 authentication_error` with a request id — but
+there is no key here, so Anthropic's own inference is the one thing still unexercised. To
+close that:
+
+```bash
+export ANTHROPIC_API_KEY=...        # or: ant auth login
+npx tsx src/cli generate fixtures/my-bty-09.json          # sections 6 and 8, for real
+npx tsx src/cli shots screenshot.png --code MY-XXX-00 --category "..."
+```
+
+If the first draft cites a figure that was not in the payload, the CLI prints what it
+rejected and that the retry passed. If both drafts fail, the run fails rather than emitting
+the brief — that is the validator working, not a fault.
+
 ## The four ways figures get in
 
 | Route | Command | Gate |
