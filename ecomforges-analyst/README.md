@@ -8,6 +8,7 @@ executes.
 npm install
 npm test
 npx tsx src/cli generate fixtures/my-bty-09.json --no-llm
+npx tsx src/cli serve --port 4173          # the form, on loopback
 ```
 
 `--no-llm` renders everything except the two prose sections, so the engine can be checked
@@ -25,6 +26,86 @@ That validator has a known limit, which is documented in a test: it is a value-s
 membership check, so a fabricated figure that happens to equal an unrelated payload number
 — a ROAS of 5.20 quoted as a 5.20% conversion benchmark — passes. It catches figures that
 were never computed, not figures used in the wrong place.
+
+## The four ways figures get in
+
+| Route | Command | Gate |
+|---|---|---|
+| Manual JSON | `generate <file.json>` | none — you typed it |
+| Platform export | `csv <file.csv>` | the column mapping is stated back and confirmed |
+| Screenshots | `shots <image...>` | every figure is echoed with the label it was read from |
+| Web form | `serve` | blank inputs stay out of the payload |
+
+**The confirmation gate is a type, not a convention.** `analyse()` takes an `Engagement`;
+CSV and screenshot intake produce a `PendingIntake`, and the only way to get an
+`Engagement` out of one is `confirm(pending, true)`. Code that forgets the step does not
+compile, and a pending read with an open question throws rather than proceeding.
+
+### What the CSV path knows about real exports
+
+The alias table is built from actual Shopee, Lazada, and TikTok Shop exports, and so are
+the traps:
+
+- **`Visitors` beats `Pageviews`** for sessions without asking. A pageview is not a session.
+- **Shopee ships two revenue columns** — `Sales (MYR)` (gross) and
+  `Sales (Shopee Rebate and Coins excluded)` (net). Equal-strength candidates for the same
+  field, so it asks rather than picking.
+- **TikTok's `Items refunded` holds a ringgit value** despite its name. Asked about — but
+  only when no unambiguous refunded-value column exists.
+- **`Units Sold` and `SKU orders` are not orders.** Asked about only when `orders` is
+  otherwise unmapped, so a real Lazada export carrying both `Orders` and `Units Sold`
+  passes clean.
+- **Rates are never summed.** A period-total row is used when present; otherwise additive
+  columns are summed and rates come back as gaps with the reason stated. AOV is derived from
+  GMV ÷ orders when the export omits it, and says so.
+
+**A platform export alone is not enough to pick a track**, and the tool says so rather than
+guessing. A full Lazada Business Advisor export yields conversion, basket, and leakage
+inputs — but no organic share, session trend, AOV trend, promo dependency, fulfilment
+state, or margin. The brief comes back with every area unscored, `No area scoreable.`, and
+seven named gaps. That is the correct output, not a failure: the CSV covers what the
+platform measures, and the rest has to be asked.
+
+## The benchmark candidate queue
+
+A brief ends with figures observed in one client's account. Those are candidates. They land
+in `benchmarks.queue.jsonl` (gitignored), and promotion is a human decision:
+
+```bash
+npx tsx src/cli generate eng.json --queue benchmarks.queue.jsonl   # queue candidates
+npx tsx src/cli queue --queue benchmarks.queue.jsonl               # review
+npx tsx src/cli approve Lazada "Beauty — skincare" "buyer CVR" \
+    --queue benchmarks.queue.jsonl --benchmarks benchmarks.md      # promote
+```
+
+Three things are enforced rather than trusted:
+
+- **n counts distinct client codes, not rows.** Six months of one seller is one client; a
+  row count would read as six. Each client contributes its most recent figure to the median.
+- **Below n=3, `approve()` throws.** One client is not a category.
+- **A candidate cannot be promoted for the brief that produced it.** Passing
+  `--current-engagement` makes it refuse — approving mid-engagement and re-running would
+  score the client against itself and always return Stable.
+
+`approve()` also reconciles vocabularies: the queue records `buyer CVR`, the benchmark
+file's table means `CVR`. Writing the candidate's own label under that heading produced a
+row the parser read as `CVR`, so a later lookup for `buyer CVR` never found it — silently,
+forever. The approved row now carries both names and the heading it belongs under.
+
+## The form
+
+`serve` runs a single self-contained page on loopback. **The API key stays server-side** —
+the page's only network call is to this server's own `/api/generate`, and a test asserts the
+HTML contains no key, no `api.anthropic.com`, and no external script or stylesheet, so the
+CSP can stay at `default-src 'none'`.
+
+It imports the engine unchanged. There is no second copy of the scoring rules in the server
+or the page, which is why the form was built last.
+
+A blank input is left out of the payload entirely rather than sent as zero: absent becomes a
+stated gap, zero becomes a claim the client never made. If the prose call fails — including
+a validator rejection, which is the system working — the brief is still returned with
+everything the engine computed, and the reason is shown.
 
 ## Provenance
 
@@ -71,6 +152,12 @@ src/engine/pipeline.ts           orchestration
 src/benchmarks/parse.ts          benchmark file parser
 src/render/brief.ts              sections 1-5, 7, 9, 10
 src/llm/prose.ts                 the one model call + validator
+src/intake/pending.ts            the confirmation gate
+src/intake/csv.ts                platform-export reader + column mapping
+src/intake/screenshot.ts         vision read, echoed and blocking
+src/benchmarks/queue.ts          candidate queue, n>=3, same-brief guard
+src/server/index.ts              the form server — holds the API key
+src/server/page.ts               the page — self-contained, no external anything
 prompts/analyst-v1.md            versioned system prompt
 ```
 

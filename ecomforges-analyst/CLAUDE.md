@@ -62,6 +62,25 @@ engagements must refuse.
 `Unscored` is a distinct value from level 0. A missing benchmark means "we do not know",
 not "this area is fine". The types make it impossible to accidentally arithmetic on it.
 
+## Intake never bypasses confirmation
+
+`analyse()` takes an `Engagement`. CSV and screenshot intake produce a `PendingIntake`, and
+the only way to get an `Engagement` out of one is `confirm(pending, true)` — which throws
+if any question is open. A misread digit in a conversion rate changes which track
+activates, and a silently wrong column mapping produces a confident wrong analysis, so
+neither may reach the engine unchecked.
+
+`src/intake/screenshot.ts` is the one place besides `src/llm/` where a model produces
+numbers. It is fenced: every figure carries the on-screen label it was read from, and an
+illegible figure comes back `null` with a stated reason rather than a best guess.
+
+## Benchmarks are promoted by a human, never by the tool
+
+A brief's observed figures go to the candidate queue. `approve()` refuses below n=3
+(counting distinct client codes, not rows) and refuses a candidate produced by the
+engagement currently being analysed. Nothing writes to the benchmark file automatically —
+otherwise the tool's own output becomes its own evidence.
+
 ## Data
 
 Real client data goes in `fixtures/real/` and is **never committed**. Neither is the
@@ -99,4 +118,9 @@ npm test                                        # vitest
 npm run typecheck
 npx tsx src/cli generate <fixture.json> --benchmarks <path>
 npx tsx src/cli generate <fixture.json> --no-llm # engine only, no API call
+npx tsx src/cli csv <file.csv> --platform Lazada --code MY-XXX-00 --category "..."
+npx tsx src/cli shots <image...> --code MY-XXX-00 --category "..."
+npx tsx src/cli queue --queue benchmarks.queue.jsonl
+npx tsx src/cli approve <platform> <category> <metric> --queue ... --benchmarks ...
+npx tsx src/cli serve --port 4173
 ```

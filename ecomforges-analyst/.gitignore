@@ -8,6 +8,10 @@ dist/
 benchmarks.md
 benchmarks.local.md
 
+# The candidate queue holds client codes and observed figures. Same reasoning.
+benchmarks.queue.jsonl
+*.queue.jsonl
+
 # Real client data. Never committed. The directory itself is tracked so the path
 # exists on a fresh clone; everything inside it is excluded.
 fixtures/real/*

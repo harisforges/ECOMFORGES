@@ -387,9 +387,9 @@ export function anthropicClient(client = new Anthropic()): ProseClient {
           format: { type: 'json_schema', schema: RESPONSE_SCHEMA },
         },
         messages: [{ role: 'user', content: userJson }],
-      } as Parameters<typeof client.messages.create>[0]);
+      });
 
-      const msg = response as Anthropic.Message;
+      const msg = response;
       if (msg.stop_reason === 'refusal') {
         throw new Error('model declined the request; nothing written');
       }
