@@ -1,0 +1,14 @@
+# The filled benchmark file is EcomForges' own accumulated data. This repository is
+# public — keep it in the Claude Project's knowledge files, not in git.
+benchmarks.local.md
+analyst/benchmarks.local.md
+
+# Client data. Never commit an engagement's raw exports or briefs to a public repo.
+analyst/clients/
+*.xls
+*.xlsx
+
+# Node artifacts. The analyst project keeps its dependencies under
+# ecomforges-analyst/node_modules; nothing belongs at the repository root, and a stray
+# root-level node_modules means a command ran from the wrong directory.
+node_modules/

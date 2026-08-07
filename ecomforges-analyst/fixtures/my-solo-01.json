@@ -1,0 +1,35 @@
+{
+  "clientCode": "MY-SOLO-01",
+  "periodStart": "2026-04-01",
+  "periodEnd": "2026-04-30",
+  "category": "Home — kitchenware",
+  "platforms": [
+    {
+      "platform": "Shopee",
+      "sessions": 31000,
+      "buyers": 1240,
+      "orders": 1290,
+      "headlineCvr": 5.1,
+      "headlineCvrBasis": "product-card clicks",
+      "aov": 54.00,
+      "gmv": 69660,
+      "organicSharePct": 26,
+      "sessionTrendPct": -8,
+      "aovTrend": "down",
+      "promoRevenuePct": 68,
+      "adSpend": 9400,
+      "roas": 1.7,
+      "grossMarginPct": 22,
+      "fulfilment": "sla-breaches",
+      "cancelledOrders": 51,
+      "cancelledValue": 2750,
+      "refundedOrders": 19,
+      "refundedValue": 1030,
+      "addToCartUsers": 2480,
+      "topSkus": [
+        { "name": "Cast Iron Pan 26cm", "units": 310, "revenue": 21700 },
+        { "name": "Knife Block Set", "units": 188, "revenue": 16920 }
+      ]
+    }
+  ]
+}
