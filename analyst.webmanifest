@@ -1,0 +1,16 @@
+{
+  "name": "EcomForges Growth Analyst",
+  "short_name": "Forge Analyst",
+  "description": "Turns one engagement's platform figures into a session brief: what is wrong, which Forge Track activates, and the 30-day sprint.",
+  "start_url": "./analyst.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162840",
+  "theme_color": "#162840",
+  "icons": [
+    { "src": "analyst-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "analyst-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "analyst-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

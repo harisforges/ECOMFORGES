@@ -44,11 +44,30 @@ makes no network requests once loaded.
 
 `analyst.html` — type a client's platform figures in, get the full growth brief. Runs
 entirely in the page: no install, no sign-in, no API key, and nothing is uploaded anywhere.
-Add it to your home screen like the calculator.
 
 The two prose sections (the finding and the 30-day sprint) are the only part that needs a
 model. Press **Copy for Claude** and paste into the EcomForges Growth Analyst Project — the
 figures are computed in the page, so the Project only writes about them.
+
+### The two tools are separate, and stay separate
+
+The calculator qualifies a prospect and picks the Forge Track *before* an engagement runs.
+The analyst scores an engagement that is *already* running. Neither replaces the other, and
+the analyst work has never touched `index.html`.
+
+They install as two independent home-screen apps, which is why each has its own manifest and
+its own icon:
+
+| | Calculator | Analyst |
+|---|---|---|
+| Page | `index.html` | `analyst.html` |
+| Manifest | `manifest.webmanifest` | `analyst.webmanifest` |
+| Home-screen label | Forge Tools | Forge Analyst |
+| Icon | cyan hexagon | **amber** hexagon |
+
+Add both to your home screen; the colour tells them apart at a glance. The analyst's icons
+are derived from the calculator's by `ecomforges-analyst/scripts/analyst-icons.py`, so the
+mark can never drift from the brand — only its accent moves.
 
 ## Note on visibility
 
