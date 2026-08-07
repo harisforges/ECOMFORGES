@@ -25,3 +25,13 @@ contains scoring weights, thresholds, pricing and client-facing scripts —
 treat the URL as shareable-by-accident and review before adding anything
 further. `robots.txt` asks search engines not to index it; that is a request,
 not access control.
+
+## Growth Analyst
+
+`analyst.html` — type a client's platform figures in, get the full growth brief. Runs
+entirely in the page: no install, no sign-in, no API key, and nothing is uploaded anywhere.
+Add it to your home screen like the calculator.
+
+The two prose sections (the finding and the 30-day sprint) are the only part that needs a
+model. Press **Copy for Claude** and paste into the EcomForges Growth Analyst Project — the
+figures are computed in the page, so the Project only writes about them.

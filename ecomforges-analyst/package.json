@@ -1,0 +1,25 @@
+{
+  "name": "ecomforges-analyst",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Advisory brief generator for a Malaysian e-commerce consultancy",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "generate": "tsx src/cli/index.ts generate",
+    "build:page": "tsx scripts/build-page.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "playwright": "^1.56.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

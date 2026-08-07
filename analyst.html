@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>EcomForges Growth Analyst</title>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#162840">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Forge Analyst">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#f5f6f8;--card:#fff;--ink:#16202c;--muted:#5b6b7c;--line:#dde3ea;
+    --navy:#162840;--cyan:#0b7fa8;--amber:#a85f00;--red:#b3261e;--green:#1c6b3f;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f141b;--card:#161d26;--ink:#e6ecf2;--muted:#98a7b6;--line:#26303c;
+      --navy:#dbe6f2;--cyan:#4fc3e8;--amber:#e0a44a;--red:#ef7a70;--green:#5fce93;
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:20px 14px 80px}
+  header{margin-bottom:20px}
+  h1{font-size:19px;margin:0 0 3px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:16px;margin-bottom:14px}
+  .card>h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px 14px}
+  .f{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+  .f span{color:var(--muted)}
+  .f em{display:block;font-style:normal;font-size:11px;opacity:.72}
+  input,select,textarea{
+    font:inherit;font-size:16px;padding:9px 10px;border-radius:8px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;min-height:44px;
+  }
+  textarea{min-height:90px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--cyan);outline-offset:1px}
+  .plat{border-top:1px dashed var(--line);padding-top:15px;margin-top:15px}
+  .plat:first-child{border-top:0;padding-top:0;margin-top:0}
+  .ph{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .ph select{width:auto;min-width:120px}
+  .rm{margin-left:auto;font-size:12px;color:var(--red);background:none;border:0;cursor:pointer;padding:8px;min-height:44px}
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  button.b{
+    font:inherit;font-weight:600;border:0;border-radius:9px;cursor:pointer;
+    padding:12px 18px;min-height:48px;background:var(--navy);color:var(--bg);
+  }
+  button.g{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .note{font-size:12.5px;color:var(--muted);margin:11px 0 0;line-height:1.5}
+  .note.err{color:var(--red)}
+  .note.ok{color:var(--green)}
+  pre{
+    white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);
+    border:1px solid var(--line);border-radius:9px;padding:13px;font-size:12px;
+    max-height:60vh;overflow:auto;margin:0;
+  }
+  details{border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:11px;background:var(--bg)}
+  summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:600}
+  details[open] summary{margin-bottom:10px}
+  ol{margin:8px 0 0;padding-left:20px;font-size:13px}
+  ol li{margin-bottom:7px}
+  .k{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11.5px;font-family:ui-monospace,monospace}
+  @media (max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:16px 12px 80px}}
+</style>
+<div class="wrap">
+  <header>
+    <h1>EcomForges Growth Analyst</h1>
+    <p class="sub">Runs entirely on this page. Nothing is uploaded anywhere. Leave anything you do not have blank — a blank field becomes a stated gap, a zero becomes a claim.</p>
+  </header>
+
+  <div class="card">
+    <h2>Engagement</h2>
+    <div class="grid">
+      <label class="f"><span>Client code<em>never a brand name</em></span><input id="code" value="MY-" placeholder="MY-BTY-09" autocapitalize="characters"></label>
+      <label class="f"><span>Category</span><input id="cat" placeholder="Beauty — skincare"></label>
+      <label class="f"><span>Period start</span><input id="ps" type="date"></label>
+      <label class="f"><span>Period end</span><input id="pe" type="date"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Platforms</h2>
+    <div id="plats"></div>
+    <div class="row" style="margin-top:15px">
+      <button class="b g" id="add" type="button">Add a platform</button>
+    </div>
+    <p class="note">Two or more platforms selling the same catalogue lets the strongest channel act as the benchmark — which is how Conversion gets scored before you have a benchmark file.</p>
+  </div>
+
+  <div class="card">
+    <h2>Benchmark file (optional)</h2>
+    <p class="note" style="margin-top:0">Paste your <span class="k">benchmarks.md</span> here to score against your own recorded figures. Leave it empty and the strongest platform is used instead. Rows below n=3 are ignored, as are struck-through examples.</p>
+    <textarea id="bm" placeholder="Paste the contents of benchmarks.md, or leave empty"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Generate</h2>
+    <div class="row">
+      <button class="b" id="go" type="button">Generate brief</button>
+      <button class="b g" id="copy" type="button" hidden>Copy brief</button>
+      <button class="b g" id="dl" type="button" hidden>Download</button>
+      <button class="b g" id="save" type="button">Save inputs</button>
+    </div>
+    <p class="note" id="status"></p>
+  </div>
+
+  <div class="card" id="out" hidden>
+    <h2>Brief</h2>
+    <pre id="brief"></pre>
+
+    <details id="prosebox">
+      <summary>Get the finding and the sprint (sections 6 and 8)</summary>
+      <ol>
+        <li>Open your <strong>EcomForges Growth Analyst</strong> Claude Project.</li>
+        <li>Press <strong>Copy for Claude</strong> below and paste it into a new chat there.</li>
+        <li>Paste the two sections it writes back into the brief above.</li>
+      </ol>
+      <p class="note">Those two sections are the only part that needs a model. An API key cannot live in this page — anyone could read it in View Source — so the figures are computed here and the Project only writes about them. It is told never to introduce a number that is not in what you paste.</p>
+      <div class="row" style="margin-top:11px">
+        <button class="b g" id="copypayload" type="button">Copy for Claude</button>
+      </div>
+    </details>
+
+    <details id="candbox">
+      <summary>Benchmark candidates from this brief</summary>
+      <p class="note" style="margin-top:0">Observed in this one account, so <strong>n=1</strong>. One client is not a category — a figure needs three separate clients before it belongs in <span class="k">benchmarks.md</span>.</p>
+      <pre id="cands" style="max-height:30vh"></pre>
+      <div class="row" style="margin-top:11px">
+        <button class="b g" id="copycands" type="button">Copy candidates</button>
+      </div>
+    </details>
+  </div>
+</div>
+</head>
+<body>
+<script>"use strict";(()=>{function K(e,n){return n===void 0?{tag:"DATA",value:e}:{tag:"DATA",value:e,source:n}}function k(e,n){return{tag:"CALC",value:e,workings:n}}function Ae(e,n){return{tag:"BM",value:e,rowId:n}}function v(e){if(typeof e!="string"||e.trim()==="")throw new Error("ASK requires a question describing what is missing");return{tag:"ASK",question:e}}function m(e){return e.tag==="ASK"}function U(e,n,r,t){let o=[],s=[];if(e.forEach((a,l)=>{var d;m(a)?o.push((d=n[l])!=null?d:`input ${l+1}`):s.push(a.value)}),o.length>0){let a=e.filter(m).map(d=>d.question).filter(d=>d.length>0),l=a.length>0?` (${a.join("; ")})`:"";return v(`not computable — missing ${o.join(" and ")}${l}`)}let i=s;return k(r(...i),t(...i))}function oe(e,n={}){var o;let r=(o=n.render)!=null?o:(s=>String(s));if(e.tag==="ASK")return`[ASK] ${e.question}`;let t=r(e.value);if(n.bare)return t;switch(e.tag){case"DATA":return e.source?`${t} [DATA ${e.source}]`:`${t} [DATA]`;case"CALC":return`${t} [CALC ${e.workings}]`;case"BM":return`${t} [BM ${e.rowId}]`;case"EST":return`${t} [EST ${e.basis}]`}}var an=new Intl.NumberFormat("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2}),Pe=new Intl.NumberFormat("en-MY",{maximumFractionDigits:0});function T(e){return`RM${an.format(e)}`}function x(e){return`RM${Pe.format(Math.round(e))}`}function f(e){return Pe.format(e)}function u(e,n=2){return`${e.toFixed(n)}%`}function se(e){return e.toFixed(3)}var ie=e=>oe(e,{render:n=>T(n)});var we=(e,n=2)=>oe(e,{render:r=>u(r,n)});var le=["Shopee","Lazada","TikTok","Own site"],on=/^[A-Z0-9]+(-[A-Z0-9]+)+$/,sn=[{month:9,day:9,label:"9.9"},{month:10,day:10,label:"10.10"},{month:11,day:11,label:"11.11"},{month:12,day:12,label:"12.12"}],Se=864e5;function de(e){return Math.round((e.periodEnd.getTime()-e.periodStart.getTime())/Se)+1}function ln(e,n){return e.getUTCFullYear()===n.getUTCFullYear()&&e.getUTCMonth()===n.getUTCMonth()&&e.getUTCDate()===n.getUTCDate()}function dn(e){let n=[];for(let r=e.periodStart.getTime();r<=e.periodEnd.getTime();r+=Se)n.push(new Date(r));return n}function Re(e){var s;let n=[];on.test(e.clientCode)||n.push({kind:"bad-client-code",message:`Client code "${e.clientCode}" is not code-shaped. Use an uppercase hyphenated code such as MY-BTY-09 — never a brand name, because briefs and benchmark rows outlive the engagement.`}),e.platforms.length===0&&n.push({kind:"no-platforms",message:"No platform data supplied."});let r=de(e);r<14&&n.push({kind:"short-period",message:`Period is ${r} days. Under 14 days is not a readable baseline — the figures below describe a fortnight, not a run rate.`});let t=[],o=dn(e);for(let i of sn)o.some(a=>a.getUTCMonth()+1===i.month&&a.getUTCDate()===i.day)&&t.push(i.label);for(let i of(s=e.rayaDates)!=null?s:[])o.some(a=>ln(a,i))&&t.push(`Raya (${i.toISOString().slice(0,10)})`);return t.length>0&&n.push({kind:"campaign-inflated",message:`Period contains ${t.join(", ")}. Campaign-inflated — this is not a baseline, and treating the totals as a run rate will overstate the business.`}),n}function cn(e,n,r){if(e!==void 0)return e===null?v(`${n}: ${r} not supplied`):K(e)}var un=["up","flat","down"],Ce=["clean","minor-delays","sla-breaches","out-of-stock"];function fn(e){let n=e.platform;if(typeof n!="string"||!le.includes(n))throw new Error(`unknown platform ${JSON.stringify(n)} — expected one of ${le.join(", ")}`);let r=n,t=["sessions","buyers","orders","headlineCvr","aov","gmv","organicSharePct","sessionTrendPct","promoRevenuePct","adSpend","roas","grossMarginPct","cancelledOrders","cancelledValue","refundedOrders","refundedValue","addToCartUsers","wishlistUsers"],o={platform:r};for(let l of t){let d=cn(e[l],r,l);d!==void 0&&(o[l]=d)}typeof e.headlineCvrBasis=="string"&&(o.headlineCvrBasis=e.headlineCvrBasis);let s=e.aovTrend;if(s!==void 0)if(s===null)o.aovTrend=v(`${r}: AOV trend not supplied`);else if(typeof s=="string"&&un.includes(s))o.aovTrend=K(s);else throw new Error(`${r}: aovTrend must be up, flat, or down`);let i=e.fulfilment;if(i!==void 0)if(i===null)o.fulfilment=v(`${r}: fulfilment state not supplied`);else if(typeof i=="string"&&Ce.includes(i))o.fulfilment=K(i);else throw new Error(`${r}: fulfilment must be one of ${Ce.join(", ")}`);let a=e.topSkus;return Array.isArray(a)&&(o.topSkus=a.map(l=>{var c,g,w;let d=l;return{name:String((c=d.name)!=null?c:""),units:Number((g=d.units)!=null?g:0),revenue:Number((w=d.revenue)!=null?w:0)}})),o}function xe(e){var i,a;let n=JSON.parse(e),r=n.platforms;if(!Array.isArray(r))throw new Error("engagement JSON needs a platforms array");let t=n.rayaDates,o=Array.isArray(t)?t.map(l=>new Date(String(l))):void 0,s=n.suppliedBenchmarkCvr;return{clientCode:String((i=n.clientCode)!=null?i:""),periodStart:new Date(String(n.periodStart)),periodEnd:new Date(String(n.periodEnd)),category:String((a=n.category)!=null?a:""),platforms:r.map(l=>fn(l)),...o!==void 0?{rayaDates:o}:{},...typeof s=="number"?{suppliedBenchmarkCvr:s}:{}}}var ue={cvrRatio:{stable:1,medium:.85,high:.65},organicThinBelowPct:30,promoDependency:{stable:40,medium:60,high:75},grossMargin:{stable:35,medium:25,high:20},roasStepUpBelow:2,impact:{conversion:1,traffic:.85,campaign:.8,basket:.7},minReadablePeriodDays:14,minNForBenchmark:3,staleAfterMonths:18},mn=/~~/,gn=/_\(empty\)_/i;function ce(e){return e.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}function pn(e){let n=e.trim();return n.startsWith("|")?n.slice(1,n.endsWith("|")?-1:void 0).split("|").map(r=>r.trim()):[]}function hn(e){return/^\|[\s:|-]+\|?$/.test(e.trim())}function Be(e){let n=e.replace(/,/g,"").match(/-?\d+(\.\d+)?/);if(!n)return;let r=Number(n[0]);return Number.isFinite(r)?r:void 0}function yn(e,n){let r=e.match(/(\d{4})-(\d{2})/);if(!r)return;let t=Number(r[1]),o=Number(r[2]),s=n.match(/(\d{4})-(\d{2})/);if(!s)return;let i=Number(s[1]),a=Number(s[2]);return(i-t)*12+(a-o)}var bn=[{re:/^##\s+Conversion rate/i,metric:"CVR"},{re:/^##\s+Average order value/i,metric:"AOV"},{re:/^##\s+Organic share/i,metric:"organic share"},{re:/^##\s+Promo dependency/i,metric:"promo dependency"},{re:/^##\s+Gross margin/i,metric:"gross margin"},{re:/^##\s+ROAS/i,metric:"ROAS"}],vn=/^##\s+(Retired figures|Internal decision thresholds|Example row|Platform mechanics|How to add)/i;function Oe(e,n){var w,h,P,C,L,G;let r={...(w=n.thresholds)!=null?w:ue},t=[],o=[],s=e.split(/\r?\n/),i,a=!1,l=!1,d,c=[],g=!1;for(let E of s){if(/^\s*```/.test(E)){g=!g;continue}if(g)continue;if(/^#{2,}\s/.test(E)){a=vn.test(E),l=/^##\s+Internal decision thresholds/i.test(E);let S=bn.find(_=>_.re.test(E));i=S==null?void 0:S.metric,/^##\s+Additional observed metrics/i.test(E)&&(i="__per-row__"),d=void 0;continue}let y=pn(E);if(y.length===0||hn(E))continue;if(l){if(y[0]==="Rule")continue;y.length>=2&&y[0]&&y[1]&&c.push({rule:y[0],value:y[1]});continue}if(a||i===void 0)continue;if(d===void 0){d=y.map(S=>S.toLowerCase());continue}if(y.some(S=>mn.test(S))||y.some(S=>gn.test(S)))continue;let V=S=>{var $e;let _=d.indexOf(S);return _<0&&(_=d.findIndex(tn=>tn.includes(S))),_>=0&&($e=y[_])!=null?$e:""},ee=(h=y[0])!=null?h:"",ne=(P=y[1])!=null?P:"";if(ee===""||ne==="")continue;let ke=i==="__per-row__"?(C=y[2])!=null?C:"":i,re=i==="__per-row__"?(L=y[3])!=null?L:"":(G=y[2])!=null?G:"";if(re==="")continue;let Te=V("n"),q=Te===""?void 0:Be(Te),W=V("last observed"),nn=V("period type"),rn=V("client code").split(/[\s,/]+/).map(S=>S.trim()).filter(S=>S.length>0),te={rowId:[ce(ee),ce(ne),ce(ke),W||"undated"].join("-"),platform:ee,category:ne,metric:ke,rawValue:re,value:Be(re),n:q,periodType:nn,lastObserved:W,clientCodes:rn};if(q===void 0||q<r.minNForBenchmark){o.push({...te,usable:!1,unusableReason:q===void 0?"no n recorded — cannot tell how many clients this came from":`n=${q}, below the ${r.minNForBenchmark} required — one client is not a category`});continue}let ae=W===""?void 0:yn(W,n.asOf);if(ae!==void 0&&ae>r.staleAfterMonths){o.push({...te,usable:!1,unusableReason:`stale, needs re-check or retirement — last observed ${W}, ${ae} months before this period`});continue}t.push({...te,usable:!0})}return{rows:t,rejected:o,thresholds:kn(r,c)}}function kn(e,n){let r=JSON.parse(JSON.stringify(e)),t=r,o=s=>{var i;return((i=s.replace(/,/g,"").match(/\d+(\.\d+)?/g))!=null?i:[]).map(Number)};for(let{rule:s,value:i}of n){let a=s.toLowerCase(),l=o(i);/cvr ratio/.test(a)&&l.length>=3?t.cvrRatio={stable:l[0],medium:l[1],high:l[2]}:/organic share/.test(a)&&l.length>=1?t.organicThinBelowPct=l[0]:/promo dependency/.test(a)&&l.length>=3?t.promoDependency={stable:l[0],medium:l[1],high:l[2]}:/gross margin/.test(a)&&l.length>=3?t.grossMargin={stable:l[0],medium:l[1],high:l[2]}:/roas/.test(a)&&l.length>=1?t.roasStepUpBelow=l[0]:/impact weight/.test(a)&&l.length>=4?t.impact={conversion:l[0],traffic:l[1],campaign:l[2],basket:l[3]}:/minimum readable period/.test(a)&&l.length>=1?t.minReadablePeriodDays=l[0]:/\bn\b.*required|required before/.test(a)&&l.length>=1&&(t.minNForBenchmark=l[l.length-1])}return r}var H=e=>e.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();function Ee(e,n,r,t){return H(e.platform).startsWith(H(n))&&H(e.category)===H(r)&&H(e.metric)===H(t)}function De(e,n,r,t){var i,a;let o=e.rows.find(l=>Ee(l,n,r,t)&&l.value!==void 0);if(o)return{found:!0,row:o};let s=e.rejected.find(l=>Ee(l,n,r,t));return s?{found:!1,reason:/stale/.test((i=s.unusableReason)!=null?i:"")?"stale":"n-too-low",detail:(a=s.unusableReason)!=null?a:"recorded but not usable"}:{found:!1,reason:"none-on-file",detail:`no benchmark on file for ${n} / ${r}`}}var Tn=(e,n)=>v(`${e}: ${n} not supplied`);function B(e,n,r){let t=e[n];return t!=null?t:Tn(e.platform,r)}function D(e){let n=B(e,"sessions","sessions"),r=e.buyers,t=e.orders,o={...e.headlineCvr!==void 0?{headline:e.headlineCvr}:{},...e.headlineCvrBasis!==void 0?{headlineBasis:e.headlineCvrBasis}:{}};return r!==void 0?{...o,fromOrders:!1,cvr:U([r,n],["buyers","sessions"],(s,i)=>i===0?0:s/i*100,(s,i)=>`${f(s)} ÷ ${f(i)}`)}:t!==void 0?{...o,fromOrders:!0,cvr:U([t,n],["orders","sessions"],(s,i)=>i===0?0:s/i*100,(s,i)=>`${f(s)} ÷ ${f(i)} — orders substituted for buyers, which are not interchangeable: a repeat buyer inflates this figure`)}:{...o,fromOrders:!1,cvr:v(`${e.platform}: neither buyers nor orders supplied — conversion not computable`)}}function Y(e){return U([B(e,"gmv","GMV"),B(e,"sessions","sessions")],["GMV","sessions"],(n,r)=>r===0?0:n/r,(n,r)=>`${f(n)} ÷ ${f(r)}`)}function J(e){return U([B(e,"gmv","GMV"),B(e,"buyers","buyers")],["GMV","buyers"],(n,r)=>r===0?0:n/r,(n,r)=>`${f(n)} ÷ ${f(r)}`)}function Ne(e){return U([B(e,"cancelledOrders","cancelled orders"),B(e,"orders","orders")],["cancelled orders","orders"],(n,r)=>r===0?0:n/r*100,(n,r)=>`${f(n)} ÷ ${f(r)}`)}function fe(e){let n=B(e,"cancelledValue","cancelled value"),r=B(e,"refundedValue","refunded value"),t=U([n,r],["cancelled value","refunded value"],(s,i)=>s+i,(s,i)=>`${f(s)} + ${f(i)}`),o=U([t,B(e,"gmv","GMV")],["leakage value","GMV"],(s,i)=>i===0?0:s/i*100,(s,i)=>`${f(s)} ÷ ${f(i)}`);return{value:t,sharePct:o}}function Me(e){let n=e.map(fe),r=e.map(a=>B(a,"gmv","GMV")),t=n.find(a=>m(a.value)),o=r.find(m);if(t!==void 0||o!==void 0)return{value:v("blended leakage not computable — one or more platforms missing cancelled/refunded value or GMV"),sharePct:v("blended leakage share not computable — see per-platform gaps")};let s=n.reduce((a,l)=>a+l.value.value,0),i=r.reduce((a,l)=>a+l.value,0);return{value:k(s,`${e.map(a=>a.platform).join(" + ")}`),sharePct:k(i===0?0:s/i*100,`${f(s)} ÷ ${f(i)} blended GMV`)}}function me(e){let n=e.map(t=>B(t,"gmv","GMV"));if(n.some(m))return v("blended GMV not computable — one or more platforms missing GMV");let r=n.reduce((t,o)=>t+o.value,0);return k(r,e.map(t=>t.platform).join(" + "))}function X(e,n){return U([B(e,"gmv","GMV"),me(n)],[`${e.platform} GMV`,"blended GMV"],(r,t)=>t===0?0:r/t*100,(r,t)=>`${f(r)} ÷ ${f(t)}`)}function ge(e){if(e===void 0)return;if(m(e))return e;let n=e.value,r=n>2?"up":n<-2?"down":"flat";return k(r,`${u(n,1)} session change`)}function pe(e,n){let r=Math.max(Math.abs(e),Math.abs(n));return r===0?0:Math.abs(e-n)/r}function N(e){if(!(e===void 0||m(e)))return e.value}function $n(e){let n="orders-vs-cvr",r=N(e.sessions),t=N(e.orders),{cvr:o}=D(e),s=N(o);if(r===void 0||t===void 0||s===void 0)return{id:n,platform:e.platform,status:"not-checkable",message:`${e.platform}: sessions, orders, or normalised conversion not available.`};let i=t/r*100,a=pe(i,s);return a>.1?{id:n,platform:e.platform,status:"discrepancy",message:`${e.platform}: orders ÷ sessions is ${u(i)} against a normalised buyer conversion of ${u(s)} — a ${u(a*100,1)} relative gap. Repeat buyers explain a few points, not this. Confirm which figure covers which period before proceeding.`,blocksAnalysis:!0}:{id:n,platform:e.platform,status:"pass",message:`${e.platform}: orders ÷ sessions ${u(i)} reconciles with buyer conversion ${u(s)}.`}}function An(e){let n="orders-x-aov-vs-gmv",r=N(e.orders),t=N(e.aov),o=N(e.gmv);if(r===void 0||t===void 0||o===void 0)return{id:n,platform:e.platform,status:"not-checkable",message:`${e.platform}: orders, AOV, or GMV not available.`};let s=r*t,i=pe(s,o);return i>.02?{id:n,platform:e.platform,status:"discrepancy",message:`${e.platform}: ${f(r)} orders × ${T(t)} = ${T(s)} against ${T(o)} stated GMV — ${u(i*100,1)} apart. Usually different periods or different platforms in the same export.`,blocksAnalysis:!0}:{id:n,platform:e.platform,status:"pass",message:`${e.platform}: ${f(r)} × ${T(t)} = ${T(s)} against ${T(o)} stated. Consistent.`}}function Pn(e){let n="headline-cvr-reconciles",r=N(e.headlineCvr),t=N(e.sessions),o=N(e.buyers),s=N(e.orders);if(r===void 0||t===void 0)return{id:n,platform:e.platform,status:"not-checkable",message:`${e.platform}: no headline conversion rate supplied to reconcile.`};let i=[];o!==void 0&&i.push({label:"buyers ÷ sessions",value:o/t*100}),s!==void 0&&i.push({label:"orders ÷ sessions",value:s/t*100});let a=i.find(d=>pe(d.value,r)<=.02);if(a)return{id:n,platform:e.platform,status:"pass",message:`${e.platform}: headline ${u(r)} matches ${a.label}.`};let l=e.headlineCvrBasis?` The platform states it is computed on ${e.headlineCvrBasis}.`:"";return{id:n,platform:e.platform,status:"discrepancy",message:`${e.platform}: headline conversion of ${u(r)} reconciles to neither ${i.map(d=>`${d.label} (${u(d.value)})`).join(" nor ")}.${l} Not smoothed over — the brief uses the recomputed figure and states both.`}}function Ie(e){let n=[];for(let t of e.platforms)n.push($n(t),An(t),Pn(t));let r=Re(e);return{checks:n,periodProblems:r,campaignInflated:r.some(t=>t.kind==="campaign-inflated"),readableBaseline:!r.some(t=>t.kind==="short-period"),anyBlocking:n.some(t=>t.blocksAnalysis===!0)}}var Le=(e,n)=>`no benchmark on file for ${e} / ${n} — need one to score Conversion`;function Ve(e){var l;let{platforms:n,category:r,benchmarks:t,suppliedCvr:o,forPlatform:s}=e;if(o!==void 0)return{cvr:K(o,"supplied by Haris"),origin:"supplied",internalBenchmark:!1,comparableAcrossClients:!0,note:`Conversion benchmark of ${u(o)} supplied for this run.`};let i=De(t,s,r,"CVR");if(i.found&&i.row.value!==void 0)return{cvr:Ae(i.row.value,i.row.rowId),origin:"file",internalBenchmark:!1,comparableAcrossClients:!0,note:`Conversion benchmark of ${u(i.row.value)} from the benchmark file (${i.row.rowId}, n=${(l=i.row.n)!=null?l:"?"}).`};let a=n.map(d=>({platform:d.platform,cvr:D(d).cvr})).filter(d=>!m(d.cvr));if(a.length>=2){let d=a.reduce((c,g)=>g.cvr.value>c.cvr.value?g:c);if(d.platform!==s){let c=d.cvr.value;return{cvr:k(c,`${d.platform} normalised buyer conversion — the client's strongest platform`),origin:"internal",internalBenchmark:!0,sourcePlatform:d.platform,comparableAcrossClients:!1,note:`No benchmark on file, so ${d.platform}'s own conversion of ${u(c)} is the benchmark. Same catalogue, same brand, same period — every variable held constant except the platform and the listing. This scores ${s} against the client's own best channel; it is not comparable across clients until the same figure reaches n=3 in the benchmark file.`}}return{cvr:k(d.cvr.value,`${s} is the client's strongest platform — scored against itself, therefore Stable`),origin:"internal",internalBenchmark:!0,sourcePlatform:d.platform,comparableAcrossClients:!1,note:`${s} is the client's strongest channel at ${u(d.cvr.value)}. Nothing in this engagement converts better, so Conversion is Stable here by construction.`}}return{cvr:v(Le(s,r)),internalBenchmark:!1,comparableAcrossClients:!1,note:`${Le(s,r)}. Only one platform has a computable conversion rate, so there is no internal benchmark either. Conversion is unscored; the other five areas still score.`}}var $={0:"Stable",1:"Medium",2:"High",3:"Critical"},M=(e,n)=>({kind:"scored",level:e,reason:n}),z=(e,n)=>({kind:"unscored",reason:e,gap:v(n)}),b=e=>e.kind==="scored",I={conversion:"Conversion Rate",traffic:"Traffic",basket:"Basket / AOV",campaign:"Campaign Execution",operations:"Operations",profitability:"Profitability"},Ue=["conversion","traffic","campaign","basket"],R={"conversion-forge":{name:"Conversion Forge™",constraint:"Buying efficiency",metric:"CVR"},"traffic-forge":{name:"Traffic Forge™",constraint:"Volume acquisition",metric:"Sessions / organic share"},"basket-forge":{name:"Basket Forge™",constraint:"Revenue per transaction",metric:"AOV"},"sales-forge":{name:"Sales Forge™",constraint:"GMV structure and mechanics",metric:"GMV / repeat rate"}},Z={conversion:"conversion-forge",traffic:"traffic-forge",basket:"basket-forge",campaign:"sales-forge"};function j(e){if(!(e===void 0||m(e)))return e.value}function wn(e,n,r){let{cvr:t}=D(e),o=j(t),s=j(n.cvr);if(o===void 0)return{score:z("conversion not computable",`${e.platform}: neither buyers nor orders supplied — Conversion cannot be scored`),cvr:t,ratio:void 0};if(s===void 0||s===0)return{score:z("no benchmark available",m(n.cvr)?n.cvr.question:"no usable conversion benchmark"),cvr:t,ratio:void 0};let i=o/s,a=i>=r.cvrRatio.stable?0:i>=r.cvrRatio.medium?1:i>=r.cvrRatio.high?2:3;return{score:M(a,`${u(o)} against a benchmark of ${u(s)} — ratio ${se(i)}`),cvr:t,ratio:i}}function Sn(e,n){let r=j(e.organicSharePct),t=e.sessionTrendPct!==void 0?ge(e.sessionTrendPct):void 0,o=t!==void 0&&!m(t)?t.value:void 0;if(r===void 0&&o===void 0)return z("no traffic inputs",`${e.platform}: organic share and session trend both missing — Traffic cannot be scored`);let s=r!==void 0&&r<n.organicThinBelowPct,i,a;return s&&o==="down"?(i=3,a=`organic share ${u(r)} is thin and sessions are falling`):s||o==="down"?(i=2,a=s?`organic share ${u(r)} is below ${n.organicThinBelowPct}%`:"sessions are falling"):o==="up"&&(r===void 0||r>=n.organicThinBelowPct)?(i=0,a=r===void 0?"sessions rising":`sessions rising with organic share at ${u(r)}`):(i=1,a=`sessions ${o!=null?o:"trend unknown"}, organic share ${r===void 0?"unknown":u(r)}`),M(i,a)}function Rn(e){let n=e.aovTrend;if(n===void 0||m(n))return z("no AOV trend",`${e.platform}: AOV trend not supplied — Basket cannot be scored. Period-on-period AOV is needed.`);let r=n.value,t=e.sessionTrendPct!==void 0?ge(e.sessionTrendPct):void 0,o=t!==void 0&&!m(t)?t.value:void 0;return r==="up"?M(0,"AOV rising"):r==="flat"?M(1,"AOV flat"):o==="up"||o==="flat"?M(3,`AOV falling while sessions are ${o} — buyers arriving and spending less`):M(2,"AOV falling")}function Cn(e,n){let r=j(e.promoRevenuePct);if(r===void 0)return z("no promo dependency figure",`${e.platform}: share of revenue from campaign days not supplied — Campaign Execution cannot be scored`);let t=r<n.promoDependency.stable?0:r<n.promoDependency.medium?1:r<n.promoDependency.high?2:3;return M(t,`${u(r)} of revenue from campaign days`)}function xn(e){var o;let n=e.fulfilment;if(n===void 0||m(n))return z("no fulfilment state",`${e.platform}: fulfilment state not supplied — Operations cannot be scored`);let t=(o={clean:0,"minor-delays":1,"sla-breaches":2,"out-of-stock":3}[n.value])!=null?o:1;return M(t,`fulfilment reported as ${n.value.replace(/-/g," ")}`)}function Bn(e,n){let r=j(e.grossMarginPct),t=j(e.roas);if(r===void 0&&t===void 0)return z("no margin or ROAS",`${e.platform}: gross margin and ROAS both missing — Profitability cannot be scored, so the margin blocker cannot be checked`);let o=1,s;if(r!==void 0?(o=r>=n.grossMargin.stable?0:r>=n.grossMargin.medium?1:r>=n.grossMargin.high?2:3,s=`gross margin ${u(r)}`):s="margin unknown, scored from ROAS alone",t!==void 0&&t<n.roasStepUpBelow){let i=Math.min(3,o+1);s+=`, raised one level because ROAS is ${t.toFixed(2)} (below ${n.roasStepUpBelow})`,o=i}else t!==void 0&&(s+=`, ROAS ${t.toFixed(2)}`);return M(o,s)}function Fe(e,n,r,t,o,s){let i=Ve({platforms:n,category:r,benchmarks:t,forPlatform:e.platform,...s!==void 0?{suppliedCvr:s}:{}}),a=wn(e,i,o);return{platform:e.platform,revenueSharePct:X(e,n),benchmark:i,cvr:a.cvr,cvrRatio:a.ratio,areas:{conversion:a.score,traffic:Sn(e,o),basket:Rn(e),campaign:Cn(e,o),operations:xn(e),profitability:Bn(e,o)}}}function En(e){return e>=50?0:e>=20?1:2}function On(e,n){let r=n.map(l=>{let d=l.areas[e],c=j(l.revenueSharePct),g=b(d)&&c!==void 0?Math.max(0,d.level-En(c)):b(d)?d.level:void 0;return{platform:l.platform,score:d,sharePct:c,steppedLevel:g}}),t=r.filter(l=>l.steppedLevel!==void 0);if(t.length===0){let l=r.find(g=>!b(g.score)),d=l&&!b(l.score)?l.score.reason:"no inputs",c=l&&!b(l.score)?l.score.gap.question:`${I[e]} cannot be scored on any platform`;return{area:e,level:z(d,c),perPlatform:r,sentence:`${I[e]}: unscored — ${d}.`}}let o=t.reduce((l,d)=>{var c,g;return d.steppedLevel>l.steppedLevel||d.steppedLevel===l.steppedLevel&&((c=d.sharePct)!=null?c:0)>((g=l.sharePct)!=null?g:0)?d:l}),s=b(o.score)?o.score.level:o.steppedLevel,i;s!==o.steppedLevel&&o.sharePct!==void 0?i=`${$[s]} on ${o.platform}, scored ${$[o.steppedLevel]} at business level because ${o.platform} is ${u(o.sharePct,1)} of revenue.`:i=`${$[o.steppedLevel]}, driven by ${o.platform}${o.sharePct!==void 0?` (${u(o.sharePct,1)} of revenue)`:""}.`;let a=b(o.score)?o.score.reason:"";return{area:e,level:M(o.steppedLevel,a===""?i:`${a}. ${i}`),perPlatform:r,sentence:i,drivingPlatform:o.platform}}function Ge(e){let n=["conversion","traffic","basket","campaign","operations","profitability"],r={};for(let t of n)r[t]=On(t,e);return r}var Dn=10;function ze(e){if(!(e===void 0||m(e)))return e.value}function Nn(e){let n=[];for(let r of e){let t=ze(r.cancelledOrders),o=ze(r.orders);if(t===void 0||o===void 0||o===0)continue;let s=t/o*100;s>=Dn&&n.push({platform:r.platform,ratePct:s,cancelled:t,orders:o})}return n}function je(e,n){let r=e.operations.level,t=e.profitability.level,o=[],s=[],i=b(r)&&r.level===3,a=b(t)&&t.level===3;if(i&&o.push(`Operations is Critical: ${r.reason}`),a&&o.push(`Profitability is Critical: ${t.reason}`),i)return{blocked:!0,kind:"operations",title:"Resolve operations first",message:"Operations is at Critical. No Forge Track activates this cycle. The session runs an operational stabilisation directive instead — fulfilment SLA, stock reliability, and internal approval speed. Re-score once operations clears Critical. Unresolved operations blocks every other growth lever, so nothing else is worth issuing.",gaps:s,alsoNoted:o};if(a)return{blocked:!0,kind:"margin",title:"Margin fix before any scaling",message:"Profitability is at Critical. Traffic and campaign scaling stay locked this cycle. The session runs a margin review: COGS structure, discount depth, and CAC. Sales Forge™ follows once margin clears Critical.",gaps:s,alsoNoted:o};let l=Nn(n),d=!b(t);if(l.length>0){let c=l.reduce((w,h)=>h.ratePct>w.ratePct?h:w),g=`Why did ${f(c.cancelled)} ${c.platform} orders cancel — buyer-initiated, stock-out, or courier? At ${u(c.ratePct)} this is a finding in its own right. If it is stock on the top SKUs, Operations is Critical and no track activates this cycle.`;s.push(v(g))}if(d&&s.push(v("Gross margin by platform, and COGS on the top SKUs. Profitability could not be scored, so the margin blocker was never checked. If margin on the target platform is thin, driving volume there is the wrong instruction and this brief’s conclusion flips.")),s.length>0){let c=[];return l.length>0&&c.push(`Operations rolls up to ${b(r)?$[r.level]:"unscored"}, but `+l.map(g=>`${g.platform} cancelled ${u(g.ratePct)} of orders`).join(" and ")+". The data says the rate, not the cause, and Critical requires a stock-out on top SKUs."),d&&c.push("Profitability could not be checked at all — no margin figure was supplied."),{blocked:"unknown",title:"No blocker fires — with a caveat that can reverse it",message:c.join(" "),wouldChange:l.length>0?"If the cancellations are stock-driven, Operations becomes Critical, no track activates, and the directive becomes stock reliability instead.":"Without a margin figure, a Critical margin cannot be ruled out. Absence of evidence is not evidence.",gaps:s,alsoNoted:o}}return{blocked:!1,title:"Clear",message:`Operations rolls up to ${b(r)?$[r.level]:"unscored"}. Profitability rolls up to ${b(t)?$[t.level]:"unscored"}. Neither is Critical, so track selection proceeds.`,gaps:s,alsoNoted:o}}function Mn(e,n){switch(e){case"conversion":return n.impact.conversion;case"traffic":return n.impact.traffic;case"campaign":return n.impact.campaign;case"basket":return n.impact.basket;default:return 0}}function he(e){if(!b(e.level))return;let n=e.level.level,r=e.perPlatform.filter(o=>o.steppedLevel===n);return r.length===0?e.drivingPlatform:r.reduce((o,s)=>{var i,a;return((i=s.sharePct)!=null?i:0)>((a=o.sharePct)!=null?a:0)?s:o}).platform}function _e(e,n){let r=Ue.map(h=>{let P=e[h],C=Mn(h,n);if(!b(P.level))return{area:h,areaName:I[h],level:void 0,levelName:"Unscored",impact:C,score:void 0,workings:`unscored × ${C.toFixed(2)} = —`,unscoredReason:P.level.reason};let L=P.level.level,G=L*C;return{area:h,areaName:I[h],level:L,levelName:$[L],impact:C,score:G,workings:`${L} × ${C.toFixed(2)} = ${G.toFixed(2)}`}}),t=r.filter(h=>h.score!==void 0);if(t.length===0)return{rows:r,topScore:0,noPressure:!0,whatToWatch:"No track-bearing area could be scored. Nothing activates. The missing inputs in the Gaps section are the whole of this cycle’s work.",note:"No area scoreable."};let o=[...t].sort((h,P)=>P.score-h.score||P.impact-h.impact),s=o[0];if(s.score===0)return{rows:r,topScore:0,noPressure:!0,whatToWatch:"Every track-bearing area is Stable. No track activates this cycle. Hold the current structure and watch the two areas closest to moving: Conversion against the benchmark, and campaign dependency on the strongest platform. Re-score after the next cycle.",note:"All four areas Stable — no pressure to act on."};let i=s.area,a=Z[i],l=he(e[s.area]),d=o.find(h=>h.area!==s.area&&h.score>0),c=d?{track:Z[d.area],area:d.area,score:d.score,...he(e[d.area])!==void 0?{platform:he(e[d.area])}:{}}:void 0,w=o.length>1&&o[1].score===s.score?`${R[a].name} and ${R[Z[o[1].area]].name} tied at ${s.score.toFixed(2)}; the higher revenue impact weight decided it.`:`${R[a].name} selected at ${s.score.toFixed(2)}.`;return{rows:r,activeTrack:a,activeArea:s.area,...l!==void 0?{platform:l}:{},topScore:s.score,...c!==void 0?{runnerUp:c}:{},noPressure:!1,note:w}}function Ke(e,n){return e[n].perPlatform.filter(o=>b(o.score)).map(o=>{let s=b(o.score)?$[o.score.level]:"—",i=o.sharePct===void 0?"share unknown":u(o.sharePct,1),a=o.steppedLevel===void 0?"—":$[o.steppedLevel];return`${o.platform} ${s} at ${i} of revenue → ${a}`}).join(" · ")}var Q=1.25;function O(e){return m(e)?void 0:e.value}function ye(e,n){let r=v(`sizing not computable — ${n}`);return{target:{uplift:r,targetMetric:r,label:"30-day target"},fullGap:{uplift:r,targetMetric:r,label:"the size of the hole"},targetMultiplier:Q,metricName:e,caveat:`Cannot size this track: ${n}.`}}function be(e,n,r=Q){let{cvr:t}=D(e),o=J(e),s=O(t),i=O(n.cvr),a=O(o),l=e.sessions!==void 0?O(e.sessions):void 0,d=e.buyers!==void 0?O(e.buyers):void 0;if(s===void 0||a===void 0||l===void 0||d===void 0)return ye("CVR","sessions, buyers, GMV, or conversion rate missing");let c=s*r,g=l*(c/100),w=(g-d)*a,h=i,P=h===void 0?void 0:l*(h/100),C=P===void 0?void 0:(P-d)*a;return{metricName:"buyer conversion rate",targetMultiplier:r,target:{label:"30-day target",targetMetric:k(c,`${u(s)} × ${r.toFixed(2)}`),uplift:k(w,`${f(l)} sessions × ${u(c)} = ${g.toFixed(0)} buyers, up ${(g-d).toFixed(0)} × ${T(a)} revenue per buyer`)},fullGap:{label:"the size of the hole",targetMetric:h===void 0?v("parity target not computable — no benchmark"):k(h,"parity with the benchmark"),uplift:C===void 0||P===void 0?v("full gap not computable — no benchmark to reach parity with"):k(C,`${f(l)} × ${u(h)} = ${P.toFixed(0)} buyers, up ${(P-d).toFixed(0)} × ${T(a)}`)},caveat:`The ${((r-1)*100).toFixed(0)}% target is deliberately conservative. Parity with the benchmark is the size of the hole, not a 30-day instruction — that is a cycle-three ambition.`}}function He(e,n,r=Q){let t=e.aov!==void 0?O(e.aov):void 0,o=e.orders!==void 0?O(e.orders):void 0,s=O(n);if(t===void 0||o===void 0)return ye("AOV","AOV or orders missing");let i=s!==void 0&&s>t?s:void 0,a=i===void 0?t*r:t+(i-t)*.5,l=i===void 0?a:Math.min(a,i);return{metricName:"AOV",targetMultiplier:r,target:{label:"30-day target",targetMetric:k(l,i===void 0?`${x(t)} × ${r.toFixed(2)}`:`halfway from ${x(t)} to ${x(i)}`),uplift:k((l-t)*o,`(${x(l)} − ${x(t)}) × ${f(o)} orders`)},fullGap:{label:"the size of the hole",targetMetric:i===void 0?v("no stronger channel AOV to reach parity with"):k(i,"the strongest channel’s AOV"),uplift:i===void 0?v("full gap not computable — no stronger channel AOV on file"):k((i-t)*o,`(${x(i)} − ${x(t)}) × ${f(o)} orders`)},caveat:"AOV parity with the strongest channel is the ceiling, not the 30-day instruction."}}function qe(e,n=Q){let r=Y(e),t=e.sessions!==void 0?O(e.sessions):void 0,o=O(r);if(t===void 0||o===void 0)return ye("sessions","sessions or GMV missing");let s=t*n,i=t*(1+(n-1)*2);return{metricName:"sessions",targetMultiplier:n,target:{label:"30-day target",targetMetric:k(s,`${f(t)} × ${n.toFixed(2)}`),uplift:k((s-t)*o,`${f(s-t)} extra sessions × ${T(o)} revenue per visitor`)},fullGap:{label:"the size of the hole",targetMetric:k(i,`${f(t)} × ${(1+(n-1)*2).toFixed(2)}`),uplift:k((i-t)*o,`${f(i-t)} extra sessions × ${T(o)}`)},caveat:"Traffic has no benchmark ceiling, so the wider figure is a stretch on the same rate rather than parity with anything. Treat it as directional."}}function We(e){let n=e.map(r=>r.aov!==void 0?O(r.aov):void 0).filter(r=>r!==void 0);return n.length===0?v("no AOV supplied on any platform"):k(Math.max(...n),"highest AOV across the engagement")}function In(e,n,r){return{data:e,cvr:D(e),revenuePerVisitor:Y(e),revenuePerBuyer:J(e),cancellationRate:Ne(e),leakage:fe(e),revenueSharePct:X(e,n),scores:r}}function Ln(e){let n=new Set,r=[];for(let t of e)n.has(t.question)||(n.add(t.question),r.push(t));return r}function F(e,n){if(m(e))return;let r=e.value;return n==="pct"?`${r.toFixed(2)}%`:n==="rm"?`RM${r.toFixed(2)}`:r.toFixed(2)}function Vn(e,n){let r=e.periodEnd.toISOString().slice(0,7),t=[];for(let o of n){let s=(i,a)=>{a!==void 0&&t.push({platform:o.data.platform,category:e.category,metric:i,value:a,observed:r,clientCode:e.clientCode})};s("buyer CVR",F(o.cvr.cvr,"pct")),o.data.aov!==void 0&&s("AOV",F(o.data.aov,"rm")),o.data.organicSharePct!==void 0&&s("organic share",F(o.data.organicSharePct,"pct")),o.data.promoRevenuePct!==void 0&&s("promo dependency",F(o.data.promoRevenuePct,"pct")),o.data.grossMarginPct!==void 0&&s("gross margin",F(o.data.grossMarginPct,"pct")),o.data.roas!==void 0&&s("ROAS",F(o.data.roas,"ratio")),s("revenue per visitor",F(o.revenuePerVisitor,"rm")),s("cancellation rate",F(o.cancellationRate,"pct")),s("leakage",F(o.leakage.sharePct,"pct"))}return t}function Je(e,n){var G,E;let r=n.thresholds,t=e.platforms,o=t.map(y=>Fe(y,t,e.category,n,r,e.suppliedBenchmarkCvr)),s=t.map((y,V)=>In(y,t,o[V])),i=Ge(o),a=Ie(e),l=je(i,t),d=_e(i,r),c=d.platform!==void 0?s.find(y=>y.data.platform===d.platform):void 0,g;(!l.blocked||l.blocked==="unknown")&&(g=Ye(d.activeArea,c,s));let w=((G=d.runnerUp)==null?void 0:G.platform)!==void 0?s.find(y=>y.data.platform===d.runnerUp.platform):void 0,h=Ye((E=d.runnerUp)==null?void 0:E.area,w,s),P=[];for(let y of Object.keys(i)){let V=i[y];b(V.level)||P.push(V.level.gap)}let C=s.map(y=>y.cvr.cvr).filter(m),L=Ln([...l.gaps,...P,...C]);return{engagement:e,periodDays:de(e),thresholds:r,platforms:s,blendedGmv:me(t),blendedLeakage:Me(t),sanity:a,business:i,blockers:l,track:d,...g!==void 0?{sizing:g}:{},...h!==void 0?{runnerUpSizing:h}:{},gaps:L,benchmarkCandidates:Vn(e,s),...c!==void 0?{targetPlatform:c}:{},...d.activeArea!==void 0?{platformRationale:Ke(i,d.activeArea)}:{}}}function Ye(e,n,r){if(e===void 0||n===void 0)return;let t=r.map(o=>o.data);switch(e){case"conversion":return be(n.data,n.scores.benchmark);case"basket":return He(n.data,We(t));case"traffic":return qe(n.data);case"campaign":return be(n.data,n.scores.benchmark);default:return}}var Xe=e=>e.toISOString().slice(0,10);function ve(e,n){return e===void 0||m(e)?"`[ASK]` not supplied":n(e)}function Ze(e){return e.tag==="ASK"?"`[ASK]`":`\`[${e.tag}]\``}function A(e,n){return e===void 0||m(e)?"`[ASK]`":`${n(e.value)} ${Ze(e)}`}function Un(e){let n=e.platforms.map(r=>r.data.platform).join(", ");return[`# GROWTH BRIEF — ${e.engagement.clientCode}`,"",`**Period** ${Xe(e.engagement.periodStart)} to ${Xe(e.engagement.periodEnd)} (${e.periodDays} days) · **Platforms** ${n}`,`**Category** ${e.engagement.category} · **Blended revenue** ${ve(e.blendedGmv,ie)}`].join(`
+`)}function Fn(e){let n=e.platforms,r=n.map(a=>a.data.platform),t=(a,l)=>`| ${a} | ${n.map(l).join(" | ")} |`,o=["## 1. DATA CONFIRMED","",`| Field | ${r.join(" | ")} |`,`|---|${r.map(()=>"---").join("|")}|`,t("Revenue / GMV",a=>A(a.data.gmv,T)),t("Share of blended revenue",a=>A(a.revenueSharePct,l=>u(l,1))),t("Sessions",a=>A(a.data.sessions,f)),t("Buyers",a=>A(a.data.buyers,f)),t("Orders",a=>A(a.data.orders,f)),t("**Buyer CVR (normalised)**",a=>`**${A(a.cvr.cvr,l=>u(l))}**`),t("Platform headline CVR",a=>a.cvr.headline===void 0?"—":`${A(a.cvr.headline,l=>u(l))}${a.cvr.headlineBasis?` (${a.cvr.headlineBasis})`:""}`),t("AOV",a=>A(a.data.aov,T)),t("Revenue per visitor",a=>A(a.revenuePerVisitor,T)),t("Revenue per buyer",a=>A(a.revenuePerBuyer,T)),t("Organic share",a=>A(a.data.organicSharePct,l=>u(l,1))),t("Promo revenue share",a=>A(a.data.promoRevenuePct,l=>u(l,1))),t("Ad spend",a=>A(a.data.adSpend,T)),t("ROAS",a=>A(a.data.roas,l=>l.toFixed(2))),t("Gross margin",a=>A(a.data.grossMarginPct,l=>u(l,1))),t("Fulfilment",a=>a.data.fulfilment===void 0||m(a.data.fulfilment)?"`[ASK]`":`${a.data.fulfilment.value.replace(/-/g," ")} ${Ze(a.data.fulfilment)}`),t("Cancellation rate",a=>A(a.cancellationRate,l=>u(l))),t("**Leakage (RM)**",a=>A(a.leakage.value,T)),t("**Leakage (% of GMV)**",a=>`**${A(a.leakage.sharePct,l=>u(l,1))}**`),t("Add-to-cart users",a=>A(a.data.addToCartUsers,f)),"",`Blended leakage ${ve(e.blendedLeakage.value,ie)} — ${ve(e.blendedLeakage.sharePct,a=>we(a,1))}`,""],s=e.gaps.length;o.push(`**Missing:** ${s===0?"nothing material.":`${s} field${s===1?"":"s"} — see section 10.`}`,"","**On conversion rate.** The platforms do not define it the same way, so every figure above was recomputed as buyers ÷ sessions and only that recomputed figure is used for comparison. Each platform’s own headline number is shown alongside, because that is what the client sees on their dashboard and it will not match.");let i=n.filter(a=>a.cvr.fromOrders);return i.length>0&&o.push("",`On ${i.map(a=>a.data.platform).join(" and ")}, buyers were not supplied and orders were substituted. Orders and buyers are not interchangeable — a repeat buyer inflates the figure.`),o.join(`
+`)}function Gn(e){let n=["## 2. SANITY CHECKS",""];for(let r of e.sanity.checks){let t=r.status==="pass"?"✓":r.status==="discrepancy"?"✗":"·";n.push(`- ${t} ${r.message}`)}if(e.sanity.periodProblems.length===0)n.push("",`- ✓ Period is ${e.periodDays} days with no campaign day inside it. Readable as a baseline.`);else{n.push("");for(let r of e.sanity.periodProblems)n.push(`- ✗ ${r.message}`)}return e.sanity.campaignInflated&&n.push("","**Every per-day figure in this brief is a month average over a campaign-inflated period.** Ask the client for the non-spike daily baseline before treating any of it as a run rate."),e.sanity.anyBlocking&&n.push("","**One or more discrepancies above need an answer before this brief is acted on.** They are listed in section 10."),n.join(`
+`)}function zn(e){var s;let n=["traffic","conversion","basket","campaign","operations","profitability"],r=["## 3. PRESSURE SCORING","","| Area | Business level | Why |","|---|---|---|"];for(let i of n){let a=e.business[i],l=b(a.level)?`**${$[a.level.level]}**`:"**Unscored**",d=(b(a.level),a.level.reason);r.push(`| ${I[i]} | ${l} | ${d} |`)}r.push("","### Per platform","");let t=e.platforms.map(i=>i.data.platform);r.push(`| Area | ${t.join(" | ")} |`,`|---|${t.map(()=>"---").join("|")}|`);for(let i of n){let a=e.business[i],l=e.platforms.map(d=>{let c=a.perPlatform.find(w=>w.platform===d.data.platform);if(!c||!b(c.score))return"Unscored";let g=c.steppedLevel;return g!==void 0&&g!==c.score.level?`${$[c.score.level]} → ${$[g]}`:$[c.score.level]});r.push(`| ${I[i]} | ${l.join(" | ")} |`)}r.push("","Where two levels appear, the second is after the revenue-share step-down: platforms are not averaged, and an area Critical on a channel worth a tenth of revenue is not a Critical business problem.");let o=(s=e.targetPlatform)!=null?s:e.platforms[0];if(o!==void 0){r.push("","### Conversion benchmark","",`- ${o.scores.benchmark.note}`);let i=e.platforms.filter(a=>a!==o&&a.scores.benchmark.origin!==o.scores.benchmark.origin).map(a=>a.scores.benchmark.note);for(let a of new Set(i))r.push(`- ${a}`)}return r.join(`
+`)}function jn(e){let n=e.blockers,r=["## 4. BLOCKER CHECK","",`**${n.title}**`,"",n.message];if(n.wouldChange!==void 0&&r.push("",n.wouldChange),n.alsoNoted.length>0){r.push("","Also noted:");for(let t of n.alsoNoted)r.push(`- ${t}`)}return r.join(`
+`)}function _n(e){var o;let n=["## 5. GROWTH PRESSURE SCORE","","| Area | Level | × Impact | Score |","|---|---|---|---|"],r=[...e.track.rows].sort((s,i)=>{var a,l;return((a=i.score)!=null?a:-1)-((l=s.score)!=null?l:-1)});for(let s of r){let a=s.score!==void 0&&s.score===e.track.topScore&&e.track.topScore>0?" ←":"",l=s.score===void 0?"—":`**${s.score.toFixed(2)}**${a}`;n.push(`| ${s.areaName} | ${s.levelName} | × ${s.impact.toFixed(2)} | ${l} |`)}n.push("",e.track.note);let t=e.track.rows.filter(s=>s.score===void 0);for(let s of t)n.push(`- ${s.areaName} is unscored: ${(o=s.unscoredReason)!=null?o:"inputs missing"}. Not treated as zero.`);return n.join(`
+`)}function Kn(e){var n;switch(e.tag){case"ASK":return e.question;case"CALC":return e.workings;case"BM":return`benchmark row ${e.rowId}`;case"EST":return`estimated — ${e.basis}`;case"DATA":return(n=e.source)!=null?n:"supplied"}}function Hn(e,n,r,t){let o=i=>m(i)?"`[ASK]`":t==="pct"?u(i.value):T(i.value);return["| | |","|---|---|",`| Now | ${o(r)} |`,`| 30-day target ${n} | ${o(e.target.targetMetric)} |`,`| **Worth** | **${m(e.target.uplift)?"`[ASK]`":`${x(e.target.uplift.value)} per month`}** |`,"",`Workings: ${Kn(e.target.uplift)}`,"",`**The size of the hole** — parity ${n} of ${o(e.fullGap.targetMetric)} would be ${m(e.fullGap.uplift)?"`[ASK]`":`${x(e.fullGap.uplift.value)} per month`}. That is the gap, not the target.`,"",e.caveat].join(`
+`)}function qn(e){var t,o,s;let n=["## 7. ACTIVE TRACK",""];if(e.blockers.blocked===!0)return n.push(`**No track activates this cycle — ${e.blockers.title.toLowerCase()}.**`,"",e.blockers.message),n.join(`
+`);if(e.track.activeTrack===void 0)return n.push("**No track activates this cycle.**","",(t=e.track.whatToWatch)!=null?t:e.track.note),n.join(`
+`);let r=R[e.track.activeTrack];if(n.push(`### ${r.name}${e.track.platform?` — on ${e.track.platform}`:""}`,"",`**Constraint** ${r.constraint} · **Metric that must move** ${r.metric}`,""),e.sizing!==void 0&&e.targetPlatform!==void 0){let i=e.track.activeArea,a=i==="basket"?(o=e.targetPlatform.data.aov)!=null?o:e.targetPlatform.cvr.cvr:i==="traffic"&&(s=e.targetPlatform.data.sessions)!=null?s:e.targetPlatform.cvr.cvr,l=i==="basket"||i==="traffic"?"rm":"pct";n.push(Hn(e.sizing,e.sizing.metricName,a,l))}return e.platformRationale!==void 0&&n.push("",`**Why this platform.** ${e.platformRationale}. The track runs where the pressure that won the score actually sits, not simply at the worst performer — a small channel can be the worst and still be the wrong place to spend the client’s only 30 days.`),n.join(`
+`)}function Wn(e){let n=["## 9. WHAT WE ARE NOT DOING THIS CYCLE",""],r=e.track.runnerUp;if(r===void 0)return n.push("No second track is in contention — every other track-bearing area is Stable or unscored. One track, one platform, one cycle."),n.join(`
+`);let t=R[r.track],o=e.runnerUpSizing!==void 0&&!m(e.runnerUpSizing.target.uplift)?`${x(e.runnerUpSizing.target.uplift.value)} per month`:"not sizeable from the data supplied",s=e.sizing!==void 0&&!m(e.sizing.target.uplift)?x(e.sizing.target.uplift.value):void 0;return n.push(`**${t.name}${r.platform?` on ${r.platform}`:""}** — scored ${r.score.toFixed(2)}, worth ${o}.`,"",s!==void 0?`It waits because the active track is worth ${s} per month for the same 30 days of the client’s attention. One track per cycle: a second priority is a way of having none.`:"It waits because the model activates one track per cycle. A second priority is a way of having none."),n.join(`
+`)}function Yn(e){let n=["## 10. GAPS","","Send these to the client before the session.",""];if(e.gaps.length===0)return n.push("None. Every field the model needs was supplied."),n.join(`
+`);e.gaps.forEach((t,o)=>{let s=o===0&&e.blockers.gaps.length>0;n.push(`${o+1}. ${t.question}${s?" **← this gap could invalidate the recommendation above.**":""}`)});let r=e.sanity.checks.filter(t=>t.blocksAnalysis===!0);if(r.length>0){n.push("");for(let t of r)n.push(`${e.gaps.length+1}. ${t.message}`)}return n.join(`
+`)}function Jn(e){let n=["## BENCHMARK CANDIDATES FROM THIS ENGAGEMENT","","Real observed figures, n=1 each. **One client is not a category** — these are not usable as benchmarks until the same figure reaches n=3. This tool never writes to the benchmark file; a human decides what goes in.","","```"];for(let r of e.benchmarkCandidates)n.push(`${r.platform} / ${r.category} / ${r.metric} / ${r.value} / observed ${r.observed} / ${r.clientCode} / n=1`);return n.push("```"),n.join(`
+`)}function Xn(e){return e===void 0?["## 6. THE FINDING","","_(not generated — run without `--no-llm` to fill this section)_"].join(`
+`):["## 6. THE FINDING","",e.finding].join(`
+`)}function Zn(e,n){if(n===void 0)return["## 8. THE 30-DAY SPRINT","","_(not generated — run without `--no-llm` to fill this section)_"].join(`
+`);let r=n.sprint,t=["## 8. THE 30-DAY SPRINT",""];return t.push(`**Fix** — ${r.fix.directive}`),r.fix.hypothesis&&(t.push("",`_Hypothesis:_ ${r.fix.hypothesis}`),r.fix.falsifiedBy&&t.push(`_Falsified by:_ ${r.fix.falsifiedBy}`)),t.push("",`**Run** — ${r.run.directive}${r.run.startsIn?` Starts ${r.run.startsIn}.`:""}${r.run.endsIn?` Ends ${r.run.endsIn}.`:""}`),t.push("",`**Optimise** — ${r.optimise.directive}`),n.highestRoiClaim&&t.push("","This is not a suggestion. It is the highest ROI move available to this business right now."),t.join(`
+`)}function Qe(e,n){return[Un(e),"","---","",Fn(e),"",Gn(e),"",zn(e),"",jn(e),"",_n(e),"",Xn(n),"",qn(e),"",Zn(e,n),"",Wn(e),"",Yn(e),"","---","",Jn(e),""].join(`
+`)}var p=e=>e===void 0||m(e)?null:e.value;function en(e){var t,o,s,i;let n=e.targetPlatform,r=["traffic","conversion","basket","campaign","operations","profitability"];return{clientCode:e.engagement.clientCode,period:{start:e.engagement.periodStart.toISOString().slice(0,10),end:e.engagement.periodEnd.toISOString().slice(0,10),days:e.periodDays,campaignInflated:e.sanity.campaignInflated},category:e.engagement.category,blendedGmv:p(e.blendedGmv),platforms:e.platforms.map(a=>{var l,d;return{platform:a.data.platform,gmv:p(a.data.gmv),revenueSharePct:p(a.revenueSharePct),sessions:p(a.data.sessions),buyers:p(a.data.buyers),orders:p(a.data.orders),normalisedCvrPct:p(a.cvr.cvr),platformHeadlineCvrPct:p(a.cvr.headline),aov:p(a.data.aov),revenuePerVisitor:p(a.revenuePerVisitor),revenuePerBuyer:p(a.revenuePerBuyer),organicSharePct:p(a.data.organicSharePct),promoRevenuePct:p(a.data.promoRevenuePct),adSpend:p(a.data.adSpend),roas:p(a.data.roas),grossMarginPct:p(a.data.grossMarginPct),cancellationRatePct:p(a.cancellationRate),leakageRm:p(a.leakage.value),leakagePct:p(a.leakage.sharePct),addToCartUsers:p(a.data.addToCartUsers),addToCartMinusBuyers:p(a.data.addToCartUsers)!==null&&p(a.data.buyers)!==null?p(a.data.addToCartUsers)-p(a.data.buyers):null,wishlistUsers:p(a.data.wishlistUsers),topSkus:(l=a.data.topSkus)!=null?l:[],cvrRatioAgainstBenchmark:(d=a.scores.cvrRatio)!=null?d:null}}),benchmark:{cvr:p(n==null?void 0:n.scores.benchmark.cvr),...(n==null?void 0:n.scores.benchmark.origin)!==void 0?{origin:n.scores.benchmark.origin}:{},internal:(t=n==null?void 0:n.scores.benchmark.internalBenchmark)!=null?t:!1,...(n==null?void 0:n.scores.benchmark.sourcePlatform)!==void 0?{sourcePlatform:n.scores.benchmark.sourcePlatform}:{},note:(o=n==null?void 0:n.scores.benchmark.note)!=null?o:"no benchmark resolved"},pressure:r.map(a=>{let l=e.business[a];return{area:I[a],businessLevel:b(l.level)?$[l.level.level]:"Unscored",reason:l.level.reason,perPlatform:l.perPlatform.map(d=>{var c;return{platform:d.platform,level:b(d.score)?$[d.score.level]:"Unscored",steppedLevel:d.steppedLevel===void 0?null:$[d.steppedLevel],revenueSharePct:(c=d.sharePct)!=null?c:null}})}}),blocker:{blocked:String(e.blockers.blocked),title:e.blockers.title,message:e.blockers.message},gps:e.track.rows.map(a=>{var l;return{area:a.areaName,level:a.levelName,impact:a.impact,score:(l=a.score)!=null?l:null}}),track:{name:e.track.activeTrack?R[e.track.activeTrack].name:null,platform:(s=e.track.platform)!=null?s:null,constraint:e.track.activeTrack?R[e.track.activeTrack].constraint:null,metric:e.track.activeTrack?R[e.track.activeTrack].metric:null},sizing:e.sizing===void 0?null:{metric:e.sizing.metricName,targetMultiplier:e.sizing.targetMultiplier,targetMetricValue:p(e.sizing.target.targetMetric),targetUpliftRmPerMonth:p(e.sizing.target.uplift),parityMetricValue:p(e.sizing.fullGap.targetMetric),fullGapUpliftRmPerMonth:p(e.sizing.fullGap.uplift)},runnerUp:e.track.runnerUp===void 0?null:{track:R[e.track.runnerUp.track].name,platform:(i=e.track.runnerUp.platform)!=null?i:null,score:e.track.runnerUp.score,targetUpliftRmPerMonth:e.runnerUpSizing?p(e.runnerUpSizing.target.uplift):null},gaps:e.gaps.map(a=>a.question)}}function Qn(e){return xe(JSON.stringify(e))}function er(e){var s;let n=Qn(e.engagement),r=n.periodStart.toISOString().slice(0,7),t=e.benchmarksMarkdown!==void 0&&e.benchmarksMarkdown.trim()!==""?Oe(e.benchmarksMarkdown,{asOf:r}):{rows:[],rejected:[],thresholds:ue},o=Je(n,t);return{brief:Qe(o),payload:JSON.stringify(en(o),null,2),gaps:o.gaps.map(i=>i.question),track:o.track.activeTrack?R[o.track.activeTrack].name:null,platform:(s=o.track.platform)!=null?s:null,blocked:String(o.blockers.blocked),candidates:o.benchmarkCandidates.map(i=>`${i.platform} / ${i.category} / ${i.metric} / ${i.value} / observed ${i.observed} / ${i.clientCode} / n=1`),benchmarkRowsRead:t.rows.length}}globalThis.Forge={run:er};})();
+</script>
+<script>/**
+ * Page script for the single-file analyst.
+ *
+ * Plain ES5-flavoured JS on purpose — it is inlined verbatim into the built HTML rather than
+ * compiled, so it stays readable in View Source and has no build step of its own.
+ */
+(function () {
+  var FIELDS = [
+    { k: 'sessions', l: 'Sessions / visitors' },
+    { k: 'buyers', l: 'Buyers', h: 'people who bought, not orders' },
+    { k: 'orders', l: 'Orders' },
+    { k: 'headlineCvr', l: 'Conversion rate on the dashboard (%)', s: '0.01' },
+    { k: 'gmv', l: 'Revenue / GMV (RM)', s: '0.01' },
+    { k: 'aov', l: 'AOV (RM)', s: '0.01' },
+    { k: 'organicSharePct', l: 'Organic share of traffic (%)', s: '0.1' },
+    { k: 'sessionTrendPct', l: 'Session change vs last period (%)', h: 'negative if down', s: '0.1' },
+    { k: 'promoRevenuePct', l: 'Revenue from campaign days (%)', s: '0.1' },
+    { k: 'adSpend', l: 'Ad spend (RM)', s: '0.01' },
+    { k: 'roas', l: 'ROAS', s: '0.01' },
+    { k: 'grossMarginPct', l: 'Gross margin (%)', s: '0.1' },
+    { k: 'cancelledOrders', l: 'Cancelled orders' },
+    { k: 'cancelledValue', l: 'Cancelled value (RM)', s: '0.01' },
+    { k: 'refundedOrders', l: 'Refunded orders' },
+    { k: 'refundedValue', l: 'Refunded value (RM)', s: '0.01' },
+    { k: 'addToCartUsers', l: 'Add-to-cart users' },
+    { k: 'wishlistUsers', l: 'Wishlist users' }
+  ];
+  var PLATFORMS = ['Shopee', 'Lazada', 'TikTok', 'Own site'];
+  var TRENDS = ['', 'up', 'flat', 'down'];
+  var FULFIL = ['', 'clean', 'minor-delays', 'sla-breaches', 'out-of-stock'];
+  var STORE = 'ecomforges-analyst-inputs-v1';
+
+  var plats = document.getElementById('plats');
+  var statusEl = document.getElementById('status');
+  var briefText = '';
+  var payloadText = '';
+  var candsText = '';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function opts(list, selected) {
+    return list
+      .map(function (v) {
+        return '<option value="' + esc(v) + '"' + (v === selected ? ' selected' : '') + '>' + esc(v || '—') + '</option>';
+      })
+      .join('');
+  }
+
+  function addPlatform(preset) {
+    var d = document.createElement('div');
+    d.className = 'plat';
+    d.innerHTML =
+      '<div class="ph"><select data-k="platform">' + opts(PLATFORMS, preset || 'Shopee') + '</select>' +
+      '<button class="rm" type="button">remove</button></div><div class="grid">' +
+      FIELDS.map(function (f) {
+        return '<label class="f"><span>' + esc(f.l) + (f.h ? '<em>' + esc(f.h) + '</em>' : '') +
+          '</span><input type="number" inputmode="decimal" step="' + (f.s || '1') +
+          '" data-k="' + f.k + '" placeholder="—"></label>';
+      }).join('') +
+      '<label class="f"><span>AOV trend vs last period</span><select data-k="aovTrend">' + opts(TRENDS, '') + '</select></label>' +
+      '<label class="f"><span>Fulfilment</span><select data-k="fulfilment">' + opts(FULFIL, '') + '</select></label>' +
+      '<label class="f"><span>Conversion-rate basis<em>how the platform defines it</em></span>' +
+      '<input type="text" data-k="headlineCvrBasis" placeholder="product-card clicks"></label></div>';
+    d.querySelector('.rm').addEventListener('click', function () {
+      if (plats.children.length > 1) d.remove();
+      else statusEl.textContent = 'At least one platform is needed.';
+    });
+    plats.appendChild(d);
+    return d;
+  }
+
+  function collect() {
+    var out = [];
+    Array.prototype.forEach.call(plats.children, function (d) {
+      var p = {};
+      Array.prototype.forEach.call(d.querySelectorAll('[data-k]'), function (el) {
+        var v = el.value.trim();
+        // A blank field is left out of the payload entirely. Absent means "nobody supplied
+        // it", which the engine reports as a gap; zero would be a claim.
+        if (v === '') return;
+        if (el.type === 'number') {
+          var n = Number(v);
+          if (isFinite(n)) p[el.dataset.k] = n;
+        } else p[el.dataset.k] = v;
+      });
+      if (p.platform) out.push(p);
+    });
+    return out;
+  }
+
+  function readForm() {
+    return {
+      clientCode: document.getElementById('code').value.trim(),
+      category: document.getElementById('cat').value.trim(),
+      periodStart: document.getElementById('ps').value,
+      periodEnd: document.getElementById('pe').value,
+      platforms: collect()
+    };
+  }
+
+  function say(msg, cls) {
+    statusEl.className = 'note' + (cls ? ' ' + cls : '');
+    statusEl.textContent = msg;
+  }
+
+  function copy(text, label) {
+    function done() { say(label + ' copied.', 'ok'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
+    function fallback() {
+      // Older iOS Safari and any non-secure context: select a temporary textarea instead.
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      try { document.execCommand('copy'); done(); }
+      catch (e) { say('Could not copy automatically — select the text and copy it manually.', 'err'); }
+      ta.remove();
+    }
+  }
+
+  document.getElementById('add').addEventListener('click', function () { addPlatform(); });
+
+  document.getElementById('go').addEventListener('click', function () {
+    var form = readForm();
+    var missing = [];
+    if (!form.clientCode || form.clientCode === 'MY-') missing.push('client code');
+    if (!form.category) missing.push('category');
+    if (!form.periodStart || !form.periodEnd) missing.push('both dates');
+    if (form.platforms.length === 0) missing.push('at least one platform');
+    if (missing.length) { say('Still needed: ' + missing.join(', ') + '.', 'err'); return; }
+
+    var res;
+    try {
+      res = window.Forge.run({
+        engagement: form,
+        benchmarksMarkdown: document.getElementById('bm').value
+      });
+    } catch (e) {
+      say(e && e.message ? e.message : String(e), 'err');
+      return;
+    }
+
+    briefText = res.brief;
+    payloadText = res.payload;
+    candsText = res.candidates.join('\n');
+
+    document.getElementById('brief').textContent = briefText;
+    document.getElementById('cands').textContent = candsText || 'None.';
+    document.getElementById('out').hidden = false;
+    document.getElementById('copy').hidden = false;
+    document.getElementById('dl').hidden = false;
+
+    var bits = [];
+    if (res.blocked === 'true') bits.push('A blocker fired — no track activates this cycle.');
+    else if (res.track && res.platform) bits.push('Track: ' + res.track + ' on ' + res.platform + '.');
+    else if (!res.track) bits.push('No track activates — see section 5.');
+    if (res.benchmarkRowsRead) bits.push(res.benchmarkRowsRead + ' usable benchmark row(s) read.');
+    if (res.gaps.length) bits.push(res.gaps.length + ' gap(s) to send the client.');
+    say(bits.join(' '), 'ok');
+    document.getElementById('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('copy').addEventListener('click', function () { copy(briefText, 'Brief'); });
+  document.getElementById('copypayload').addEventListener('click', function () {
+    copy(
+      'Write sections 6 (THE FINDING) and 8 (THE 30-DAY SPRINT) from the computed figures ' +
+      'below. Do not introduce any number that is not in this data.\n\n' + payloadText,
+      'Payload'
+    );
+  });
+  document.getElementById('copycands').addEventListener('click', function () { copy(candsText, 'Candidates'); });
+
+  document.getElementById('dl').addEventListener('click', function () {
+    var name = 'brief-' + (document.getElementById('code').value.trim() || 'engagement') + '.md';
+    var blob = new Blob([briefText], { type: 'text/markdown' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 1500);
+  });
+
+  document.getElementById('save').addEventListener('click', function () {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({ form: readForm(), bm: document.getElementById('bm').value }));
+      say('Inputs saved on this device. They reload next time you open the page.', 'ok');
+    } catch (e) {
+      say('Could not save — private browsing blocks local storage.', 'err');
+    }
+  });
+
+  function restore() {
+    var raw;
+    try { raw = localStorage.getItem(STORE); } catch (e) { return false; }
+    if (!raw) return false;
+    var saved;
+    try { saved = JSON.parse(raw); } catch (e) { return false; }
+    var f = saved.form || {};
+    if (f.clientCode) document.getElementById('code').value = f.clientCode;
+    if (f.category) document.getElementById('cat').value = f.category;
+    if (f.periodStart) document.getElementById('ps').value = f.periodStart;
+    if (f.periodEnd) document.getElementById('pe').value = f.periodEnd;
+    if (saved.bm) document.getElementById('bm').value = saved.bm;
+    var list = f.platforms && f.platforms.length ? f.platforms : null;
+    if (!list) return false;
+    list.forEach(function (p) {
+      var d = addPlatform(p.platform);
+      Object.keys(p).forEach(function (k) {
+        var el = d.querySelector('[data-k="' + k + '"]');
+        if (el) el.value = p[k];
+      });
+    });
+    return true;
+  }
+
+  if (!restore()) addPlatform('Shopee');
+})();
+</script>
+</body>
+</html>
