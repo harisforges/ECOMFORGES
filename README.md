@@ -69,6 +69,56 @@ Add both to your home screen; the colour tells them apart at a glance. The analy
 are derived from the calculator's by `ecomforges-analyst/scripts/analyst-icons.py`, so the
 mark can never drift from the brand — only its accent moves.
 
+## Client decks
+
+Every tool produces two PDFs from the same data.
+
+| Button | Reader | Answers |
+|---|---|---|
+| **Internal PDF** | you, or a partner | should we take or keep this client, and what do we work on |
+| **Client deck (PDF)** | the client or prospect | here is what we found in your business, and here is what you do about it |
+
+They are **not the same document with fields hidden**. Same data, different reader, so most
+sentences are rewritten. What never crosses into a client deck:
+
+| From | Stays internal |
+|---|---|
+| Qualification | the 100-point score, the Tier letter, red flags, category weights, *"probe this before committing to a package"* |
+| Forge Track | impact weights, the track ranking score, and every *"say this exactly"* call script |
+| Status Review | the retention decision word (Downgrade / Pause / Exit), attendance, whether they paid, the model back-test |
+| Growth Analyst | the internal client code, `[ASK]` tags, benchmark origins |
+
+The qualification model's own category names are also renamed. "Founder Mindset & Execution"
+is a fair thing to score privately and an insulting row to hand the founder; the deck calls it
+"Speed of decisions and execution".
+
+**Pause and Exit produce a summary, not an announcement.** Ending an engagement is a
+conversation. A PDF that lands in an inbox declaring it removes the chance to have that
+conversation and states the terms in our words rather than agreed ones — so the deck records
+what was issued, what moved, and what stays with them. A person delivers the decision.
+
+### It is enforced, not remembered
+
+A forbidden-content list lives in `index.html` (`DECK_FORBIDDEN`). Every string a deck draws is
+recorded as it is drawn, and `assertClientSafe` reads it back **before the download starts**. If
+anything internal got in, the deck does not save and the page names what and why. `deck.test.ts`
+does the same job at build time, by generating every deck in a real browser, extracting the text
+out of the finished PDF bytes, and — this is the load-bearing part — checking the *internal*
+report from identical state still contains those tokens. Otherwise a deck that leaked nothing
+because the data never arrived would pass just as happily as one that redacted properly.
+
+### The analyst's extra step
+
+The analyst's finding and sprint come from the Claude Project, so the deck needs that text back:
+
+1. **Generate brief** → **Copy for Claude** → paste into the Growth Analyst Project
+2. Paste its reply into **"Paste the Project's reply here"** → **Check the reply**
+3. Type the business name → **Client deck (PDF)**
+
+Step 2 is not a formality. Every figure in the reply is checked against the numbers the page
+computed, and anything that is not in the data is named and refused — the same validator the API
+version runs. A clipboard is not a reason to trust the text more. **No checked reply, no deck.**
+
 ## Note on visibility
 
 This repository is public so that GitHub Pages can serve the tools. The pages

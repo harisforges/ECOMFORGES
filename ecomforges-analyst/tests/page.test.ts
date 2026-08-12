@@ -226,11 +226,18 @@ describe('the calculator and the analyst do not converge', () => {
     expect(linked(analystHtml, 'icon')).not.toBe(linked(calcHtml, 'icon'));
   });
 
-  it('the analyst build did not touch the calculator', () => {
-    // The calculator is the qualification tool and predates all of this. It must still be a
-    // standalone page that knows nothing about the analyst.
-    expect(calcHtml).not.toContain('analyst.html');
+  it('the calculator never navigates to, or depends on, the analyst', () => {
+    /*
+     * The calculator is the qualification tool and stands alone. It may *mention* the analyst
+     * in a comment — the shared PDF block says which build script reads it, and that pointer
+     * is the reason the two cannot drift — but it must not link to it, install as it, or need
+     * anything it ships. So this checks references that would actually couple them at runtime
+     * rather than the bare string.
+     */
+    expect(calcHtml).not.toMatch(/href="[^"]*analyst/i);
+    expect(calcHtml).not.toMatch(/src="[^"]*analyst/i);
     expect(calcHtml).not.toContain('analyst.webmanifest');
+    expect(calcHtml).not.toMatch(/analyst-(icon|apple|favicon)/);
     expect(calcHtml).toContain('Forge Tools');
   });
 });

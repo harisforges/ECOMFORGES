@@ -17,7 +17,9 @@ import { analyse } from '../engine/pipeline.js';
 import { renderBrief } from '../render/brief.js';
 import { TRACK } from '../engine/scoring.js';
 import { buildPayload } from '../llm/payload.js';
+import { validateProse } from '../llm/validate.js';
 import type { Engagement } from '../types/datasheet.js';
+import type { Prose } from '../render/brief.js';
 
 export interface RunInput {
   readonly engagement: unknown;
@@ -76,9 +78,49 @@ export function run(input: RunInput): RunOutput {
   };
 }
 
-declare global {
-  // eslint-disable-next-line no-var
-  var Forge: { run: typeof run };
+export interface CheckedProse {
+  readonly ok: boolean;
+  readonly problems: readonly string[];
+  readonly prose?: Prose;
 }
 
-globalThis.Forge = { run };
+/**
+ * Check what the Claude Project wrote before it can reach a client deck.
+ *
+ * On the API path this check is automatic and a failure triggers a retry. Here a human is
+ * carrying the text across, which is the same trust boundary with a longer wire — so the
+ * paste gets the identical validator. Anything it rejects is reported by figure and the deck
+ * is not built. A confident wrong number in a document a client acts on is the one failure
+ * this whole codebase is arranged to prevent, and it does not stop mattering because the
+ * transport was a clipboard.
+ */
+export function checkProse(raw: string, payloadJson: string): CheckedProse {
+  let parsed: unknown;
+  try {
+    // The Project is asked for bare JSON, but a fenced block is the common slip.
+    parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
+  } catch {
+    return { ok: false, problems: ['That is not valid JSON. Copy the whole object the Project replied with, including both braces.'] };
+  }
+  const p = parsed as Partial<Prose>;
+  if (typeof p.finding !== 'string' || p.sprint === undefined) {
+    return { ok: false, problems: ['The JSON parsed but has no "finding" and "sprint" — that is not the Project’s reply.'] };
+  }
+  let payload: unknown;
+  try {
+    payload = JSON.parse(payloadJson);
+  } catch {
+    return { ok: false, problems: ['Generate the brief again first — the payload this is checked against is missing.'] };
+  }
+  const problems = validateProse(p as Prose, payload);
+  return problems.length === 0
+    ? { ok: true, problems: [], prose: p as Prose }
+    : { ok: false, problems: problems.map((x) => x.detail) };
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var Forge: { run: typeof run; checkProse: typeof checkProse };
+}
+
+globalThis.Forge = { run, checkProse };

@@ -1279,7 +1279,8 @@ function renderVerdict(r) {
     <div class="actions">
       <button class="btn btn-cyan" onclick="copyQ()">Copy summary</button>
       <button class="btn" onclick="exportQ()">Download CSV</button>
-      <button class="btn" onclick="makePDF('qualify')">Download PDF</button>
+      <button class="btn" onclick="makePDF('qualify')">Internal PDF</button>
+      <button class="btn btn-cyan" onclick="makeDeck('qualify')">Client deck (PDF)</button>
       <button class="btn btn-ghost" onclick="window.print()">Print</button>
       <button class="btn btn-ghost" onclick="resetQualify()">Reset</button>
     </div>`;
@@ -1506,7 +1507,8 @@ function renderDecision(r) {
     <div class="actions">
       <button class="btn btn-cyan" onclick="copyF()">Copy decision</button>
       <button class="btn" onclick="exportF()">Download CSV</button>
-      <button class="btn" onclick="makePDF('forge')">Download PDF</button>
+      <button class="btn" onclick="makePDF('forge')">Internal PDF</button>
+      <button class="btn btn-cyan" onclick="makeDeck('forge')">Client deck (PDF)</button>
       <button class="btn btn-ghost" onclick="window.print()">Print</button>
       <button class="btn btn-ghost" onclick="resetForge()">Reset</button>
     </div>`;
@@ -1810,7 +1812,8 @@ function renderOutcome(h) {
     <div class="actions">
       <button class="btn btn-cyan" onclick="copyR()">Copy review</button>
       <button class="btn" onclick="exportR()">Download CSV</button>
-      <button class="btn" onclick="makePDF('review')">Download PDF</button>
+      <button class="btn" onclick="makePDF('review')">Internal PDF</button>
+      <button class="btn btn-cyan" onclick="makeDeck('review')">Client deck (PDF)</button>
       <button class="btn" onclick="saveFile()">Save engagement file</button>
       <button class="btn btn-ghost" onclick="window.print()">Print</button>
     </div>`;
@@ -2054,6 +2057,16 @@ function resetReview() {
   renderCycles(); computeReview(); toast('Review reset');
 }
 
+/* ══ SHARED-PDF-START ══ Everything between these two sentinels is extracted verbatim by
+   ecomforges-analyst/scripts/build-page.ts and inlined into analyst.html, so both tools
+   write PDFs with one implementation and one document language. Edit it here only. The
+   build fails loudly if either sentinel goes missing, and a test asserts the block in
+   analyst.html is byte-identical to the block here — so the two cannot drift.
+
+   Nothing in this region may read calculator state or touch the DOM by id. It gets a
+   `doc` and its arguments, and that is all. Stage-specific sections live below the end
+   sentinel; the analyst's live in its own ui.js. ══ */
+
 /* ══════════════════════════════════════════════════════════════════════════
    SELF-CONTAINED PDF WRITER
    No library, no network. Base-14 Helvetica needs no font embedding; the
@@ -2172,6 +2185,10 @@ const PDFKit = (() => {
     /* font: 0 reg, 1 bold, 2 oblique, 3 bold-oblique */
     text(str, x, y, o={}) {
       const size = o.size || 9, f = o.font || 0, color = o.color || '#FFFFFF';
+      /* Decks set `audit` to an array so assertClientSafe can read back everything that was
+         drawn. Internal reports leave it null and are unaffected — they are supposed to say
+         "Internal Use Only". Recorded pre-encoding, so the check sees real characters. */
+      if (this.audit) this.audit.push(String(str));
       const e = enc(str);
       let tx = x;
       if (o.align === 'center') tx = x + (o.width - widthOf(e, size, f===1||f===3))/2;
@@ -2426,6 +2443,221 @@ function alertBox(doc, heading, lines) {
   doc.y += h + 12;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   CLIENT DECK LAYER
+
+   A client deck is not a redacted internal report. The internal report answers
+   "should we take or keep this client, and what do we work on". The deck answers
+   "here is what we found in your business, and here is what you do about it".
+   Same data, different document, different reader — so these are separate
+   sections rather than a flag on the internal ones.
+
+   Everything below is client-facing by construction: it emits only what a deck
+   section hands it. The guard at the end is the backstop, not the policy.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/*
+ * Text that must never reach a client, with the reason it is on the list.
+ *
+ * This is a runtime guard, not documentation. `assertClientSafe` runs before any deck is
+ * saved and throws rather than downloading, because the failure mode this prevents —
+ * emailing a client a PDF that grades them C and tells the reader to probe them on the
+ * call — is not recoverable by apologising.
+ */
+const DECK_FORBIDDEN = [
+  [/internal use only/i,        'the internal chrome; a deck carries the client’s name instead'],
+  [/\btier\s*[ABC]\b/i,         'the qualification tier is how we rank prospects, not feedback'],
+  [/\d\s*\/\s*100\b/,           'any score out of 100 — qualification or health'],
+  [/red flag/i,                 'red flags are risks to us, not findings for them'],
+  [/\bdowngrade\b/i,            'the retention decision. Never a client-facing word'],
+  [/\bback-?test\b/i,           'back-testing our own model against their engagement'],
+  [/founder mindset/i,          'a category that scores the person reading the deck'],
+  [/say this (exactly|on the call)/i, 'the call scripts are ours'],
+  [/\bon the call\b/i,          'anything addressed to the consultant, not the client'],
+  [/\bprobe\b/i,                'what we interrogate before committing to a package'],
+  [/before sending an agreement/i, 'pre-sale internal caution'],
+  [/\bweighted\b/i,             'the scoring model’s internals'],
+  [/dependency load/i,          'a measure of how much they lean on us'],
+  [/\bpayment\b/i,              'whether they pay on time is never in their own deck'],
+  [/\bassessed by\b/i,          'names the internal assessor'],
+  [/\bMY-[A-Z]{2,6}-\d{2}\b/,   'the internal client code; a deck uses the business name'],
+];
+
+/**
+ * Read back every string the deck drew and refuse to save if any of it is internal.
+ *
+ * `doc.audit` is switched on only for decks, so internal reports are unaffected — they are
+ * *supposed* to say "Internal Use Only".
+ */
+function assertClientSafe(doc) {
+  const seen = (doc.audit || []).join('\n');
+  for (const [re, why] of DECK_FORBIDDEN) {
+    const hit = re.exec(seen);
+    if (hit) throw new Error(`internal content in a client deck: "${hit[0]}" — ${why}`);
+  }
+  return true;
+}
+
+/**
+ * Page furniture for a deck: the client's name where the internal mark used to be.
+ *
+ * Page 1 is the cover and gets the wordmark only. It has to, for two reasons: a cover
+ * carrying a running head reads like page 4 of something, and the section that sets
+ * `doc.deck` has not run yet when page 1's furniture is drawn — so a running head there
+ * would print an empty client name.
+ */
+function chromeDeck(doc, pageNo, ctx) {
+  doc.rect(0, 0, doc.W, doc.H, P.navy);
+  if (doc.img) {
+    const h = 15, w = doc.img.w * h / doc.img.h;
+    doc.image(doc.margin, 22, w, h);
+  } else {
+    doc.text('ECOMFORGES', doc.margin, 24, {size:11, font:1, color:P.white});
+  }
+  if (pageNo === 1) { doc.y = 64; return; }
+  doc.line(doc.margin, 46, doc.W-doc.margin, 46, P.cyan, 1.2);
+  doc.text(ctx.client, doc.W-doc.margin-220, 26, {size:7.5, color:P.grey, align:'right', width:220});
+  doc.line(doc.margin, doc.H-40, doc.W-doc.margin, doc.H-40, P.border, 0.5);
+  doc.text(`Prepared by EcomForges for ${ctx.client}  ·  ${ctx.date}  ·  Confidential`,
+           doc.margin, doc.H-32, {size:7, color:P.grey, align:'center', width:doc.innerW});
+  doc.text('Page ' + pageNo, doc.margin, doc.H-32, {size:7, color:P.grey, align:'right', width:doc.innerW});
+  doc.y = 64;
+}
+
+/**
+ * The cover.
+ *
+ * A deck opens on one page that says who it is for and what it decides, because it is read
+ * on a phone in a WhatsApp thread as often as on a desktop, and page one is frequently the
+ * only page read closely.
+ */
+function deckCover(doc, ctx) {
+  const midY = doc.H * 0.32;
+  doc.rect(doc.margin, midY - 34, 3, 26, P.cyan);
+  doc.text(ctx.kicker.toUpperCase(), doc.margin + 14, midY - 30, {size:7.5, font:1, color:P.cyan});
+  doc.y = midY;
+  doc.y = doc.para(ctx.title, doc.margin, doc.y, doc.innerW * 0.82, {size:27, font:1, color:P.white, leading:33});
+  doc.y += 14;
+  doc.y = doc.para(ctx.standfirst, doc.margin, doc.y, doc.innerW * 0.78,
+                   {size:10.5, color:P.grey, leading:16});
+  doc.y += 26;
+  doc.line(doc.margin, doc.y, doc.margin + 120, doc.y, P.cyan, 1);
+  doc.y += 18;
+  const meta = [['Prepared for', ctx.client], ['Period', ctx.period], ['Prepared by', 'EcomForges']];
+  const colW = doc.innerW / 3;
+  meta.forEach(([k, v], i) => {
+    doc.text(k.toUpperCase(), doc.margin + i*colW, doc.y, {size:6.5, color:P.grey});
+    doc.para(v, doc.margin + i*colW, doc.y + 11, colW - 12, {size:9.5, font:1, color:P.white, leading:12});
+  });
+  doc.newPage();
+}
+
+/** A numbered section heading. Numbers matter: a client refers to "section 3" on a call. */
+function deckHeading(doc, n, title, sub) {
+  doc.need(52);
+  doc.text(String(n).padStart(2, '0'), doc.margin, doc.y + 2, {size:8, font:1, color:P.dcyan});
+  doc.text(title, doc.margin + 26, doc.y, {size:15, font:1, color:P.white});
+  doc.y += 21;
+  if (sub) { doc.para(sub, doc.margin + 26, doc.y, doc.innerW - 26, {size:8.5, color:P.grey, leading:12}); doc.y += 15; }
+  doc.line(doc.margin, doc.y, doc.W - doc.margin, doc.y, P.border, 0.8);
+  doc.y += 13;
+}
+
+/** The one paragraph that carries the section. Set larger than body on purpose. */
+function deckLead(doc, txt) {
+  doc.need(40);
+  doc.y = doc.para(txt, doc.margin, doc.y, doc.innerW, {size:11, color:P.white, leading:16.5}) + 12;
+}
+
+/**
+ * A row of figures with their labels.
+ *
+ * Deliberately not a table: three or four numbers a client can read in two seconds, sized
+ * so the one that matters is the one they see first.
+ */
+function deckFigures(doc, items) {
+  if (!items.length) return;
+  const colW = doc.innerW / items.length;
+  /* Height comes from the tallest note, not a constant. A two-line note under a fixed 58pt
+     panel is clipped by the panel edge, and the figure row is the part of the page a client
+     reads first. */
+  const noteTop = 43, lead = 9;
+  const noteH = items.reduce((m, [, , note]) =>
+    Math.max(m, note ? doc.paraHeight(note, colW - 22, 7, lead, false) : 0), 0);
+  const h = Math.max(58, noteTop + noteH + 8);
+  doc.need(h + 8);
+  doc.rect(doc.margin, doc.y, doc.innerW, h, P.main);
+  items.forEach(([label, value, note], i) => {
+    const x = doc.margin + i*colW;
+    if (i) doc.line(x, doc.y + 10, x, doc.y + h - 10, P.border, 0.6);
+    doc.text(String(label).toUpperCase(), x + 12, doc.y + 11, {size:6.5, color:P.grey});
+    doc.text(String(value), x + 12, doc.y + 23, {size:15, font:1, color:i === 0 ? P.cyan : P.white});
+    if (note) doc.para(note, x + 12, doc.y + noteTop, colW - 22, {size:7, color:P.grey, leading:lead});
+  });
+  doc.y += h + 14;
+}
+
+/**
+ * One step of the sprint the client's own team executes.
+ *
+ * The verb is theirs. "You set the free shipping threshold to RM89", never "we will set".
+ * The owner and due columns exist because a directive without a name against it is a wish.
+ */
+function deckAction(doc, n, phase, directive, note) {
+  const pad = 12, w = doc.innerW - pad*2 - 24;
+  const bh = doc.paraHeight(directive, w, 10, 14.5, false);
+  const nh = note ? doc.paraHeight(note, w, 8, 11.5, false) + 6 : 0;
+  const h = 16 + bh + nh + pad*2 - 4;
+  doc.need(h + 8);
+  doc.rect(doc.margin, doc.y, doc.innerW, h, P.panel);
+  doc.rect(doc.margin, doc.y, 2.5, h, P.cyan);
+  doc.text(String(n), doc.margin + pad, doc.y + pad + 2, {size:13, font:1, color:P.dcyan});
+  doc.text(String(phase).toUpperCase(), doc.margin + pad + 24, doc.y + pad - 1, {size:6.5, font:1, color:P.cyan});
+  let yy = doc.y + pad + 12;
+  yy = doc.para(directive, doc.margin + pad + 24, yy, w, {size:10, color:P.white, leading:14.5});
+  if (note) doc.para(note, doc.margin + pad + 24, yy + 4, w, {size:8, color:P.grey, leading:11.5});
+  doc.y += h + 9;
+}
+
+/**
+ * What the client owes us before the next session.
+ *
+ * Every brief has gaps. Printing them as requests rather than hiding them is what makes the
+ * next one better, and it moves the reason a figure is missing onto the record.
+ */
+function deckAsks(doc, items) {
+  if (!items.length) return;
+  const pad = 11, w = doc.innerW - pad*2 - 16;
+  doc.need(30);
+  items.forEach(it => {
+    const h = doc.paraHeight(it, w, 9, 13, false) + pad*1.3;
+    doc.need(h);
+    doc.rect(doc.margin, doc.y, doc.innerW, h, P.alt);
+    doc.rect(doc.margin, doc.y, 2, h, P.amber);
+    // A bullet, not an arrow: WinAnsi has no →, and the writer's ASCII stand-in renders as a
+    // literal "->" in the middle of a client document.
+    doc.text('•', doc.margin + pad, doc.y + pad*0.6, {size:9, font:1, color:P.amber});
+    doc.para(it, doc.margin + pad + 16, doc.y + pad*0.6, w, {size:9, color:P.white, leading:13});
+    doc.y += h + 4;
+  });
+  doc.y += 8;
+}
+
+/** The closing panel: what happens next, and by when. */
+function deckClose(doc, heading, body) {
+  const pad = 13, w = doc.innerW - pad*2;
+  const bh = doc.paraHeight(body, w, 9.5, 14, false);
+  const h = 24 + bh + pad*2 - 6;
+  doc.need(h);
+  doc.rect(doc.margin, doc.y, doc.innerW, h, P.main);
+  doc.rect(doc.margin, doc.y, 3, h, P.green);
+  doc.text(heading, doc.margin + pad + 4, doc.y + pad, {size:11.5, font:1, color:P.green});
+  doc.para(body, doc.margin + pad + 4, doc.y + pad + 20, w - 4, {size:9.5, color:P.white, leading:14});
+  doc.y += h + 12;
+}
+
+/* ══ SHARED-PDF-END ══ */
+
 /* ── Stage sections ─────────────────────────────────────── */
 function secQualification(doc) {
   const r = computeQ();
@@ -2600,7 +2832,306 @@ function secReview(doc) {
   return true;
 }
 
+/* ── Client deck sections ───────────────────────────────── */
+/*
+ * These read the same state the internal sections read and emit a different document. They
+ * are written out longhand rather than derived from the internal ones on purpose: a client
+ * deck built by filtering an internal report is one forgotten field away from leaking, and
+ * the reader is different enough that most sentences have to be rewritten anyway.
+ */
+
+/** The name on the cover. Internal reports can say "—"; a deck cannot go out unaddressed. */
+function deckClient(id) {
+  const v = (document.getElementById(id).value || '').trim();
+  if (!v) throw new Error('Enter the client’s business name first — a deck cannot go out unaddressed');
+  return v;
+}
+
+function cliQualification(doc) {
+  const r = computeQ();
+  if (!Object.keys(picks).length) return false;
+  const client = deckClient('cl-name');
+  const date = document.getElementById('cl-date').value || today;
+  const ctx = { client, date,
+    kicker: 'Engagement recommendation',
+    title: 'Where your store is losing revenue, and what we would fix first',
+    standfirst: 'A review of your current position across the areas that decide growth, and the '
+      + 'single constraint we would work on with you first.',
+    period: date };
+  doc.deck = ctx;
+  deckCover(doc, ctx);
+
+  /*
+   * The model's own category names are written for us, not for the reader. "Founder Mindset &
+   * Execution" is a fair thing to score privately and an insulting row to put in front of the
+   * founder; "Operational Readiness" grades them, where "How orders get fulfilled" describes
+   * the thing being looked at. Same six areas, named as subjects rather than as verdicts.
+   */
+  const AREA_LABEL = {
+    revenue:   'Sales and revenue base',
+    ops:       'Order fulfilment and stock',
+    product:   'Product range and margins',
+    founder:   'Speed of decisions and execution',
+    marketing: 'Marketing and ad spend',
+    scale:     'Room to scale',
+  };
+  const labelOf = c => AREA_LABEL[c.id] || strip(c.name);
+
+  /*
+   * Which areas are solid and which one is holding the rest back is the whole of what the
+   * 100-point model may say to a prospect. The score, the tier and the weights stay behind:
+   * they rank prospects against each other, which is our problem, not a fact about their
+   * business.
+   */
+  const ratio = c => c.weighted / c.weight;
+  const byRatio = [...r.cats].sort((a, b) => ratio(a) - ratio(b));
+  const weak = byRatio[0], weak2 = byRatio[1], strong = byRatio[byRatio.length-1];
+  // With a part-filled or uniformly-rated scorecard every area ties, and naming a "strongest"
+  // out of a dead heat is a claim the data does not support.
+  const spread = ratio(strong) - ratio(weak) >= 0.1;
+
+  deckHeading(doc, 1, 'What we reviewed', 'Six areas of the business, from your platform data and the intake call.');
+  deckLead(doc, spread
+    ? `We reviewed ${r.cats.length} areas of the business. ${labelOf(strong)} is the strongest of them — `
+      + `that is the part of the operation we would build on rather than rebuild. ${labelOf(weak)} is the `
+      + `weakest, and ${labelOf(weak2)} is the next one after it.`
+    : `We reviewed ${r.cats.length} areas of the business. They read close to each other, so the first `
+      + `session starts from platform data rather than from this review.`);
+  table(doc, ['Area reviewed', 'Reading'],
+    byRatio.slice().reverse().map(c => {
+      const pct = ratio(c);
+      const read = pct >= 0.75 ? 'Solid' : pct >= 0.5 ? 'Workable' : pct >= 0.25 ? 'Needs work' : 'Holding you back';
+      const row = [labelOf(c), read];
+      row.__colors = [P.white, pct >= 0.75 ? P.green : pct >= 0.5 ? P.white : pct >= 0.25 ? P.amber : P.red];
+      return row;
+    }), [62, 38]);
+
+  deckHeading(doc, 2, 'What we would work on first', 'One constraint per cycle. Not a list of everything.');
+  deckLead(doc, spread
+    ? `${labelOf(weak)} is the constraint. Working on anything else while it holds means paying for `
+      + `improvements the business cannot convert into revenue yet.`
+    : `We work one constraint per cycle, and the first session names it from 30 days of your platform `
+      + `data. Spreading a cycle across several areas at once produces movement on none of them.`);
+  deckAsks(doc, [
+    `Before the first session you send us 30 days of platform data for every channel you sell on — `
+      + `Shopee, Lazada, TikTok Shop or your own store. Screenshots of the analytics pages are enough.`,
+    `You name one person who owns execution between sessions. Not necessarily you, but one name.`,
+  ]);
+
+  deckClose(doc, 'What happens next',
+    'We run one session against the constraint above and issue a 30-day sprint your team executes. '
+    + 'At the next session we measure whether the number moved. If it did not, we say so and change '
+    + 'the approach — that is the whole of the arrangement.');
+  return true;
+}
+
+function cliForge(doc) {
+  const s = forgeState();
+  if (!s.rated) return false;
+  const client = deckClient('fk-name');
+  const date = document.getElementById('fk-date').value || today;
+  const cycle = document.getElementById('fk-cycle').value.replace(/—.*/,'').trim();
+  const blocked = Boolean(s.blocker);
+  const t = s.active ? TRACKS[s.active] : null;
+
+  const ctx = { client, date, period: cycle || date,
+    kicker: blocked ? 'Stabilisation cycle' : 'This cycle’s focus',
+    title: blocked ? strip(BLOCKERS[s.blocker].title)
+         : t ? `${strip(t.plain)}: ${strip(t.finding)}`
+             : 'No growth pressure this cycle',
+    standfirst: blocked
+      ? strip(BLOCKERS[s.blocker].line)
+      : t ? `The constraint this cycle is ${String(t.constraint).toLowerCase()}. Everything below serves that one thing.`
+          : 'Every area we rated came back stable. The sprint below protects the position rather than changing it.' };
+  doc.deck = ctx;
+  deckCover(doc, ctx);
+
+  deckHeading(doc, 1, 'The finding', 'What the data says, before any recommendation.');
+  if (blocked) {
+    const b = BLOCKERS[s.blocker];
+    deckLead(doc, strip(b.detail));
+  } else if (t) {
+    deckLead(doc, `Across the areas we rated, the pressure sits on ${String(t.constraint).toLowerCase()} — `
+      + `${strip(t.finding)}. That is the one constraint this cycle works on. The others are logged and `
+      + `stay logged until this one clears.`);
+    deckFigures(doc, [
+      ['Constraint', strip(t.constraint)],
+      ['Metric we move', strip(t.metric)],
+      ['Cycle length', '30 days'],
+    ]);
+  } else {
+    deckLead(doc, 'Every area we rated came back stable. No single constraint stands out, so this cycle '
+      + 'holds the position and re-measures rather than changing direction.');
+  }
+
+  /*
+   * The pressure readings, without the arithmetic. A client benefits from seeing which areas
+   * are under pressure — it is why they accept the sequencing. The impact weights and the
+   * ranking score are how we choose, and publishing them invites a negotiation about the
+   * weights instead of the work.
+   */
+  const rated = AREAS.filter(a => press[a.id] !== undefined);
+  if (rated.length) {
+    deckHeading(doc, 2, 'Pressure by area', 'Where the business is under strain right now.');
+    table(doc, ['Growth area', 'What it covers', 'Pressure'],
+      rated.map(a => {
+        const lv = press[a.id];
+        const row = [strip(a.name), strip(a.desc), LEVELS[lv]];
+        row.__colors = [P.white, P.grey, [P.green,P.amber,P.red,P.red][lv]];
+        return row;
+      }), [26, 52, 22]);
+  }
+
+  if (!blocked && t) {
+    deckHeading(doc, 3, 'Your 30-day sprint', 'Three moves, executed by your team, in this order.');
+    const phases = ['Fix', 'Run', 'Optimise'];
+    t.sprint.forEach((line, i) => {
+      // The stored strings carry their own "Fix — " prefix; the card supplies the label.
+      const directive = strip(line).replace(/^(Fix|Run|Optimise)\s*[—-]\s*/, '');
+      deckAction(doc, i+1, phases[i] || '', directive);
+    });
+    deckClose(doc, `The one number that matters: ${strip(t.metric)}`,
+      `By the next session, ${strip(t.metric)} should have moved. If it has not, the sprint was either `
+      + `not executed or the reading was wrong — and we will say which. Nothing else on this list is `
+      + `scored until that number is checked.`);
+  } else if (blocked) {
+    deckHeading(doc, 3, 'This cycle’s work', 'Stabilisation, before any growth lever is pulled.');
+    deckAction(doc, 1, 'Stabilise', strip(BLOCKERS[s.blocker].detail));
+    deckClose(doc, 'What unlocks the next cycle',
+      `Growth work resumes when ${String(BLOCKERS[s.blocker].constraint).toLowerCase()} is back in place. `
+      + `Scaling on top of it would multiply the problem rather than the revenue.`);
+  }
+  return true;
+}
+
+function cliReview(doc) {
+  const h = computeHealth();
+  if (!h || h.empty) return false;
+  const client = deckClient('rv-name');
+  const date = document.getElementById('rv-date').value || today;
+  /*
+   * Pause and Exit are conversations, not documents. A PDF that lands in an inbox announcing
+   * the end of an engagement removes every chance to have that conversation properly, and it
+   * creates a record written in our language rather than an agreed one. So the deck for those
+   * outcomes is a summary of the work: what was issued, what moved, what they keep. The
+   * decision is delivered by a person.
+   */
+  const closing = h.key === 'pause' || h.key === 'exit';
+  const cadence = h.key === 'downgrade';
+  const pct = Math.round(h.execRate * 100);
+
+  const ctx = { client, date, period: `${h.n} cycle${h.n===1?'':'s'}`,
+    kicker: closing ? 'Engagement summary' : 'Progress review',
+    title: closing ? 'What we did together, and what stays with you'
+         : cadence ? 'Matching session cadence to execution'
+         : `${h.n} cycle${h.n===1?'':'s'} in: what moved and what did not`,
+    standfirst: closing
+      ? 'A record of the directives issued across the engagement, what moved, and everything that '
+        + 'remains yours to keep and re-use.'
+      : `Across ${h.n} cycle${h.n===1?'':'s'} we issued ${h.issued} directive${h.issued===1?'':'s'}. `
+        + `${h.executed} ${h.executed===1?'was':'were'} executed. This review is about that gap and `
+        + `what changes because of it.` };
+  doc.deck = ctx;
+  deckCover(doc, ctx);
+
+  deckHeading(doc, 1, 'The record', 'Directives issued against directives executed.');
+  deckFigures(doc, [
+    ['Execution rate', `${pct}%`, `${h.executed} of ${h.issued} directives executed`],
+    ['Cycles reviewed', String(h.n), 'Only complete cycles are counted'],
+    ['KPI targets met', `${h.kpiMet} of ${h.n}`, 'Cycles where the 30-day number moved'],
+  ]);
+  // A closing deck states the record and stops. The paragraph below it is coaching, and
+  // coaching an engagement that is ending reads as a parting lecture.
+  deckLead(doc, closing
+    ? `Across ${h.n} cycle${h.n===1?'':'s'} we issued ${h.issued} directive${h.issued===1?'':'s'} and `
+      + `${h.executed} ${h.executed===1?'was':'were'} executed. Section 3 lists what stays with you.`
+    : pct >= 75
+      ? `Execution is holding at ${pct}%. That is the reason the numbers are moving, and it is the `
+        + `single strongest predictor of what the next three cycles produce.`
+      : `Execution sits at ${pct}%. The system produces results when the sprint is executed between `
+        + `sessions and produces nothing when it is not. That is not a criticism of the business — it `
+        + `is the mechanism, and it is the one thing worth fixing before anything else is added.`);
+
+  deckHeading(doc, 2, 'Cycle by cycle', 'Executed and whether the 30-day number moved.');
+  const L_EXEC = {'3':'All three','2':'Two of three','1':'One of three','0':'None','':'—'};
+  const L_KPI  = {above:'Beat the target',on:'Hit the target',below:'Missed the target','':'—'};
+  table(doc, ['Cycle', 'Sprint executed', '30-day number'],
+    h.scored.map((c, i) => {
+      const row = [String(i+1), L_EXEC[c.exec] || '—', L_KPI[c.kpi] || '—'];
+      row.__colors = [P.grey,
+        c.exec === '0' ? P.red : c.exec === '3' ? P.green : P.white,
+        c.kpi === 'below' ? P.red : c.kpi === 'above' ? P.green : P.white];
+      return row;
+    }), [14, 43, 43]);
+
+  if (cadence) {
+    const pkg = PACKAGES[h.pkg], next = pkg.down ? PACKAGES[pkg.down] : null;
+    deckHeading(doc, 3, 'What changes from the next cycle', 'Fewer sessions, same system.');
+    deckLead(doc, `From the next cycle you move to ${next ? next.label : pkg.label}. More sessions are `
+      + `not the fix when the sprints from the existing sessions are not being executed — it raises your `
+      + `cost and adds directives to a queue that is already not clearing. When execution rises, we `
+      + `revisit the cadence.`);
+  } else if (closing) {
+    deckHeading(doc, 3, 'What stays with you', 'Everything issued to date is yours.');
+    deckAsks(doc, [
+      'Your Growth Blueprint and every session summary remain yours to keep and re-use, with no '
+        + 'restriction and no expiry.',
+      'Every sprint issued across the engagement stays valid. The directives that were not executed '
+        + 'do not expire — they are still the highest-return moves available to the store.',
+      'The platform data we assembled is yours on request, in the format we hold it.',
+    ]);
+  } else {
+    deckHeading(doc, 3, 'What changes next cycle', 'One correction, named once.');
+    deckLead(doc, pct >= 75
+      ? 'Nothing changes. The engagement is producing and the structure holds. We re-run this review '
+        + 'after the next three cycles.'
+      : 'The next session opens with the execution gap, once, and then runs normally. One sprint, '
+        + 'three moves, executed between sessions. That is the whole of the correction.');
+  }
+
+  deckClose(doc, closing ? 'The door stays open' : 'The next three cycles',
+    closing
+      ? 'Our model needs execution between sessions to produce results. This is a timing and fit '
+        + 'issue with how we work, not a judgement on the business. If the situation changes, the '
+        + 'door is open and we start from what is already built.'
+      : 'We measure the same way at the next review: directives issued against directives executed, '
+        + 'and whether the 30-day number moved. Nothing else is added until that holds.');
+  return true;
+}
+
 /* ── Entry points ───────────────────────────────────────── */
+/**
+ * Build a client deck.
+ *
+ * Separate from makePDF because the failure behaviour has to differ: an internal report that
+ * comes out slightly wrong is a nuisance, and a client deck that comes out slightly wrong is
+ * sent to a client. `assertClientSafe` runs before the download and aborts it.
+ */
+function makeDeck(which) {
+  try {
+    const doc = new PDFKit.Doc({ onNewPage: (d, n) => chromeDeck(d, n, d.deck || { client: '', date: today }) });
+    doc.audit = [];
+    if (LOGO_CACHE) { doc.img = LOGO_CACHE; doc.pages = []; doc.newPage(); }
+
+    const fn = which === 'qualify' ? cliQualification : which === 'forge' ? cliForge : cliReview;
+    if (!fn(doc)) {
+      toast(which === 'qualify' ? 'Score the scorecard first'
+          : which === 'forge'   ? 'Rate the growth areas first'
+          : 'Complete a cycle row first');
+      return;
+    }
+    assertClientSafe(doc);
+
+    const slug = doc.deck.client.replace(/[^a-z0-9]+/gi,'_').toLowerCase().replace(/^_|_$/g,'') || 'client';
+    const tag = which === 'qualify' ? 'recommendation' : which === 'forge' ? 'cycle_focus' : 'progress_review';
+    doc.save(`ecomforges_${tag}_${slug}_${today}.pdf`);
+    toast('Client deck downloaded');
+  } catch (err) {
+    console.error('Client deck failed:', err);
+    toast(err && err.message ? err.message : 'Client deck failed');
+  }
+}
+
 function makePDF(which) {
   try { return buildPDF(which); }
   catch (err) {

@@ -30,6 +30,8 @@ const OUT = join(repoRoot, 'analyst.html');
 interface Theme {
   readonly css: string;
   readonly logo: string;
+  /** The PDF writer and document components, lifted from the calculator's sentinel block. */
+  readonly pdf: string;
 }
 
 /** The analyst's own install identity — never the calculator's. See the header comment. */
@@ -58,7 +60,35 @@ function extractTheme(): Theme {
   const logo = pngs.find((p) => p.length > 5000);
   if (logo === undefined) throw new Error('no logo data URI found in the calculator');
 
-  return { css, logo };
+  return { css, logo, pdf: extractSharedPdf(src) };
+}
+
+/**
+ * Lift the PDF writer and the document components out of the calculator.
+ *
+ * Same reasoning as the stylesheet: one implementation, extracted rather than copied, so a
+ * change to the document language lands in both tools on the next build. The sentinels are
+ * checked for by name and the build dies without them — a silently missing block would ship
+ * an analyst page whose deck button throws on click.
+ */
+function extractSharedPdf(src: string): string {
+  const START = '/* ══ SHARED-PDF-START ══';
+  const END = '/* ══ SHARED-PDF-END ══ */';
+  const a = src.indexOf(START);
+  const b = src.indexOf(END);
+  if (a < 0 || b < 0 || b < a) {
+    throw new Error(`the SHARED-PDF sentinels are missing from ${CALCULATOR}; the PDF block has moved`);
+  }
+  const block = src.slice(a, b + END.length);
+  // Spot-check the pieces the analyst's deck actually calls, so a partial block fails here
+  // rather than at the user's click.
+  for (const needed of ['const PDFKit', 'function chromeDeck', 'function deckCover', 'function deckAction',
+                        'function assertClientSafe', 'DECK_FORBIDDEN', 'function prepareLogo']) {
+    if (!block.includes(needed)) {
+      throw new Error(`the shared PDF block no longer contains ${needed}`);
+    }
+  }
+  return block;
 }
 
 /**
@@ -220,6 +250,10 @@ async function main(): Promise<void> {
     '<body>',
     body.trim(),
     '<script>' + engine + '</script>',
+    '<script>',
+    '/* Extracted from index.html at build time. Do not edit here — edit the calculator. */',
+    theme.pdf,
+    '</script>',
     '<script>' + ui + '</script>',
     '</body>',
     '</html>',
