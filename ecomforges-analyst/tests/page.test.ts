@@ -52,7 +52,7 @@ describe('the built page', () => {
     // iOS ignores <link rel="icon"> entirely, so apple-touch-icon is what puts the mark on
     // the home screen; the manifest does the same job on Android.
     expect(html).toContain('apple-touch-icon');
-    expect(html).toContain('manifest.webmanifest');
+    expect(html).toContain('analyst.webmanifest');
     expect(html).toMatch(/apple-mobile-web-app-capable/);
   });
 
@@ -132,5 +132,112 @@ describe('the built page', () => {
   it('is small enough to open over a phone connection', () => {
     const kb = statSync(PAGE).size / 1024;
     expect(kb).toBeLessThan(250);
+  });
+});
+
+/**
+ * The two tools must stay separable on a phone home screen.
+ *
+ * The calculator qualifies prospects and picks a Forge Track before an engagement starts; the
+ * analyst scores an engagement that is already running. They are used at different moments by
+ * different people, and they live on the same origin.
+ *
+ * They originally shared one manifest, whose `start_url` was `"./"` — the calculator. Adding
+ * the analyst to an Android home screen therefore produced an icon that opened the calculator,
+ * and because both icons were the same cyan hexagon there was no way to tell from the home
+ * screen that anything was wrong. That is the failure these tests exist to prevent: not a
+ * cosmetic one, but the wrong tool opening silently.
+ */
+describe('the calculator and the analyst do not converge', () => {
+  const ANALYST_HTML = join('..', 'analyst.html');
+  const CALC_HTML = join('..', 'index.html');
+
+  const analystHtml = readFileSync(ANALYST_HTML, 'utf8');
+  const calcHtml = readFileSync(CALC_HTML, 'utf8');
+
+  const manifest = (name: string) =>
+    JSON.parse(readFileSync(join('..', name), 'utf8')) as Record<string, unknown>;
+  const analystManifest = manifest('analyst.webmanifest');
+  const calcManifest = manifest('manifest.webmanifest');
+
+  const linked = (html: string, rel: string): string => {
+    const m = new RegExp(`<link[^>]*rel="${rel}"[^>]*>`).exec(html);
+    expect(m, `no rel="${rel}" link found`).not.toBeNull();
+    return /href="([^"]+)"/.exec(m![0])?.[1] ?? '';
+  };
+
+  it('each page links its own manifest', () => {
+    expect(linked(analystHtml, 'manifest')).toBe('analyst.webmanifest');
+    expect(linked(calcHtml, 'manifest')).toBe('manifest.webmanifest');
+  });
+
+  it('the analyst manifest opens the analyst, not the calculator', () => {
+    // The original bug in one assertion. "./" is the calculator.
+    expect(analystManifest['start_url']).toBe('./analyst.html');
+    expect(calcManifest['start_url']).toBe('./');
+    expect(analystManifest['start_url']).not.toBe(calcManifest['start_url']);
+  });
+
+  it('the two install names are distinguishable in a home-screen label', () => {
+    expect(analystManifest['name']).not.toBe(calcManifest['name']);
+    expect(analystManifest['short_name']).not.toBe(calcManifest['short_name']);
+    /*
+     * A home screen truncates the label to roughly a dozen characters, so a difference that
+     * only appears in a long suffix is no difference at all. Both names deliberately keep the
+     * "Forge" prefix — they are one product family — which is why the icon colour, not the
+     * label, is the primary way to tell them apart. This only checks the label does not stop
+     * carrying information altogether.
+     */
+    const LABEL_WIDTH = 11;
+    const a = String(analystManifest['short_name']).slice(0, LABEL_WIDTH);
+    const c = String(calcManifest['short_name']).slice(0, LABEL_WIDTH);
+    expect(a === c, `both labels truncate to "${a}" on a phone`).toBe(false);
+  });
+
+  it('the two manifests share no icon file', () => {
+    const srcs = (m: Record<string, unknown>) =>
+      (m['icons'] as { src: string }[]).map((i) => i.src);
+    const shared = srcs(analystManifest).filter((s) => srcs(calcManifest).includes(s));
+    expect(shared, 'a shared icon file means two identical home-screen icons').toEqual([]);
+  });
+
+  it('every icon a manifest names actually exists', () => {
+    for (const m of [analystManifest, calcManifest]) {
+      for (const icon of m['icons'] as { src: string; sizes: string }[]) {
+        expect(existsSync(join('..', icon.src)), `${icon.src} is missing`).toBe(true);
+      }
+    }
+    // Both purposes are covered, or the Android install prompt falls back to a screenshot.
+    const purposes = (m: Record<string, unknown>) =>
+      (m['icons'] as { purpose: string }[]).map((i) => i.purpose);
+    expect(purposes(analystManifest)).toContain('maskable');
+  });
+
+  it('the iOS home-screen icons are different images, not just different names', () => {
+    // iOS ignores the manifest, so apple-touch-icon is the whole story there.
+    const a = linked(analystHtml, 'apple-touch-icon');
+    const c = linked(calcHtml, 'apple-touch-icon');
+    expect(a).not.toBe(c);
+    expect(read(join('..', a)).equals(read(join('..', c)))).toBe(false);
+  });
+
+  it('the browser-tab favicons differ too', () => {
+    // Both are inline data URIs, so comparing the href compares the image.
+    expect(linked(analystHtml, 'icon')).not.toBe(linked(calcHtml, 'icon'));
+  });
+
+  it('the calculator never navigates to, or depends on, the analyst', () => {
+    /*
+     * The calculator is the qualification tool and stands alone. It may *mention* the analyst
+     * in a comment — the shared PDF block says which build script reads it, and that pointer
+     * is the reason the two cannot drift — but it must not link to it, install as it, or need
+     * anything it ships. So this checks references that would actually couple them at runtime
+     * rather than the bare string.
+     */
+    expect(calcHtml).not.toMatch(/href="[^"]*analyst/i);
+    expect(calcHtml).not.toMatch(/src="[^"]*analyst/i);
+    expect(calcHtml).not.toContain('analyst.webmanifest');
+    expect(calcHtml).not.toMatch(/analyst-(icon|apple|favicon)/);
+    expect(calcHtml).toContain('Forge Tools');
   });
 });

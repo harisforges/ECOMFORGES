@@ -88,6 +88,32 @@ filled benchmark file — see `.gitignore`, which explains why. Client codes
 (`MY-BTY-09`) rather than client names are mandatory: a row that survives into a public
 place must not identify anyone.
 
+## A client deck is a different document, not a filtered brief
+
+The brief is the working document: provenance tags, `[ASK]` gaps, benchmark origins, the Growth
+Pressure arithmetic. That is how we know the finding is sound and none of it is what a client
+needs. The deck (`analyst.html` → Client deck) carries the finding, the money, the sprint their
+team executes, and the gaps as requests.
+
+Three things are deliberately absent. The **internal client code**, because a document a client
+opens carries their own business name. The **benchmark's origin**, because when the benchmark is
+the client's own strongest platform, naming it invites a debate about the comparison instead of
+the gap. And the **scoring consequence** trailing most gap questions — "Basket cannot be scored"
+is our machinery. That clause is trimmed and the request in front of it kept, at clause level
+rather than sentence level, so "Shopee: AOV trend not supplied — Basket cannot be scored" does
+not lose the word Shopee on its way out.
+
+The PDF writer itself is **not in this project**. It is extracted from `index.html` at build
+time between the `SHARED-PDF` sentinels, along with the stylesheet — one document language, no
+second copy to drift. A test asserts the block in `analyst.html` is byte-identical to the
+calculator's.
+
+**The deck will not build from unchecked prose.** A browser cannot hold an API key, so the
+consultant carries the two prose sections across by hand — and that paste faces the same
+`validateProse` the API path runs (`src/llm/validate.ts`, split out of `prose.ts` so the page
+bundle does not pull in the SDK). Any figure not in the payload is named and the deck is
+refused. The manual route must not be the unguarded one.
+
 ## Output voice
 
 British spelling. RM for currency, with thousands separators. Short sentences. No

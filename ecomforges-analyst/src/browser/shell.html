@@ -131,7 +131,7 @@
         <div class="cat-num num">2</div>
         <div class="cat-title">
           <h3>The finding and the 30-day sprint</h3>
-          <p>Sections 6 and 8 are the only part that needs a model. Press Copy for Claude, paste into your Growth Analyst Project, then paste the two sections it writes back into the brief above.</p>
+          <p>Sections 6 and 8 are the only part that needs a model. Press Copy for Claude, paste into your Growth Analyst Project, then paste its reply back below.</p>
         </div>
         <div class="weight-pill">Sections 6 &amp; 8</div>
       </div>
@@ -143,6 +143,18 @@
           to introduce a number that is not in what you paste.
         </p>
         <button class="btn btn-sm btn-cyan" type="button" id="copypayload">Copy for Claude</button>
+
+        <div class="field" style="margin-top:18px">
+          <label for="proseback">Paste the Project&rsquo;s reply here</label>
+          <textarea id="proseback" rows="5" placeholder="The JSON object the Project replies with, starting with { and ending with }"></textarea>
+        </div>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--blue-grey);margin:0 0 12px">
+          Every figure in that reply is checked against the numbers this page computed. If one of
+          them is not in the data, it is named below and no deck is produced &mdash; the same check
+          the API version runs, because a clipboard is not a reason to trust the text more.
+        </p>
+        <div id="prose-status" hidden></div>
+        <button class="btn btn-sm" type="button" id="checkprose">Check the reply</button>
       </div>
     </div>
 
@@ -158,6 +170,29 @@
       <div class="card-body">
         <pre id="cands" class="num" style="max-height:34vh"></pre>
         <button class="btn btn-sm" type="button" id="copycands" style="margin-top:12px">Copy candidates</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="cat-num num">4</div>
+        <div class="cat-title">
+          <h3>Client deck</h3>
+          <p>The brief above is the working document &mdash; tags, gaps, benchmark notes. The deck is what the client reads: the finding, the money, the sprint they execute.</p>
+        </div>
+        <div class="weight-pill">PDF</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label for="bizname">Business name &mdash; goes on the cover</label>
+          <input id="bizname" type="text" placeholder="Glow Beauty Sdn Bhd" autocomplete="off">
+        </div>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--blue-grey);margin:0 0 14px">
+          The client code stays internal. A deck a client opens carries their own business name, and
+          nothing typed here leaves this device.
+        </p>
+        <div id="deck-status" hidden></div>
+        <button class="btn btn-sm btn-cyan" type="button" id="deck">Client deck (PDF)</button>
       </div>
     </div>
 

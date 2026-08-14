@@ -365,6 +365,232 @@
     );
   });
 
+  /* ══════════════════════════════════════════════════════════════════════════
+     THE CLIENT DECK
+
+     The brief above is the working document: provenance tags, [ASK] gaps, benchmark
+     origins, the Growth Pressure arithmetic. All of that is how we know the finding is
+     sound, and none of it is what a client needs. The deck carries the finding, the money,
+     the sprint their team executes, and what we still need from them.
+
+     Two things stay out by construction. The internal client code, because a document a
+     client opens should carry their own name. And the benchmark's origin, because when the
+     benchmark is the client's own strongest platform, naming it invites a debate about the
+     comparison instead of the gap.
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  var prose = null;      // set only by a reply that passed the number check
+
+  function proseStatus(html, tone) {
+    var el = $('prose-status');
+    el.hidden = !html;
+    el.className = 'fb-note ' + (tone || '');
+    el.style.cssText = 'margin:0 0 12px;font-size:12.5px;line-height:1.6;color:' +
+      (tone === 'err' ? 'var(--red)' : tone === 'ok' ? 'var(--green)' : 'var(--blue-grey)');
+    el.innerHTML = html;
+  }
+
+  $('checkprose').addEventListener('click', function () {
+    var raw = $('proseback').value.trim();
+    if (!raw) { proseStatus('Nothing pasted yet.', 'err'); prose = null; return; }
+    if (!payloadText) { proseStatus('Generate the brief first.', 'err'); prose = null; return; }
+    var res = window.Forge.checkProse(raw, payloadText);
+    if (res.ok) {
+      prose = res.prose;
+      proseStatus('Checked. Every figure in the reply appears in the computed data.', 'ok');
+    } else {
+      prose = null;
+      var items = res.problems.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('');
+      proseStatus('Not used. Fix these and paste again:<ul style="margin:6px 0 0 18px">' +
+        items + '</ul>', 'err');
+    }
+  });
+
+  /**
+   * Money, the way the deck writes it.
+   *
+   * Thousands separators throughout. Cents are dropped above RM1,000, where they are noise,
+   * and forced below it, where dropping them turns an average order value of RM68.50 into
+   * "RM68.5" — which reads like a typo in the one document a client scrutinises.
+   */
+  function rm(n) {
+    if (n === null || n === undefined || !isFinite(n)) return null;
+    var big = Math.abs(n) >= 1000;
+    return 'RM' + n.toLocaleString('en-MY', big
+      ? { maximumFractionDigits: 0 }
+      : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  /*
+   * The metric, named for the reader. "CVR" is how we write it to each other; a client deck
+   * that turns on one number should not make its reader guess which number that is.
+   */
+  var METRIC_PLAIN = {
+    'CVR': 'conversion rate',
+    'AOV': 'average order value',
+    'GMV': 'revenue',
+    'Sessions': 'visitors',
+    'GMV / repeat rate': 'revenue and repeat purchase rate',
+    'Sessions / organic share': 'visitors and organic share'
+  };
+  function metricPlain(m) { return m ? (METRIC_PLAIN[m] || String(m).toLowerCase()) : 'the constraint metric'; }
+
+  /*
+   * A gap, rewritten as a request.
+   *
+   * The engine writes gaps for the consultant, so most carry a trailing clause explaining the
+   * scoring consequence — "Basket cannot be scored", "no track activates this cycle",
+   * "Operations is Critical". The request in front of it is exactly right for a client; the
+   * consequence is our machinery and reads as jargon in their document.
+   *
+   * Trimming happens at clause level before sentence level, and the order matters. "Shopee:
+   * AOV trend not supplied — Basket cannot be scored." must lose only the tail: dropping the
+   * whole sentence takes the channel name with it, leaving an ask that does not say which
+   * store it is about. A sentence that is internal all the way through goes entirely.
+   *
+   * If trimming leaves nothing, the original is used unchanged — a slightly technical ask on
+   * the page beats silently losing a question we need answered.
+   */
+  var INTERNAL_CLAUSE = /cannot be scored|no track activates|is Critical\b|Unscored|Growth Pressure|scored as|activates this cycle/i;
+  function clientAsk(gap) {
+    var kept = String(gap)
+      .split(/(?<=[.?])\s+/)
+      .map(function (s) {
+        // Drop an internal tail after an em-dash, keeping the request in front of it.
+        var parts = s.split(/\s+—\s+/);
+        if (parts.length > 1 && INTERNAL_CLAUSE.test(parts[parts.length - 1])) {
+          var head = parts.slice(0, -1).join(' — ').replace(/[,;:]?\s*$/, '');
+          return /[.?!]$/.test(head) ? head : head + '.';
+        }
+        return s;
+      })
+      .filter(function (s) { return s.trim() && !INTERNAL_CLAUSE.test(s); });
+    return kept.length ? kept.join(' ').trim() : String(gap).trim();
+  }
+  function pct(n, dp) {
+    return n === null || n === undefined || !isFinite(n) ? null : n.toFixed(dp === undefined ? 2 : dp) + '%';
+  }
+
+  $('deck').addEventListener('click', function () {
+    var el = $('deck-status');
+    function fail(msg) {
+      el.hidden = false;
+      el.style.cssText = 'margin:0 0 12px;font-size:12.5px;line-height:1.6;color:var(--red)';
+      el.textContent = msg;
+    }
+    try {
+      if (!payloadText) return fail('Generate a brief first.');
+      var name = $('bizname').value.trim();
+      if (!name) return fail('Enter the business name — a deck cannot go out unaddressed.');
+      if (!prose) return fail('Paste the Project’s reply and press "Check the reply" first. ' +
+        'The deck needs the finding and the sprint, and it will only use text that passed the check.');
+
+      var pd = JSON.parse(payloadText);
+      buildDeck(pd, prose, name);
+      el.hidden = false;
+      el.style.cssText = 'margin:0 0 12px;font-size:12.5px;line-height:1.6;color:var(--green)';
+      el.textContent = 'Client deck downloaded.';
+    } catch (e) {
+      fail(e && e.message ? e.message : 'Deck failed.');
+    }
+  });
+
+  function buildDeck(pd, pr, client) {
+    var period = pd.period.start + ' to ' + pd.period.end;
+    var ctx = {
+      client: client,
+      date: pd.period.end,
+      period: period,
+      kicker: pd.blocker.blocked === 'true' ? 'Stabilisation cycle' : 'Growth brief',
+      title: pd.blocker.blocked === 'true' ? pd.blocker.title
+           : pd.track.name ? String(pd.track.name).replace(/™/g, '') + ': the constraint this cycle'
+           : 'Where the next month of growth comes from',
+      standfirst: pd.blocker.blocked === 'true' ? pd.blocker.message
+        : 'A reading of your store across every channel you sell on, and the three moves your ' +
+          'team runs over the next 30 days.'
+    };
+
+    var doc = new PDFKit.Doc({
+      onNewPage: function (d, n) { chromeDeck(d, n, d.deck || { client: client, date: ctx.date }); }
+    });
+    doc.audit = [];
+    if (typeof LOGO_CACHE === 'object' && LOGO_CACHE) { doc.img = LOGO_CACHE; doc.pages = []; doc.newPage(); }
+    doc.deck = ctx;
+    deckCover(doc, ctx);
+
+    /* 1 — the finding. The model's sentences, over figures the engine computed. */
+    deckHeading(doc, 1, 'The finding', 'What the data says, before any recommendation.');
+    deckLead(doc, pr.finding);
+
+    var tp = null;
+    for (var i = 0; i < pd.platforms.length; i++) {
+      if (pd.platforms[i].platform === pd.track.platform) tp = pd.platforms[i];
+    }
+    var figures = [];
+    /* The target uplift, not the full-parity one. Parity assumes the weaker channel converts
+       exactly like the strongest, which is the ceiling rather than the plan — leading with it
+       would put a number on the cover the sprint is not designed to hit. Parity goes in the
+       note underneath, where it belongs. */
+    if (pd.sizing && pd.sizing.targetUpliftRmPerMonth !== null) {
+      var parity = rm(pd.sizing.fullGapUpliftRmPerMonth);
+      figures.push(['On the table', rm(pd.sizing.targetUpliftRmPerMonth),
+        'Per month at the 30-day target' + (parity ? '. ' + parity + ' at full parity' : '')]);
+    }
+    if (tp && tp.normalisedCvrPct !== null) {
+      figures.push([pd.track.platform + ' conversion', pct(tp.normalisedCvrPct),
+        pd.benchmark.cvr !== null ? 'Against ' + pct(pd.benchmark.cvr) + ' on your strongest channel' : null]);
+    }
+    if (tp && tp.leakageRm !== null && tp.leakageRm > 0) {
+      figures.push(['Cancelled and refunded', rm(tp.leakageRm),
+        tp.leakagePct !== null ? pct(tp.leakagePct, 1) + ' of revenue on that channel' : null]);
+    }
+    deckFigures(doc, figures.slice(0, 3));
+
+    /* 2 — the channels, side by side. No provenance tags, no [ASK] rows: a blank cell in a
+       client deck is a question we ask in section 4, not a symbol to explain. */
+    var rows = [];
+    for (var j = 0; j < pd.platforms.length; j++) {
+      var p = pd.platforms[j];
+      var row = [p.platform, rm(p.gmv) || '—', p.sessions === null ? '—' : p.sessions.toLocaleString('en-MY'),
+                 pct(p.normalisedCvrPct) || '—', rm(p.aov) || '—'];
+      row.__colors = [p.platform === pd.track.platform ? P.cyan : P.white, P.white, P.white, P.white, P.white];
+      rows.push(row);
+    }
+    if (rows.length) {
+      deckHeading(doc, 2, 'Your channels, side by side',
+        'Same catalogue, same period. Conversion is calculated the same way on every row so the columns compare.');
+      table(doc, ['Channel', 'Revenue', 'Visitors', 'Conversion', 'Average order'], rows, [22, 21, 19, 19, 19]);
+    }
+
+    /* 3 — the sprint. Three directives, in order, executed by their team. */
+    deckHeading(doc, 3, 'Your 30-day sprint', 'Three moves, in this order, run by your team.');
+    var steps = [['Fix', pr.sprint.fix], ['Run', pr.sprint.run], ['Optimise', pr.sprint.optimise]];
+    for (var k = 0; k < steps.length; k++) {
+      var s = steps[k][1] || {};
+      var note = s.hypothesis || (s.startsIn ? 'Starts ' + s.startsIn + (s.endsIn ? ', ends ' + s.endsIn : '') : '');
+      deckAction(doc, k + 1, steps[k][0], s.directive || '', note);
+    }
+
+    /* 4 — the gaps, as requests. Every one of these is a figure the next brief is sharper for
+       having, and printing them puts the reason a number is missing on the record. */
+    var asks = (pd.gaps || []).map(clientAsk).filter(Boolean);
+    if (asks.length) {
+      deckHeading(doc, 4, 'What we need from you',
+        'Each of these is a figure we could not read from the exports. They make the next brief sharper.');
+      deckAsks(doc, asks.slice(0, 6));
+    }
+
+    var metric = metricPlain(pd.track.metric);
+    deckClose(doc, 'The one number that matters: ' + metric,
+      'By the next session, ' + metric + ' on ' + (pd.track.platform || 'the target channel') +
+      ' should have moved. If it has not, either the sprint was not executed or the reading was ' +
+      'wrong — and we will say which. Nothing else is added until that number is checked.');
+
+    assertClientSafe(doc);
+    var slug = client.replace(/[^a-z0-9]+/gi, '_').toLowerCase().replace(/^_|_$/g, '') || 'client';
+    doc.save('ecomforges_growth_brief_' + slug + '_' + pd.period.end + '.pdf');
+  }
+
   $('add').addEventListener('click', function () { addPlatform(); });
   $('rm').addEventListener('click', function () {
     if (plats.children.length < 2) { say('At least one platform is needed.', 'err'); return; }
@@ -414,4 +640,10 @@
   }
 
   if (!restore()) addPlatform('Shopee');
+
+  /* The wordmark is rasterised once, at load, never on the click path: awaiting inside a click
+     handler costs the user-activation flag in some browsers and the download is then blocked
+     with no error at all. If the image is not decoded yet, retry after the load event. */
+  prepareLogo();
+  if (!LOGO_CACHE) window.addEventListener('load', prepareLogo);
 })();
