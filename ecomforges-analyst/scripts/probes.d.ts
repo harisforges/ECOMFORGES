@@ -66,3 +66,33 @@ declare module '*/analyst-deck-probe.mjs' {
     readonly goodReply: Record<string, unknown>;
   }>;
 }
+
+declare module '*/history-probe.mjs' {
+  interface Panel {
+    readonly hidden: boolean;
+    readonly pill: string;
+    readonly sub: string;
+    readonly body: string;
+  }
+  interface Ledger {
+    readonly pill: string;
+    readonly text: string;
+  }
+  export function runHistory(): Promise<{
+    readonly results: {
+      readonly firstRun: Panel;
+      readonly briefHasMovementApril: boolean;
+      readonly restoredAfterReload: { code: string; periodEnd: string };
+      readonly secondRun: Panel;
+      readonly briefHasMovementMay: boolean;
+      readonly overlapping: Panel;
+      readonly ledgerOneClient: Ledger;
+      readonly ledgerSameClientTwice: Ledger;
+      readonly ledgerTwoClients: Ledger;
+      readonly ledgerThreeClients: Ledger;
+      readonly proseStatus: string;
+      readonly deck: { name: string; bytes: number[]; pages: number } | null;
+    };
+    readonly errors: string[];
+  }>;
+}

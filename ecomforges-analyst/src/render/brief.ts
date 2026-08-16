@@ -22,10 +22,16 @@ import {
 } from '../types/tagged.js';
 import { isScored, LEVEL_NAME, TRACK, AREA_NAME, type AreaId } from '../engine/scoring.js';
 import type { Sizing } from '../engine/sizing.js';
+import type { Movement } from '../engine/movement.js';
 
 /** How to fill sections 6 and 8, phrased for wherever the brief is being read. */
 export interface RenderOptions {
   readonly proseHint?: string;
+  /**
+   * Movement against the last period for this client, when one is on file. Passed in rather
+   * than computed here because the renderer computes nothing — see `src/engine/movement.ts`.
+   */
+  readonly movement?: Movement;
 }
 
 const DEFAULT_HINT = 'this section is written by the model';
@@ -441,6 +447,57 @@ function section8(a: Analysis, prose?: Prose, hint = DEFAULT_HINT): string {
   return lines.join('\n');
 }
 
+/**
+ * What happened to the last cycle's promise.
+ *
+ * Placed before this period's reading on purpose: the first thing a session should establish
+ * is whether the previous sprint worked, and a brief that opens with fresh figures invites
+ * everyone to move on from a directive that was never executed.
+ */
+function sectionMovement(m: Movement): string {
+  const arrow = (d: string): string => (d === 'up' ? 'UP' : d === 'down' ? 'DOWN' : 'FLAT');
+  const lines: string[] = [
+    '## 1a. MOVEMENT SINCE LAST PERIOD',
+    '',
+    `Comparing against ${m.since.periodStart} to ${m.since.periodEnd} ` +
+      `(${m.daysBetween} day${m.daysBetween === 1 ? '' : 's'} between periods).`,
+    '',
+  ];
+
+  const verdict =
+    m.promise.outcome === 'moved'
+      ? '**The number moved.**'
+      : m.promise.outcome === 'did-not-move'
+        ? '**The number did not move.**'
+        : '**Unknown — not the same as unchanged.**';
+  lines.push(
+    `Last period's track was ${m.since.track ?? 'none'}` +
+      (m.promise.metric === null ? '' : `, aimed at ${m.promise.metric} on ${m.promise.platform}`) +
+      '.',
+    '',
+    `${verdict} ${m.promise.detail}`,
+    '',
+  );
+
+  if (m.movements.length === 0) {
+    lines.push('No metric could be compared across both periods.');
+    return lines.join('\n');
+  }
+
+  lines.push(
+    '| Channel | Metric | Last period | This period | Change | |',
+    '|---|---|---|---|---|---|',
+  );
+  for (const x of m.movements) {
+    const pctCol = x.changePct === undefined ? '—' : fmtPct(x.changePct);
+    lines.push(
+      `| ${x.platform} | ${x.metric}${x.isTargetMetric ? ' **(target)**' : ''} | ` +
+        `${num(x.before)} | ${num(x.after)} | ${pctCol} | ${arrow(x.direction)} |`,
+    );
+  }
+  return lines.join('\n');
+}
+
 export function renderBrief(a: Analysis, prose?: Prose, opts: RenderOptions = {}): string {
   const hint = opts.proseHint ?? DEFAULT_HINT;
   return [
@@ -450,6 +507,7 @@ export function renderBrief(a: Analysis, prose?: Prose, opts: RenderOptions = {}
     '',
     section1(a),
     '',
+    ...(opts.movement === undefined ? [] : [sectionMovement(opts.movement), '']),
     section2(a),
     '',
     section3(a),

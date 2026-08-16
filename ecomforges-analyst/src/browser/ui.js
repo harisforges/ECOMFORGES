@@ -298,7 +298,15 @@
 
     var res;
     try {
-      res = window.Forge.run({ engagement: form, benchmarksMarkdown: $('bm').value });
+      /* The page supplies the earlier period; the engine never goes looking for storage.
+         Refusing to compare is the engine's call, and it reports why rather than going quiet. */
+      var prior = priorPeriodFor(form.clientCode, form.periodStart);
+      skippedPeriods = prior.skipped;
+      res = window.Forge.run({
+        engagement: form,
+        benchmarksMarkdown: $('bm').value,
+        priorPeriod: prior.snap
+      });
     } catch (e) {
       setView('input');
       say(e && e.message ? e.message : String(e), 'err');
@@ -312,8 +320,14 @@
     $('brief').textContent = briefText;
     $('brief-rendered').innerHTML = renderMarkdown(briefText);
     $('cands').textContent = candsText || 'None.';
-    $('cand-pill').textContent = res.candidates.length ? res.candidates.length + ' × n=1' : 'none';
     $('dl').hidden = false;
+
+    /* Keep this period, and fold its candidates into the ledger. Both happen after a
+       successful run only — a brief that threw has nothing worth remembering. */
+    rememberPeriod(res.snapshot);
+    recordCandidates(res.candidates, res.snapshot.periodEnd);
+    renderLedger();
+    renderMovement(res);
 
     // The sticky panel carries the conclusion, the way the calculator's verdict does.
     // Shown only once there is a score: 0.00 is a real result (every area Stable), so an
@@ -405,6 +419,69 @@
         items + '</ul>', 'err');
     }
   });
+
+  /* ── Movement panel ──────────────────────────────────────
+     Shown above the brief because the first thing a session settles is whether the last
+     sprint worked. A run with no earlier period on file hides the card entirely; a refused
+     comparison says why, rather than looking identical to a first-ever cycle. */
+
+  var lastMovement = null;
+  var skippedPeriods = [];
+
+  function renderMovement(res) {
+    var card = $('movement-card');
+    lastMovement = res.movement || null;
+
+    if (!res.movement) {
+      if (res.movementRefused) {
+        card.hidden = false;
+        $('movement-pill').textContent = 'Not compared';
+        $('movement-sub').textContent = 'An earlier period is on file but was not comparable.';
+        $('movement-body').innerHTML = '<p style="margin:0;color:var(--amber)">' +
+          esc(res.movementRefused) + '</p>';
+      } else {
+        card.hidden = true;
+      }
+      return;
+    }
+
+    var m = res.movement;
+    card.hidden = false;
+    $('movement-pill').textContent =
+      m.outcome === 'moved' ? 'Moved' : m.outcome === 'did-not-move' ? 'Did not move' : 'Unknown';
+    $('movement-sub').textContent = 'Against ' + m.since + '.';
+
+    var warn = skippedPeriods.length
+      ? '<p style="margin:0 0 12px;color:var(--amber);font-size:13px">Note: ' +
+        skippedPeriods.map(function (s) { return esc(s.periodStart + ' to ' + s.periodEnd); }).join(', ') +
+        ' overlaps this period and was skipped, so this compares against an older one.</p>'
+      : '';
+
+    var verdictColour = m.outcome === 'moved' ? 'var(--green)'
+      : m.outcome === 'did-not-move' ? 'var(--red)' : 'var(--amber)';
+    var html = warn + '<p style="margin:0 0 14px;font-size:15px;color:' + verdictColour + '">' +
+      esc(m.detail) + '</p>';
+
+    if (m.rows.length) {
+      html += '<div class="tw wide"><table><thead><tr>' +
+        '<th>Channel</th><th>Metric</th><th>Was</th><th>Now</th><th>Change</th>' +
+        '</tr></thead><tbody>' +
+        m.rows.map(function (r) {
+          /* Leakage is money lost, so down is the win. Every other metric here is a growth
+             figure. Colouring them all the same way would paint a falling refund bill red. */
+          var good = r.metric === 'Leakage' ? r.direction === 'down' : r.direction === 'up';
+          var colour = r.direction === 'flat' ? 'var(--blue-grey)'
+            : good ? 'var(--green)' : 'var(--red)';
+          var chg = r.changePct === null ? '\u2014'
+            : (r.changePct > 0 ? '+' : '') + r.changePct.toFixed(1) + '%';
+          return '<tr><td>' + esc(r.platform) + '</td><td>' + esc(r.metric) +
+            (r.isTargetMetric ? ' <strong>(target)</strong>' : '') + '</td><td>' +
+            esc(movementNum(r.before)) + '</td><td>' + esc(movementNum(r.after)) +
+            '</td><td style="color:' + colour + '">' + esc(chg) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+    $('movement-body').innerHTML = html;
+  }
 
   /**
    * Money, the way the deck writes it.
@@ -518,8 +595,36 @@
     doc.deck = ctx;
     deckCover(doc, ctx);
 
-    /* 1 — the finding. The model's sentences, over figures the engine computed. */
-    deckHeading(doc, 1, 'The finding', 'What the data says, before any recommendation.');
+    var n = 0;
+
+    /*
+     * 0 — what happened to the last cycle.
+     *
+     * Only when there is an earlier period on file. This is the section that makes the
+     * retainer defensible: last month we named one number and a date, and here is whether it
+     * moved. It goes first, and it reports a miss as plainly as a win — a deck that only
+     * appears when the news is good is worth nothing as evidence.
+     */
+    if (lastMovement) {
+      deckHeading(doc, ++n, 'Since your last review',
+        'What we said would move, and whether it did. Compared against ' + lastMovement.since + '.');
+      deckLead(doc, lastMovement.detail);
+      var moved = lastMovement.rows.filter(function (r) { return r.direction !== 'flat'; });
+      if (moved.length) {
+        table(doc, ['Channel', 'Metric', 'Was', 'Now', 'Change'],
+          moved.slice(0, 6).map(function (r) {
+            var good = r.metric === 'Leakage' ? r.direction === 'down' : r.direction === 'up';
+            var chg = r.changePct === null ? '—'
+              : (r.changePct > 0 ? '+' : '') + r.changePct.toFixed(1) + '%';
+            var row = [r.platform, r.label, movementNum(r.before), movementNum(r.after), chg];
+            row.__colors = [P.white, P.white, P.grey, P.white, good ? P.green : P.red];
+            return row;
+          }), [20, 28, 17, 17, 18]);
+      }
+    }
+
+    /* The finding. The model's sentences, over figures the engine computed. */
+    deckHeading(doc, ++n, 'The finding', 'What the data says, before any recommendation.');
     deckLead(doc, pr.finding);
 
     var tp = null;
@@ -557,13 +662,13 @@
       rows.push(row);
     }
     if (rows.length) {
-      deckHeading(doc, 2, 'Your channels, side by side',
+      deckHeading(doc, ++n, 'Your channels, side by side',
         'Same catalogue, same period. Conversion is calculated the same way on every row so the columns compare.');
       table(doc, ['Channel', 'Revenue', 'Visitors', 'Conversion', 'Average order'], rows, [22, 21, 19, 19, 19]);
     }
 
     /* 3 — the sprint. Three directives, in order, executed by their team. */
-    deckHeading(doc, 3, 'Your 30-day sprint', 'Three moves, in this order, run by your team.');
+    deckHeading(doc, ++n, 'Your 30-day sprint', 'Three moves, in this order, run by your team.');
     var steps = [['Fix', pr.sprint.fix], ['Run', pr.sprint.run], ['Optimise', pr.sprint.optimise]];
     for (var k = 0; k < steps.length; k++) {
       var s = steps[k][1] || {};
@@ -575,7 +680,7 @@
        having, and printing them puts the reason a number is missing on the record. */
     var asks = (pd.gaps || []).map(clientAsk).filter(Boolean);
     if (asks.length) {
-      deckHeading(doc, 4, 'What we need from you',
+      deckHeading(doc, ++n, 'What we need from you',
         'Each of these is a figure we could not read from the exports. They make the next brief sharper.');
       deckAsks(doc, asks.slice(0, 6));
     }
@@ -602,13 +707,232 @@
     renderTabs();
   });
 
-  $('save').addEventListener('click', function () {
+  /* ══════════════════════════════════════════════════════════════════════════
+     WHAT THIS DEVICE REMEMBERS
+
+     Three separate stores, because they have different lifetimes and different risks:
+
+       inputs   — the form, so a closed tab does not cost an hour of typing
+       history  — one snapshot per client per period, so the next brief can say whether
+                  the number the last one promised actually moved
+       ledger   — benchmark candidates across every engagement, so a figure can reach n=3
+                  and stop the tool falling back to the client's own strongest channel
+
+     All of it stays on this device. Nothing is uploaded, and the analyst never stores a
+     business name — history is keyed by client code, which is what the codes are for.
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  var HISTORY = 'ecomforges-analyst-history-v1';
+  var LEDGER = 'ecomforges-analyst-ledger-v1';
+
+  function readStore(key, fallback) {
     try {
-      localStorage.setItem(STORE, JSON.stringify({ form: readForm(), bm: $('bm').value }));
-      say('Saved on this device. The figures reload next time you open the page.', 'ok');
-    } catch (e) {
-      say('Could not save — private browsing blocks local storage.', 'err');
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function writeStore(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch (e) { return false; }   // private browsing, or the quota is full
+  }
+
+  function saveInputs() {
+    return writeStore(STORE, { form: readForm(), bm: $('bm').value });
+  }
+
+  $('save').addEventListener('click', function () {
+    var ok = saveInputs();
+    say(ok
+      ? 'Saved on this device. The figures reload next time you open the page.'
+      : 'Could not save — private browsing blocks local storage.', ok ? 'ok' : 'err');
+  });
+
+  /*
+   * Autosave.
+   *
+   * Pressing Save was the only thing that kept a set of figures, and nobody presses Save
+   * before their phone reclaims the tab. Debounced so typing a five-digit number is one write
+   * rather than five, and it never reports success — a silent background save that announces
+   * itself is noise, and one that fails is caught by the explicit Save button anyway.
+   */
+  var autosaveTimer = null;
+  function scheduleAutosave() {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(saveInputs, 800);
+  }
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.closest && e.target.closest('#view-input')) scheduleAutosave();
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.closest && e.target.closest('#view-input')) scheduleAutosave();
+  });
+  // A phone backgrounding the tab may never fire anything else, so take the last chance.
+  window.addEventListener('pagehide', saveInputs);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') saveInputs();
+  });
+
+  /* ── History ─────────────────────────────────────────────
+     One entry per client per period. Re-running the same period replaces its entry rather
+     than stacking, so correcting a typo does not create a second version of the same month
+     for the next run to compare against. */
+
+  function loadHistory() {
+    var h = readStore(HISTORY, []);
+    return Object.prototype.toString.call(h) === '[object Array]' ? h : [];
+  }
+
+  function rememberPeriod(snap) {
+    var all = loadHistory().filter(function (s) {
+      return !(s.clientCode === snap.clientCode && s.periodStart === snap.periodStart &&
+               s.periodEnd === snap.periodEnd);
+    });
+    all.push(snap);
+    all.sort(function (a, b) { return a.periodEnd < b.periodEnd ? -1 : 1; });
+    // 60 periods is five years of monthly cycles across a dozen clients. Past that, the
+    // oldest go — a quota failure would silently lose the newest instead.
+    writeStore(HISTORY, all.slice(-60));
+  }
+
+  /**
+   * The latest period on file for this client that ends before the one being analysed.
+   *
+   * Also reports any *more recent* stored period that had to be skipped because it overlaps.
+   * Without that, a brief for 15 May to 14 June quietly compares against April, skipping May
+   * entirely, and reads exactly like a comparison against last month.
+   */
+  function priorPeriodFor(clientCode, periodStart) {
+    var mine = loadHistory().filter(function (s) { return s.clientCode === clientCode; });
+    var usable = mine.filter(function (s) { return s.periodEnd < periodStart; });
+    var chosen = usable.length ? usable[usable.length - 1] : undefined;
+    var skipped = mine.filter(function (s) {
+      return s.periodEnd >= periodStart && s.periodStart < periodStart;
+    });
+    return { snap: chosen, skipped: skipped };
+  }
+
+  /**
+   * A figure as it should appear next to another figure.
+   *
+   * Conversion rates arrive as full floats — 3.8700361010830324 — and printing one of those
+   * beside its previous value makes a movement table unreadable and the tool look unfinished.
+   * Money and counts lose their decimals; rates and ratios keep two.
+   */
+  function movementNum(n) {
+    if (n === null || n === undefined || !isFinite(n)) return '—';
+    return Math.abs(n) >= 1000
+      ? Math.round(n).toLocaleString('en-MY')
+      : (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  /* ── Benchmark ledger ────────────────────────────────────
+     The engine emits candidates observed in one account, so every one is n=1. A figure only
+     becomes a benchmark at n=3 counted by *distinct client codes* — three readings of the
+     same client is one client, and promoting it would make the tool its own evidence. */
+
+  function ledgerKey(c) { return c.platform + '|' + c.category + '|' + c.metric; }
+
+  /** Candidate strings come from the engine as "platform / category / metric / value / ...". */
+  function parseCandidate(line) {
+    var p = String(line).split(' / ').map(function (s) { return s.trim(); });
+    if (p.length < 6) return null;
+    var value = parseFloat(p[3]);
+    if (!isFinite(value)) return null;
+    return {
+      platform: p[0], category: p[1], metric: p[2], value: value,
+      observed: p[4].replace(/^observed\s+/i, ''),
+      clientCode: p[5]
+    };
+  }
+
+  function recordCandidates(lines, periodEnd) {
+    var ledger = readStore(LEDGER, {});
+    if (Object.prototype.toString.call(ledger) !== '[object Object]') ledger = {};
+    lines.forEach(function (line) {
+      var c = parseCandidate(line);
+      if (!c) return;
+      var k = ledgerKey(c);
+      var rows = ledger[k] || [];
+      // One reading per client per period: a re-run must not look like a second client.
+      rows = rows.filter(function (r) {
+        return !(r.clientCode === c.clientCode && r.periodEnd === periodEnd);
+      });
+      rows.push({ clientCode: c.clientCode, value: c.value, observed: c.observed, periodEnd: periodEnd });
+      ledger[k] = rows;
+    });
+    writeStore(LEDGER, ledger);
+    return ledger;
+  }
+
+  function distinctClients(rows) {
+    var seen = {};
+    rows.forEach(function (r) { seen[r.clientCode] = 1; });
+    return Object.keys(seen).length;
+  }
+
+  /** The median across clients — one client's outlier must not drag a category benchmark. */
+  function medianPerClient(rows) {
+    var byClient = {};
+    rows.forEach(function (r) {
+      if (!byClient[r.clientCode] || r.periodEnd > byClient[r.clientCode].periodEnd) {
+        byClient[r.clientCode] = r;   // that client's most recent reading
+      }
+    });
+    var vals = Object.keys(byClient).map(function (k) { return byClient[k].value; })
+      .sort(function (a, b) { return a - b; });
+    if (!vals.length) return null;
+    var mid = Math.floor(vals.length / 2);
+    return vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+  }
+
+  function renderLedger() {
+    var ledger = readStore(LEDGER, {});
+    var keys = Object.keys(ledger).sort();
+    if (!keys.length) {
+      $('ledger').textContent = 'Nothing recorded yet. Every brief you generate adds to this.';
+      $('cand-pill').textContent = 'n=0';
+      return;
     }
+    var ready = 0, lines = [];
+    keys.forEach(function (k) {
+      var rows = ledger[k];
+      var n = distinctClients(rows);
+      var parts = k.split('|');
+      var med = medianPerClient(rows);
+      if (n >= 3) {
+        ready++;
+        // The exact markdown row for benchmarks.md, so promoting it is a paste, not a retype.
+        lines.push('READY  ' + parts[0] + ' / ' + parts[1] + ' / ' + parts[2] +
+          '\n       | ' + parts[1] + ' | ' + med.toFixed(2) + ' | ' + n + ' | ' +
+          new Date().toISOString().slice(0, 7) + ' | observed across ' + n + ' clients |');
+      } else {
+        lines.push('n=' + n + '/3  ' + parts[0] + ' / ' + parts[1] + ' / ' + parts[2] +
+          '  —  median ' + (med === null ? '—' : med.toFixed(2)) +
+          ', needs ' + (3 - n) + ' more client' + (3 - n === 1 ? '' : 's'));
+      }
+    });
+    $('ledger').textContent = lines.join('\n\n');
+    $('cand-pill').textContent = ready ? ready + ' ready' : keys.length + ' tracked';
+  }
+
+  $('copyledger').addEventListener('click', function () {
+    var ledger = readStore(LEDGER, {});
+    var rows = Object.keys(ledger).filter(function (k) { return distinctClients(ledger[k]) >= 3; });
+    if (!rows.length) { say('Nothing has reached three separate clients yet.', 'err'); return; }
+    var out = rows.map(function (k) {
+      var parts = k.split('|');
+      return '<!-- ' + parts[0] + ' / ' + parts[2] + ' -->\n| ' + parts[1] + ' | ' +
+        medianPerClient(ledger[k]).toFixed(2) + ' | ' + distinctClients(ledger[k]) + ' | ' +
+        new Date().toISOString().slice(0, 7) + ' | observed |';
+    }).join('\n');
+    copy(out, 'Promotable rows');
+  });
+
+  $('clearledger').addEventListener('click', function () {
+    if (!window.confirm('Delete every recorded benchmark candidate on this device? This cannot be undone.')) return;
+    writeStore(LEDGER, {});
+    renderLedger();
+    say('Benchmark ledger cleared.');
   });
 
   function restore() {

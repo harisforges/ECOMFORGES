@@ -17,6 +17,7 @@ import { analyse } from '../engine/pipeline.js';
 import { renderBrief } from '../render/brief.js';
 import { TRACK } from '../engine/scoring.js';
 import { buildPayload } from '../llm/payload.js';
+import { movementSince, snapshot, SnapshotMismatchError, type PeriodSnapshot } from '../engine/movement.js';
 import { validateProse } from '../llm/validate.js';
 import type { Engagement } from '../types/datasheet.js';
 import type { Prose } from '../render/brief.js';
@@ -25,6 +26,11 @@ export interface RunInput {
   readonly engagement: unknown;
   /** Contents of a benchmark markdown file, if the user pasted one. */
   readonly benchmarksMarkdown?: string;
+  /**
+   * The most recent earlier period on file for this client, if any. Supplied by the page from
+   * local storage — the engine has no storage of its own and never goes looking for one.
+   */
+  readonly priorPeriod?: PeriodSnapshot;
 }
 
 export interface RunOutput {
@@ -42,6 +48,26 @@ export interface RunOutput {
   readonly topScore: number | null;
   readonly candidates: readonly string[];
   readonly benchmarkRowsRead: number;
+  /** Keep this against the client code; it is what the next run compares against. */
+  readonly snapshot: PeriodSnapshot;
+  /** Present only when a comparable earlier period was supplied and accepted. */
+  readonly movement?: {
+    readonly outcome: 'moved' | 'did-not-move' | 'unknown';
+    readonly detail: string;
+    readonly since: string;
+    readonly rows: readonly {
+      platform: string;
+      metric: string;
+      label: string;
+      before: number;
+      after: number;
+      changePct: number | null;
+      direction: string;
+      isTargetMetric: boolean;
+    }[];
+  };
+  /** Why an offered earlier period was refused, so the page can say so rather than go quiet. */
+  readonly movementRefused?: string;
 }
 
 function engagementFrom(input: unknown): Engagement {
@@ -58,10 +84,27 @@ export function run(input: RunInput): RunOutput {
 
   const analysis = analyse(engagement, benchmarks);
 
+  /*
+   * A refused comparison is reported, never swallowed. If the page offers a snapshot from
+   * another client or an overlapping period, the run still succeeds — but the brief says why
+   * there is no movement section, rather than silently looking like a first-ever cycle.
+   */
+  let movement: ReturnType<typeof movementSince> | undefined;
+  let movementRefused: string | undefined;
+  if (input.priorPeriod !== undefined) {
+    try {
+      movement = movementSince(analysis, input.priorPeriod);
+    } catch (e) {
+      if (!(e instanceof SnapshotMismatchError)) throw e;
+      movementRefused = e.message;
+    }
+  }
+
   return {
     brief: renderBrief(analysis, undefined, {
       // The CLI's phrasing names a flag that does not exist in a browser.
       proseHint: 'press Copy for Claude below, then paste what the Project writes back here',
+      ...(movement === undefined ? {} : { movement }),
     }),
     payload: JSON.stringify(buildPayload(analysis), null, 2),
     gaps: analysis.gaps.map((g) => g.question),
@@ -75,6 +118,27 @@ export function run(input: RunInput): RunOutput {
         `${c.platform} / ${c.category} / ${c.metric} / ${c.value} / observed ${c.observed} / ${c.clientCode} / n=1`,
     ),
     benchmarkRowsRead: benchmarks.rows.length,
+    snapshot: snapshot(analysis),
+    ...(movement === undefined
+      ? {}
+      : {
+          movement: {
+            outcome: movement.promise.outcome,
+            detail: movement.promise.detail,
+            since: `${movement.since.periodStart} to ${movement.since.periodEnd}`,
+            rows: movement.movements.map((m) => ({
+              platform: m.platform,
+              metric: m.metric,
+              label: m.label,
+              before: m.before,
+              after: m.after,
+              changePct: m.changePct === undefined ? null : m.changePct.value,
+              direction: m.direction,
+              isTargetMetric: m.isTargetMetric,
+            })),
+          },
+        }),
+    ...(movementRefused === undefined ? {} : { movementRefused }),
   };
 }
 
