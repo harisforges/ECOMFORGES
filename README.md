@@ -23,8 +23,9 @@ Three stages:
 | Forge Track | Before each session | Which single Forge Track activates this cycle |
 | Status Review | Every three cycles | Continue / Coach / Downgrade / Pause / Exit |
 
-State lives only in the page. Nothing is written to the browser or sent
-anywhere, so use **Save** to export an engagement file before closing the tab.
+Nothing is sent anywhere. Work is autosaved to this browser's local storage so a
+closed tab can be recovered — see [What the tools remember](#what-the-tools-remember) —
+and **Save engagement file** is still how you move work between devices.
 
 ## Client Portal (prototype)
 
@@ -118,6 +119,26 @@ The analyst's finding and sprint come from the Claude Project, so the deck needs
 Step 2 is not a formality. Every figure in the reply is checked against the numbers the page
 computed, and anything that is not in the data is named and refused — the same validator the API
 version runs. A clipboard is not a reason to trust the text more. **No checked reply, no deck.**
+
+## What the tools remember
+
+Everything below stays on the device it was typed on. Nothing is uploaded, and the analyst
+stores client **codes**, never business names.
+
+**Autosave.** Both tools now save as you type. The calculator offers a part-filled scorecard
+back after a crash rather than restoring it silently — a silent restore would start the next
+client's assessment pre-filled with the last one's answers.
+
+**Movement between periods.** Every deck closes by naming one metric and a date. The analyst
+now keeps one snapshot per client per period, and the next brief opens by saying whether that
+number actually moved. It refuses to compare across different clients or overlapping periods,
+and it says so when a nearer period was skipped for overlapping. A metric missing from either
+period is reported as **unknown**, never as "no change".
+
+**The benchmark ledger.** Candidates used to be copied to a clipboard and go nowhere. They now
+accumulate across every brief, counted by **distinct client code** — three readings of one
+account is still one client. At three, the ledger hands over the finished `benchmarks.md` row,
+using the median across clients so one outlier cannot drag a category.
 
 ## Note on visibility
 

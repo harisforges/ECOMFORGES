@@ -106,6 +106,20 @@
   <!-- ══════════════ BRIEF ══════════════ -->
   <div id="view-brief" hidden>
 
+    <div class="card" id="movement-card" hidden>
+      <div class="card-head">
+        <div class="cat-num num">&#8593;</div>
+        <div class="cat-title">
+          <h3>Since last period</h3>
+          <p id="movement-sub">&mdash;</p>
+        </div>
+        <div class="weight-pill" id="movement-pill">&mdash;</div>
+      </div>
+      <div class="card-body">
+        <div id="movement-body"></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-head">
         <div class="cat-num num">1</div>
@@ -162,14 +176,27 @@
       <div class="card-head">
         <div class="cat-num num">3</div>
         <div class="cat-title">
-          <h3>Benchmark candidates</h3>
-          <p>Observed in this one account, so <b>n=1</b>. One client is not a category &mdash; a figure needs three separate clients before it belongs in <code>benchmarks.md</code>.</p>
+          <h3>Benchmark ledger</h3>
+          <p>One client is not a category. This device counts every candidate you generate, by <b>distinct client code</b> &mdash; at three, the figure is worth putting in <code>benchmarks.md</code> and Conversion stops falling back to the client&rsquo;s own strongest channel.</p>
         </div>
-        <div class="weight-pill" id="cand-pill">n=1</div>
+        <div class="weight-pill" id="cand-pill">n=0</div>
       </div>
       <div class="card-body">
-        <pre id="cands" class="num" style="max-height:34vh"></pre>
-        <button class="btn btn-sm" type="button" id="copycands" style="margin-top:12px">Copy candidates</button>
+        <p class="fb-label" style="margin:0 0 10px;display:block">Across every brief on this device</p>
+        <pre id="ledger" class="num" style="max-height:30vh"></pre>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn btn-sm btn-cyan" type="button" id="copyledger">Copy promotable rows</button>
+          <button class="btn btn-sm" type="button" id="clearledger">Clear ledger</button>
+        </div>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--blue-grey);margin:14px 0 8px">
+          Three readings of the same client is still one client. Only distinct client codes count,
+          and the median across them is used so one outlier cannot drag a category.
+        </p>
+        <details style="margin-top:6px">
+          <summary style="cursor:pointer;font-size:12.5px;color:var(--blue-grey)">This brief&rsquo;s candidates</summary>
+          <pre id="cands" class="num" style="max-height:24vh;margin-top:10px"></pre>
+          <button class="btn btn-sm" type="button" id="copycands" style="margin-top:10px">Copy candidates</button>
+        </details>
       </div>
     </div>
 

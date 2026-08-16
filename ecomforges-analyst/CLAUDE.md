@@ -114,6 +114,20 @@ consultant carries the two prose sections across by hand — and that paste face
 bundle does not pull in the SDK). Any figure not in the payload is named and the deck is
 refused. The manual route must not be the unguarded one.
 
+## Movement is computed, not remembered by the page
+
+`src/engine/movement.ts` compares one analysis against a `PeriodSnapshot` of an earlier one.
+It is in `src/engine/` for the usual reason: it produces numbers, so it is deterministic and
+its deltas carry their arithmetic.
+
+It **throws** rather than returning an empty result when the snapshot is not comparable —
+different client, or a period that is not strictly earlier. An empty result reads exactly like
+a genuinely flat cycle, and "nothing moved" is a sentence someone says out loud to a client.
+
+The browser supplies the snapshot; the engine never goes looking for storage. Leakage is the
+one metric where *down* is the win, and `verdict()` knows that — the alternative is
+congratulating a client for losing revenue.
+
 ## Output voice
 
 British spelling. RM for currency, with thousands separators. Short sentences. No

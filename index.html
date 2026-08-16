@@ -1897,6 +1897,76 @@ function collectState() {
       predFounder: document.getElementById('bt-founder').value }
   };
 }
+/* ══════════════════════════════════════════════════════════════════════════
+   CRASH RECOVERY
+
+   Nothing was kept unless "Save engagement file" was pressed, and nobody presses it before
+   a phone reclaims the tab. A part-filled 100-point scorecard is twenty minutes of work and
+   there was no way to get it back.
+
+   Deliberately *offered* rather than restored. Silently repopulating a scorecard would be
+   worse than losing it: the next client's assessment would start pre-filled with the last
+   one's answers and nothing on screen would say so. The engagement file stays the way to
+   move work between devices — this only covers the tab that died.
+   ══════════════════════════════════════════════════════════════════════════ */
+const RECOVERY = 'ecomforges-tools-recovery-v1';
+
+function autosave() {
+  try {
+    const s = collectState();
+    // An untouched page has nothing worth offering back.
+    if (!Object.keys(picks).length && !Object.keys(press).length && !cycles.length) return;
+    localStorage.setItem(RECOVERY, JSON.stringify({ at: Date.now(), state: s }));
+  } catch (e) { /* private browsing or a full quota; the file export still works */ }
+}
+
+let autosaveTimer = null;
+function scheduleAutosave() {
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(autosave, 800);
+}
+
+function offerRecovery() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(RECOVERY) || 'null'); } catch (e) { return; }
+  if (!saved || !saved.state) return;
+  // Older than a week and it is more likely to confuse than to help.
+  if (Date.now() - saved.at > 7 * 86400000) { try { localStorage.removeItem(RECOVERY); } catch (e) {} return; }
+
+  const when = new Date(saved.at);
+  const name = (saved.state.client && saved.state.client.name) || 'an unnamed client';
+  const bar = document.createElement('div');
+  bar.className = 'file-bar';
+  bar.style.cssText = 'margin:14px 0;border-left:3px solid var(--amber)';
+  bar.innerHTML =
+    '<span class="fb-label">Unsaved work from ' + when.toLocaleString() + ' — ' +
+    String(name).replace(/[&<>"]/g, '') + '</span>' +
+    '<button class="btn btn-sm btn-cyan" type="button" id="rec-yes">Restore it</button>' +
+    '<button class="btn btn-sm" type="button" id="rec-no">Discard</button>';
+  const page = document.querySelector('.page');
+  if (page) page.insertBefore(bar, page.firstChild);
+  document.getElementById('rec-yes').addEventListener('click', () => {
+    applyState(saved.state);
+    bar.remove();
+    toast('Restored');
+  });
+  document.getElementById('rec-no').addEventListener('click', () => {
+    try { localStorage.removeItem(RECOVERY); } catch (e) {}
+    bar.remove();
+  });
+}
+
+document.addEventListener('input', scheduleAutosave);
+document.addEventListener('change', scheduleAutosave);
+document.addEventListener('click', e => {
+  // Scores are set by clicking option rows, not by typing, so input events never fire.
+  if (e.target && e.target.closest && e.target.closest('.opt, .flag-card')) scheduleAutosave();
+});
+window.addEventListener('pagehide', autosave);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') autosave();
+});
+
 function saveFile() {
   const s = collectState();
   const nm = (s.client.name || 'client').replace(/[^a-z0-9]+/gi,'_').toLowerCase();
@@ -3360,6 +3430,7 @@ const _logoEl = document.querySelector('.brand-logo');
 if (_logoEl && !LOGO_CACHE) _logoEl.addEventListener('load', prepareLogo, { once:true });
 addCycle();                    // start the log with one row so the shape is obvious
 recompute(); computeTrack(); computeReview();
+offerRecovery();               // after the first render, so the bar sits on a built page
 </script>
 
 </body>
