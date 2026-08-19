@@ -1,7 +1,7 @@
 # Homepage FAQ — approved replacement copy
 
-Status: **approved, not yet applied.** Replaces the FAQ block on the Homepage
-(Breakdance post 18), in the section headed "Wondering how we works?".
+Status: **applied 2026-08-19.** Live on the Homepage (Breakdance post 18), in the
+section headed "Wondering how we works?". LiteSpeed cache purged after applying.
 
 ## Why this exists
 
@@ -88,11 +88,13 @@ point you at what to do instead.
 ## Two other homepage fixes, same pass
 
 1. **"We Execute"** — a heading in the four-step band. Now that the public
-   promise is advisory-only, it contradicts the FAQ one screen below it. Should
-   become "You Execute" or "We Direct".
+   promise is advisory-only, it contradicted the FAQ one screen below it.
+   Applied as **"You Execute"**. It lives in the `<h1>` of the animated SVG code
+   block, not a Heading element; the `we-execute-*` CSS classes and JS ids were
+   deliberately left alone so the animation keeps working.
 
 2. **"Trusted by 900+ brands to scale their e-commerce performace"** — missing an
-   `r` in *performance*. Live on the homepage.
+   `r` in *performance*. Corrected.
 
 ## Applying it
 
@@ -103,3 +105,10 @@ survives.
 
 **LiteSpeed Cache is active and serves stale HTML.** Purge after applying, or the
 old answers keep showing.
+
+### What was done
+
+The eight question/answer pairs replaced the five placeholder items in place on
+the existing FAQ element, so its styling and accordion behaviour are untouched.
+The element also carries a stale three-item `questions` array left over from an
+older version of the block; it renders nothing and was left as found.
