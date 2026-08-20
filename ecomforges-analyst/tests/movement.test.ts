@@ -239,3 +239,39 @@ describe('the brief', () => {
     expect(brief).not.toContain('MOVEMENT SINCE LAST PERIOD');
   });
 });
+
+describe('the gaps list numbers every item once', () => {
+  it('continues counting through the blocking checks instead of repeating one number', () => {
+    /*
+     * A brief with two gaps and several failed reconciliations used to render the checks as
+     * "3." four times over. The list is read aloud to a client — "answer number 4" has to mean
+     * exactly one thing.
+     */
+    const messy = loadEngagement(
+      JSON.stringify({
+        clientCode: 'MY-BTY-09',
+        category: 'Beauty — skincare',
+        periodStart: '2026-05-01',
+        periodEnd: '2026-05-31',
+        platforms: [
+          // Orders and GMV that cannot both be true, on two channels, so several checks fail.
+          { platform: 'Shopee', sessions: 100, buyers: 90, orders: 5000, gmv: 200, aov: 2,
+            headlineCvr: 1, organicSharePct: 12, promoRevenuePct: 2, grossMarginPct: 1,
+            roas: 1, fulfilment: 'clean' },
+          { platform: 'Lazada', sessions: 66, buyers: 60, orders: 9000, gmv: 300, aov: 3,
+            headlineCvr: 67, organicSharePct: 48, promoRevenuePct: 67, grossMarginPct: 40,
+            roas: 4, fulfilment: 'clean' },
+          // No buyers and no orders, so this channel contributes real gaps above the checks.
+          { platform: 'TikTok', sessions: 500, gmv: 1000 },
+        ],
+      }),
+    );
+    const brief = renderBrief(analyse(messy, EMPTY));
+    const section = brief.slice(brief.indexOf('## 10. GAPS'));
+    const numbers = [...section.matchAll(/^(\d+)\. /gm)].map((m) => Number(m[1]));
+    expect(numbers.length).toBeGreaterThan(2);
+    // Strictly increasing by one, with no repeats anywhere in the list.
+    expect(numbers).toEqual(numbers.map((_, i) => i + 1));
+    expect(new Set(numbers).size).toBe(numbers.length);
+  });
+});

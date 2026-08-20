@@ -389,7 +389,13 @@ function section10(a: Analysis): string {
   const blocking = a.sanity.checks.filter((c) => c.blocksAnalysis === true);
   if (blocking.length > 0) {
     lines.push('');
-    for (const c of blocking) lines.push(`${a.gaps.length + 1}. ${c.message}`);
+    /*
+     * Keep counting from where the gaps stopped. This used to emit `a.gaps.length + 1` for
+     * every check, so a brief with two gaps and four failed reconciliations listed them all as
+     * item 3 — and the consultant reading it back to a client has no way to refer to one.
+     */
+    let n = a.gaps.length;
+    for (const c of blocking) lines.push(`${(n += 1)}. ${c.message}`);
   }
   return lines.join('\n');
 }
