@@ -147,3 +147,16 @@ contain scoring weights, thresholds, pricing and client-facing scripts — treat
 the URLs as shareable-by-accident and review before adding anything further.
 `robots.txt` asks search engines not to index them; that is a request, not
 access control.
+
+## WordPress
+
+`wordpress/mu-plugins/` holds must-use plugins deployed to the live site at
+`wp-content/mu-plugins/`. This directory is the source of truth — edit here and
+redeploy, rather than editing on the server.
+
+| File | Does |
+|---|---|
+| `ecomforges-seo.php` | Document title, meta description, Open Graph / Twitter tags, and JSON-LD (Organization, WebSite, WebPage, FAQPage). The FAQ schema is read from the Breakdance FAQ element on the page, so editing an answer in the builder updates the markup with it. |
+
+The site runs no SEO plugin; this file is what fills that gap. Deleting it removes
+everything it adds and breaks nothing else.
