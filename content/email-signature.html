@@ -1,0 +1,78 @@
+<!--
+  EcomForges email signature.
+
+  Table-based and inline-styled on purpose. Outlook on Windows renders email through Word's
+  engine: no flexbox, no grid, no external or embedded stylesheets, no data-URI images. Anything
+  cleverer than this breaks for a large share of Malaysian business inboxes.
+
+  Replace the four {{TOKENS}} below. Nothing else needs touching.
+
+  The logo is an absolute URL because mail clients strip embedded images. It is served from
+  GitHub Pages today; swap the src for a wp-content URL on ecomforges.com whenever convenient,
+  and every signature already sent keeps working either way.
+
+  The brand name appears as TEXT as well as inside the logo. Many clients block images by
+  default, and a signature that says nothing at all when the image fails is worse than one with
+  no image.
+
+  TO INSTALL
+
+  Gmail:    open this file in a browser, select the whole signature, copy, then paste into
+            Settings > See all settings > General > Signature. Paste into the browser, not
+            into a text editor, or you will paste the code instead of the signature.
+  Outlook:  same copy, then File > Options > Mail > Signatures. On Outlook for Windows check
+            it once after inserting; Word's engine is the one that breaks layouts.
+  Apple Mail: paste into Preferences > Signatures with "Always match my default message font"
+            UNTICKED, or it will strip the styling.
+
+  Plain-text clients: use content/email-signature.txt instead.
+-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    <td style="padding:0 0 10px 0;">
+      <img src="https://harisforges.github.io/ECOMFORGES/assets/ecomforges-logo-email.png"
+           alt="EcomForges" width="190" height="37"
+           style="display:block;border:0;outline:none;text-decoration:none;width:190px;height:37px;" />
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 10px 0;">
+      <!-- A 2px rule rather than a border, so Outlook cannot collapse it away. -->
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr><td width="52" height="2" bgcolor="#10A5B4" style="width:52px;height:2px;line-height:2px;font-size:0;">&nbsp;</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;color:#162840;font-weight:bold;mso-line-height-rule:exactly;">
+      {{FULL NAME}}
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#3E5570;mso-line-height-rule:exactly;">
+      {{ROLE}} &middot; <span style="color:#162840;font-weight:bold;">EcomForges</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 10px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#3E5570;mso-line-height-rule:exactly;">
+      Clear strategy. Decisive action. Measurable outcomes.
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 3px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#3E5570;mso-line-height-rule:exactly;">
+      <a href="https://www.ecomforges.com" style="color:#10A5B4;text-decoration:none;">www.ecomforges.com</a>
+      <span style="color:#C3D0DD;">&nbsp;|&nbsp;</span>
+      <a href="mailto:{{EMAIL}}" style="color:#3E5570;text-decoration:none;">{{EMAIL}}</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 0 10px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#3E5570;mso-line-height-rule:exactly;">
+      <a href="tel:{{PHONE_E164}}" style="color:#3E5570;text-decoration:none;">{{PHONE}}</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:15px;color:#8FA1B4;mso-line-height-rule:exactly;">
+      EcomForges &middot; SSM TR0332758-W &middot; Malaysia
+    </td>
+  </tr>
+</table>
