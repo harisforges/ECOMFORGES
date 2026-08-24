@@ -117,6 +117,45 @@ const EMAIL = {
       ],
     },
   ],
+  after: [
+    {
+      n: 'After 1',
+      when: 'Same day as the 15-minute call, within two hours. The single most important email in the sequence.',
+      subject: 'what we said we would do',
+      body: [
+        'Hi {{first_name}},',
+        'Thanks for the fifteen minutes.',
+        'What I took away: {{their_constraint}}. If that is wrong, tell me now rather than later, because it changes what I look at.',
+        'Next step is yours and it is small: 30 days of screenshots from every channel you sell on. Send them whenever, and I will come back within two working days with which channel is underperforming, what it is worth in ringgit, and what I would work on first.',
+        'No charge for that, and no obligation afterwards.',
+        '{{sender_name}}',
+      ],
+    },
+    {
+      n: 'After 2',
+      when: 'Three days later, if no data has arrived. Gives value instead of chasing.',
+      subject: '(reply in thread)',
+      body: [
+        'Hi {{first_name}},',
+        'No pressure on the screenshots.',
+        'One thing you can do without me, in about five minutes: open your conversion rate on each channel for the same 30 days, side by side. If one is far behind the other on the same catalogue, the gap is the listings or the pricing on that channel, not the market. That alone usually tells you where to look.',
+        'If you want the full read, the offer stands.',
+        '{{sender_name}}',
+      ],
+    },
+    {
+      n: 'After 3',
+      when: 'Ten days after the call. Asks for the truth, and converts a dead lead into a subscriber.',
+      subject: '(reply in thread)',
+      body: [
+        'Hi {{first_name}},',
+        'Last one from me, and it is a question rather than a pitch: was the call useful? One line is plenty, and an honest "not really" is more use to me than silence.',
+        'If the timing is simply wrong, I send one email a month on what we are seeing across Malaysian stores. The conversion gaps, what is working in campaigns, what is not. No pitch in it. Reply with the word monthly and I will add you.',
+        'Either way, thanks for the time.',
+        '{{sender_name}}',
+      ],
+    },
+  ],
 };
 
 const WHATSAPP = {
@@ -134,6 +173,18 @@ const WHATSAPP = {
     ['C', 'Agreed follow-up', 'They agreed on a call or by email that you would send it'],
     ['D', 'Re-engagement', 'A past lead who went quiet, at least 30 days ago'],
     ['E', 'Session logistics', 'Confirming a booked session'],
+    ['F', 'Cold', 'No prior contact. Highest risk — read the note below'],
+    ['G', 'Introduction', 'A group, event or mutual context where introducing yourself is expected'],
+    ['H', 'After the call', 'You have just had the 15-minute meeting'],
+    ['I', 'Feedback and nurture', 'A week after the call, still quiet'],
+  ],
+  cold: [
+    'Use a separate number. Never the one your existing clients message you on, because a ban takes those conversations with it.',
+    'Twenty to thirty a day, sent by hand. Bulk tools and identical text sent fast are what the spam detection is actually looking for.',
+    'No link and no attachment in the first message. A link from an unknown number is the single strongest report trigger.',
+    'Open their store first and name something real about it. A message that could have been sent to anyone gets reported; one that clearly was not, rarely does.',
+    'Stop at one follow-up. If there is no reply to the second message, remove them.',
+    'If someone asks you to stop, stop and delete the number. One report is survivable, a pattern is not.',
   ],
   note:
     'On the Business API, templates A, B and D need submitting for approval in WhatsApp Manager ' +
@@ -170,6 +221,38 @@ const WHATSAPP = {
         'Hi {{first_name}}, {{sender_name}} from EcomForges. We spoke about {{brand}} back in {{month}}.',
         'No pitch. Campaign season is coming and the sellers who do well in it are the ones who fixed their conversion before the traffic arrived, not during.',
         'If you want that read on your numbers, the offer stands. If not, I will leave you to it.',
+      ],
+    },
+    {
+      n: 'F', when: 'Cold. No prior contact. Send from a separate number, never the one clients use.',
+      body: [
+        'Hi {{first_name}}, {{sender_name}} here from EcomForges, a Malaysian e-commerce advisory.',
+        'A question rather than a pitch: have you ever compared your Shopee and Lazada conversion side by side for the same month?',
+        'On most stores we look at, one is running at close to half the other on the same catalogue, and nobody has noticed because the two dashboards calculate it differently.',
+        'Happy to check yours at no charge if it is useful. If not, no problem at all.',
+      ],
+    },
+    {
+      n: 'G', when: 'Introducing yourself. A seller group, an event follow-up, a mutual context.',
+      body: [
+        'Hi {{first_name}}, I am {{sender_name}} from EcomForges.',
+        'We are a Malaysian e-commerce advisory. We work with Shopee, Lazada and TikTok sellers, but we do not run ads or touch your account. We read your numbers, name the one thing costing you money that month, and your team runs the fix.',
+        'If it is ever useful, I am glad to read 30 days of your dashboards and tell you what I see. No charge, and no obligation.',
+      ],
+    },
+    {
+      n: 'H', when: 'Within an hour of the 15-minute call. Locks in what was agreed while it is fresh.',
+      body: [
+        'Hi {{first_name}}, thanks for the call earlier.',
+        'Recap so we are agreed: {{their_constraint}}. Next step is 30 days of screenshots from each channel, and I come back within two working days.',
+        'If I got any of that wrong, tell me now rather than later.',
+      ],
+    },
+    {
+      n: 'I', when: 'About a week after the call, still no data. Asks for the truth and offers a way to stay in touch.',
+      body: [
+        'Hi {{first_name}}, quick one. Was the call last week actually useful? One line is plenty, and an honest no is more use to me than silence.',
+        'If the timing is just wrong, I send one short email a month on what we are seeing across Malaysian stores. No pitch in it. Say the word monthly and I will add you.',
       ],
     },
     {
@@ -282,14 +365,36 @@ async function build() {
         table(doc, ['', 'Template', 'Basis to message'],
           cfg.allowed.map((r) => [r[0], r[1], r[2]]), [7, 26, 67]);
         doc.y = doc.para(cfg.note, doc.margin, doc.y, doc.innerW, { size: 8.5, color: P.grey, leading: 12 }) + 12;
+        /* Template F is cold, which was asked for in full knowledge of the risk. Repeating the
+           warning would not help; these are the things that actually reduce the chance of a ban. */
+        alertBox(doc, 'If you send Template F cold, do it this way', cfg.cold);
         doc.y = doc.para('Keep messages under about 300 characters. Malaysian business WhatsApp is direct, and a wall of text reads as a template.',
           doc.margin, doc.y, doc.innerW, { size: 8.5, color: P.grey, leading: 12 }) + 14;
       }
 
-      label(doc, kind === 'email' ? 'The sequence' : 'The templates');
+      label(doc, kind === 'email' ? 'The sequence — first contact' : 'The templates');
       for (const t of cfg.templates) {
         templateHead(doc, kind === 'email' ? t.n : 'Template ' + t.n, t.when, t.subject, t.body);
         templateBlock(doc, t.body);
+      }
+
+      /*
+       * The post-meeting sequence. Deals do not usually die in the cold email; they die in the
+       * silence after a call that went well, so this gets its own page rather than trailing off
+       * the end of the first-contact sequence.
+       */
+      if (cfg.after) {
+        doc.newPage();
+        label(doc, 'After the 15-minute call');
+        doc.y = doc.para(
+          'A prospect who goes quiet after a good call has usually not decided against you. They ' +
+          'have gone back to work. These three do the remembering for them, and the last one asks ' +
+          'for the truth and keeps the relationship alive either way.',
+          doc.margin, doc.y, doc.innerW, { size: 9, color: P.grey, leading: 13 }) + 14;
+        for (const t of cfg.after) {
+          templateHead(doc, t.n, t.when, t.subject, t.body);
+          templateBlock(doc, t.body);
+        }
       }
 
       doc.newPage();
