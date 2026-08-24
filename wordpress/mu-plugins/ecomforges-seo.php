@@ -135,6 +135,15 @@ function ef_seo_title(): string {
     return wp_get_document_title();
 }
 
+/** Strip markup, decode entities, collapse whitespace and trim to a sane length. */
+function ef_seo_clean_description(string $text): string {
+    $text = wp_strip_all_tags(strip_shortcodes($text));
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = trim((string) preg_replace('/\s+/u', ' ', $text));
+
+    return wp_trim_words($text, 32, '…');
+}
+
 function ef_seo_description(): string {
     $config = ef_seo_config();
 
@@ -151,15 +160,17 @@ function ef_seo_description(): string {
             return trim($custom);
         }
 
-        $excerpt = get_the_excerpt($post_id);
-        if (is_string($excerpt) && trim($excerpt) !== '') {
-            return wp_trim_words(wp_strip_all_tags($excerpt), 32, '…');
-        }
-
-        // Breakdance pages have no post_content, so fall back to the first FAQ answer.
+        // Breakdance pages have no post_content, so prefer the FAQ over a scraped excerpt.
         $faq = ef_seo_faq_items($post_id);
         if ($faq) {
-            return wp_trim_words(wp_strip_all_tags($faq[0]['a']), 32, '…');
+            return ef_seo_clean_description($faq[0]['a']);
+        }
+
+        $excerpt = ef_seo_clean_description((string) get_the_excerpt($post_id));
+        // A short excerpt is usually scraped interface text ("Step 1 of 7 Welcome…"),
+        // which reads worse in a search result than the site's own sentence.
+        if (mb_strlen($excerpt) >= 60) {
+            return $excerpt;
         }
     }
 
