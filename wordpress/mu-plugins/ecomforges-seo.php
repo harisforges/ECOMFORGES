@@ -257,7 +257,15 @@ function ef_seo_json_ld(array $config, string $title, string $desc, string $url)
         ]];
     }
 
+    // Breakdance replaces the theme, so the customizer's logo slot is usually empty.
+    // Fall back to an explicit option, then to the site icon.
     $logo_id = (int) get_theme_mod('custom_logo');
+    if (!$logo_id) {
+        $logo_id = (int) get_option('ef_seo_logo_id', 0);
+    }
+    if (!$logo_id) {
+        $logo_id = (int) get_option('site_icon', 0);
+    }
     if ($logo_id) {
         $logo = wp_get_attachment_image_src($logo_id, 'full');
         if ($logo) {
