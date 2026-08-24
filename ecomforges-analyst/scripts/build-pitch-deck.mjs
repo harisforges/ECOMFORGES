@@ -9,6 +9,15 @@
  * of a founder pitch is spending nine minutes on "who we are" and ninety seconds on the offer.
  * The markers are the script's pacing, printed where the presenter can see it.
  *
+ * Two versions come out of one set of slides:
+ *
+ *   internal — timing markers and presenter notes. For the person presenting.
+ *   client   — neither, plus contact details, so it stands up as a leave-behind.
+ *
+ * Same split as the briefs and the client decks, and for the same reason: a client reading
+ * "say this one plainly, it is the slide that makes the rest believable" has been shown the
+ * strings. The build asserts the client version carries none of it.
+ *
  *   node scripts/build-pitch-deck.mjs [outDir]
  */
 
@@ -132,6 +141,7 @@ const SLIDES = [
     at: '14:00', for: '1 min',
     kicker: 'Next step',
     title: 'Send us 30 days',
+    contact: ['haris@ecomforges.com', 'daniel@ecomforges.com'],
     body: [
       'Screenshots of your analytics pages from every channel. That is the whole ask.',
       'We read them and come back within two working days with which channel is underperforming, what it is worth in ringgit, and what we would work on first.',
@@ -140,7 +150,7 @@ const SLIDES = [
   },
 ];
 
-async function build() {
+async function build(mode) {
   const server = serve();
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
@@ -150,7 +160,8 @@ async function build() {
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'networkidle' });
 
-  const doc = await page.evaluate((SLIDES) => {
+  const doc = await page.evaluate(({ SLIDES, mode }) => {
+    const isClient = mode === 'client';
     // A4 landscape. Shared with the client decks in palette and mark, not in geometry.
     const W = 841.89, H = 595.28;
 
@@ -174,7 +185,7 @@ async function build() {
 
     /** Timing marker, top right. The presenter's pacing, not the prospect's information. */
     function timing(d, at, dur) {
-      if (!at) return;
+      if (isClient || !at) return;   // the presenter's pacing is not the client's information
       d.text(`${at}  ·  ${dur}`, W - d.margin - 150, 28, { size: 8.5, color: P.dcyan, align: 'right', width: 150 });
     }
 
@@ -260,28 +271,70 @@ async function build() {
         doc.y += h + 12;
       }
 
+      if (s.kind === 'cta' && isClient && s.contact) {
+        // A leave-behind has to say how to reach a person, not just a domain.
+        doc.y += 6;
+        doc.text('TALK TO US', doc.margin, doc.y, { size: 8.5, font: 1, color: P.grey });
+        doc.y += 15;
+        for (const c of s.contact) {
+          doc.text(c, doc.margin, doc.y, { size: 13, color: P.cyan });
+          doc.y += 19;
+        }
+      }
+
       if (s.kind === 'cta') {
         const bw = 300, bh = 56, bx = W - doc.margin - bw, by = H - doc.margin - bh - 10;
         doc.rect(bx, by, bw, bh, P.cyan, 8);
         doc.text('www.ecomforges.com', bx, by + 14, { size: 15, font: 1, color: P.navy, align: 'center', width: bw });
-        doc.text('Book the read, or reply to this email', bx, by + 34, { size: 9.5, color: P.navy, align: 'center', width: bw });
+        doc.text(isClient ? 'Send your screenshots, we do the rest' : 'Book the read, or reply to this email',
+          bx, by + 34, { size: 9.5, color: P.navy, align: 'center', width: bw });
       }
 
-      if (s.say) presenterNote(doc, s.say);
+      if (s.say && !isClient) presenterNote(doc, s.say);
     });
 
     return { bytes: Array.from(doc.build()), pages: doc.pages.length };
-  }, SLIDES);
+  }, { SLIDES, mode });
 
   await browser.close();
   server.close();
   return { doc, errors };
 }
 
+/** Recover the drawn strings from the PDF, so the check reads what a viewer would read. */
+function pdfText(bytes) {
+  let raw = '';
+  for (const b of bytes) raw += String.fromCharCode(b);
+  return [...raw.matchAll(/\(((?:\\.|[^\\()])*)\)\s*Tj/g)]
+    .map((m) => m[1].replace(/\\([()\\])/g, '$1')).join('\n');
+}
+
 const outDir = process.argv[2] || '/tmp/outreach';
 mkdirSync(outDir, { recursive: true });
-const { doc, errors } = await build();
-if (errors.length) console.error('page errors:', errors);
-const name = 'EcomForges_15min_Pitch_Deck.pdf';
-writeFileSync(join(outDir, name), Buffer.from(doc.bytes));
-console.log(`${name}  ${doc.pages} slides  ${doc.bytes.length.toLocaleString()} bytes`);
+
+for (const [mode, name] of [
+  ['internal', 'EcomForges_15min_Pitch_Deck_INTERNAL.pdf'],
+  ['client', 'EcomForges_15min_Pitch_Deck.pdf'],
+]) {
+  const { doc, errors } = await build(mode);
+  if (errors.length) console.error(`${mode} page errors:`, errors);
+  const text = pdfText(doc.bytes);
+
+  if (mode === 'client') {
+    /*
+     * Read the finished file back rather than trusting the flags. The presenter notes are the
+     * whole reason there are two versions, and a client who reads them has been shown how the
+     * pitch is constructed.
+     */
+    const leaks = [];
+    for (const s of SLIDES) {
+      if (s.say && text.includes(s.say.slice(0, 30))) leaks.push(`presenter note on "${s.title.replace(/\n/g, ' ')}"`);
+    }
+    if (/\b\d{1,2}:\d{2}\s+·\s+\d+ min\b/.test(text)) leaks.push('a timing marker');
+    if (text.includes('SAY')) leaks.push('a SAY label');
+    if (leaks.length) throw new Error(`client deck leaked ${leaks.join(', ')}`);
+  }
+
+  writeFileSync(join(outDir, name), Buffer.from(doc.bytes));
+  console.log(`${name}  ${doc.pages} slides  ${doc.bytes.length.toLocaleString()} bytes`);
+}
