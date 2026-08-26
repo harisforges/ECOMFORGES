@@ -10,10 +10,6 @@
       {
         "source": "/",
         "destination": "/lead.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ]
   }
