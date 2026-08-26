@@ -38,6 +38,19 @@ function removePhoneRow(html) {
  */
 const template = readFileSync(TEMPLATE, 'utf8').replace(/^<!--[\s\S]*?-->\n/, '');
 
+/*
+ * The tagline is written once, in the HTML template, and lifted out for the plain-text version.
+ * It used to be typed in both, which drifts the moment one is edited — and a signature is
+ * exactly the kind of file where nobody notices for months.
+ */
+const TAGLINE = (() => {
+  const rows = [...template.matchAll(/mso-line-height-rule:exactly;">\s*\n\s*([^<\n]+?)\s*\n\s*<\/td>/g)]
+    .map((m) => m[1].trim());
+  const found = rows.find((r) => !r.includes('{{') && !r.includes('SSM'));
+  if (!found) throw new Error('tagline not found in the template — its row shape changed');
+  return found;
+})();
+
 for (const p of PEOPLE) {
   let html = p.phone === undefined ? removePhoneRow(template) : template;
   html = html
@@ -58,7 +71,7 @@ for (const p of PEOPLE) {
   const txt = [
     p.name,
     `${p.role} · EcomForges`,
-    'Clear strategy. Decisive action. Measurable outcomes.',
+    TAGLINE,
     '',
     'www.ecomforges.com',
     p.phone === undefined ? p.email : `${p.email} · ${p.phone}`,
