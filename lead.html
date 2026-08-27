@@ -1944,10 +1944,10 @@ const USE_FIREBASE = true;
                 return;
             }
             try {
-                const hasRealConfig = FIREBASE_CONFIG.apiKey &&
-                    FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY' &&
-                    FIREBASE_CONFIG.databaseURL &&
-                    FIREBASE_CONFIG.databaseURL !== 'https://YOUR_PROJECT-default-rtdb.firebaseio.com';
+                const hasRealConfig = firebaseConfig.apiKey &&
+                    firebaseConfig.apiKey !== 'YOUR_API_KEY' &&
+                    firebaseConfig.databaseURL &&
+                    firebaseConfig.databaseURL !== 'https://YOUR_PROJECT-default-rtdb.firebaseio.com';
 
                 if (!hasRealConfig) {
                     syncDot.className = 'dot offline';
@@ -1955,7 +1955,7 @@ const USE_FIREBASE = true;
                     return;
                 }
 
-                firebase.initializeApp(FIREBASE_CONFIG);
+                firebase.initializeApp(firebaseConfig);
                 const db = firebase.database();
                 dbRef = db.ref('leads');
 
