@@ -63,6 +63,54 @@ imports CSV so a pipeline can move between phones.
 It wears the EcomForges logo: the lockup on a wide screen, and the mark alone below 620px,
 where the header has to share its row with the sync badge and the action buttons.
 
+### The fields are a list, not a text box
+
+Industry, Lead Source and Assigned To were free text, which is how one pipeline ends up with
+`Haris`, `haris` and `Haris ` as three different owners and `F&B`, `FnB` and `Food` as three
+different categories. All three are now dropdowns built from one table in the page:
+
+| Field | Values |
+|---|---|
+| Assigned to | Haris, DQ (or unassigned) |
+| Lead source | Cold lead, Warm lead, Referral |
+| Industry | the 17 categories a Malaysian SME seller lists under — Beauty & personal care, Health & supplements, Fashion & apparel, Jewellery & accessories, Home & living, Furniture & decor, Electronics & gadgets, Mobile & computer accessories, Baby & kids, Toys/games & hobby, Sports & outdoor, Pet supplies, Food & beverage, Automotive & accessories, Books & stationery, Digital products & services, Other |
+| Sells on | Shopee, Lazada, TikTok Shop, own web store, Instagram / Facebook |
+
+The industry list is deliberately the **same vocabulary as the analyst's category field** —
+`Beauty — skincare` and `Home — kitchenware` are a LeadForge industry plus a sub-category — so
+a lead that converts hands its category to the brief instead of being retyped into it.
+
+A lead stores the value, not the label, so renaming a label later re-renders old leads instead
+of stranding them. Leads typed before the lists existed are matched back onto them when they
+load (`Referral` → Referral, `Haris` → Haris); anything that matches nothing is kept exactly as
+typed and shown in the form as *(imported)*, because the point is to stop the drift, not to
+throw away the record.
+
+### Three things the lists made possible
+
+**The opener picks itself.** *Sells on* is the hook, not an attribute. Two or more channels
+means the cross-platform conversion gap is available and the form says to open with it and
+names the two platforms (Email 1). One channel means it is not available, and the form says so
+(Email 1b) — using the multi-channel hook on a single-channel seller is exactly what reads as a
+blast. Both come from `content/outreach-templates.md`; the tool does not invent a third.
+
+**The follow-up date is the house cadence.** Picking a source fills an empty follow-up date
+with what the templates already say: cold gets Email 2 three working days after the first send,
+an inbound warm lead is answered the same day, a referral introduction goes out the day it
+lands. Working days only, it never overwrites a date someone typed, and **Use cadence** re-fills
+it on demand.
+
+**Owner row.** A second chip row filters by owner and counts the *open* pipeline — converted
+and not-interested leads are not work either of them still has to do. **Assign** is a picker
+now, not a text prompt.
+
+### CSV
+
+The export writes labels (`Food & beverage`, `Shopee | Lazada`) and the import maps them back
+onto the stored values, so a file that leaves the tool can come back into it. Dates go out as
+`YYYY-MM-DD` for the same reason: the old export wrote `01 Sept 2026`, which the importer read
+as no date at all.
+
 ### The tools are separate, and stay separate
 
 LeadForge works a prospect who is not a client yet. The calculator qualifies that prospect and

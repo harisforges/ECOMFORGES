@@ -507,6 +507,60 @@
             color: var(--navy);
         }
 
+        /* Owner row. Same chip as the status filters, in green, because it answers a
+           different question — whose lead is this, not where is it in the pipeline —
+           and two identical rows would read as one wrapped one. */
+        .owner-filters {
+            margin-top: 6px;
+            align-items: center;
+        }
+        .filters-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            padding-right: 2px;
+        }
+        .own-btn {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 34px;
+        }
+        .own-btn:hover {
+            border-color: var(--green);
+            color: var(--text);
+        }
+        .own-btn.active {
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .own-btn .count {
+            display: inline-block;
+            background: var(--navy);
+            color: var(--text-soft);
+            font-size: 9px;
+            border-radius: 10px;
+            padding: 0 7px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+        .own-btn.active .count {
+            background: var(--green);
+            color: var(--navy);
+        }
+
         /* ── Lead List ── */
         .list-wrap {
             max-width: 880px;
@@ -974,6 +1028,79 @@
         .modal-overlay.open {
             display: flex;
         }
+
+        /* ── Choice sheet ── */
+        /* A one-question picker. The full modal is the wrong weight for "who owns this",
+           and prompt() is the wrong control for a list of two. */
+        .sheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 260;
+            padding: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+        .sheet-overlay.open {
+            display: flex;
+        }
+        .sheet {
+            background: var(--main-blue);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 420px;
+            padding: 16px;
+            margin-bottom: var(--safe-bottom);
+            box-shadow: var(--shadow);
+            animation: slideUp 0.25s ease;
+        }
+        .sheet h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-soft);
+            margin-bottom: 12px;
+        }
+        .sheet .sheet-option {
+            width: 100%;
+            text-align: left;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            cursor: pointer;
+            margin-bottom: 8px;
+            min-height: 46px;
+            transition: all var(--transition);
+        }
+        .sheet .sheet-option:hover {
+            border-color: var(--border-light);
+        }
+        .sheet .sheet-option.current {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .sheet .sheet-option.current::after {
+            content: '✓';
+            float: right;
+        }
+        .sheet .btn-cancel {
+            width: 100%;
+            background: var(--panel);
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+        }
+        .sheet .btn-cancel:hover {
+            border-color: var(--text-muted);
+            color: var(--text);
+        }
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -1044,6 +1171,61 @@
         .modal .form-group label .req {
             color: var(--red);
         }
+        /* Multi-select chips. A phone keyboard has no room for a multi-<select>, and a
+           row of tappable chips shows every channel at once — which matters here,
+           because how many are on is what picks the opener. */
+        .chip-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .chip-select .chip {
+            background: var(--navy);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 13px;
+            font-size: 12px;
+            font-family: inherit;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all var(--transition);
+            min-height: 34px;
+        }
+        .chip-select .chip:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+        }
+        .chip-select .chip.on {
+            background: var(--cyan-dim);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        .modal .form-hint {
+            font-size: 10.5px;
+            line-height: 1.45;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .modal .form-hint.on {
+            color: var(--green);
+        }
+        .modal .form-group label .link-btn {
+            float: right;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cyan);
+            cursor: pointer;
+        }
+        .modal .form-group label .link-btn:hover {
+            text-decoration: underline;
+        }
+
         .modal .form-group input,
         .modal .form-group select,
         .modal .form-group textarea {
@@ -1421,6 +1603,7 @@
             .btn-export,
             .install-banner,
             .filters .filter-btn:not(.active),
+            .filters .own-btn:not(.active),
             .search-wrap,
             .header-actions .sync-badge,
             .lead-card .actions .btn-delete,
@@ -1441,7 +1624,8 @@
                 background: #f0f0f0 !important;
                 color: #111 !important;
             }
-            .modal-overlay {
+            .modal-overlay,
+            .sheet-overlay {
                 display: none !important;
             }
             header {
@@ -1552,6 +1736,15 @@
         <button class="filter-btn" data-filter="overdue">⏰ Overdue <span class="count" id="count-overdue">0</span></button>
     </div>
 
+    <!-- ─── Owner filter ─── -->
+    <div class="filters owner-filters" id="owner-bar">
+        <span class="filters-label">Owner</span>
+        <button class="own-btn active" data-owner="all">Everyone <span class="count" id="own-count-all">0</span></button>
+        <button class="own-btn" data-owner="haris">Haris <span class="count" id="own-count-haris">0</span></button>
+        <button class="own-btn" data-owner="dq">DQ <span class="count" id="own-count-dq">0</span></button>
+        <button class="own-btn" data-owner="unassigned">Unassigned <span class="count" id="own-count-unassigned">0</span></button>
+    </div>
+
     <!-- ─── Lead List ─── -->
     <div class="list-wrap" id="list-wrap">
         <div class="pull-indicator" id="pull-indicator"><span class="spinner-sm"></span> Refreshing...</div>
@@ -1614,14 +1807,14 @@
                     </div>
                     <div class="form-group">
                         <label>Industry</label>
-                        <input type="text" id="f-industry" placeholder="Tech, Retail, F&B…" />
+                        <select id="f-industry"></select>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Source</label>
-                        <input type="text" id="f-source" placeholder="LinkedIn, Referral, Cold call…" />
+                        <label>Lead Source</label>
+                        <select id="f-source"></select>
                     </div>
                     <div class="form-group">
                         <label>Status</label>
@@ -1636,14 +1829,24 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>Sells On</label>
+                    <div class="chip-select" id="f-platforms"></div>
+                    <p class="form-hint" id="opener-hint">Pick every channel they sell on.</p>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Assigned To</label>
-                        <input type="text" id="f-assigned" placeholder="Team member name" />
+                        <select id="f-assigned"></select>
                     </div>
                     <div class="form-group">
-                        <label>Follow-up Date</label>
+                        <label>
+                            Follow-up Date
+                            <button type="button" class="link-btn" id="f-followup-suggest">Use cadence</button>
+                        </label>
                         <input type="date" id="f-followup" />
+                        <p class="form-hint" id="cadence-hint">Pick a lead source for the house cadence.</p>
                     </div>
                 </div>
 
@@ -1657,6 +1860,15 @@
                     <button type="submit" class="btn btn-submit" id="modal-submit">Save Lead</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ─── Choice sheet ─── -->
+    <div class="sheet-overlay" id="sheet-overlay">
+        <div class="sheet">
+            <h3 id="sheet-title">Choose</h3>
+            <div id="sheet-options"></div>
+            <button type="button" class="btn btn-cancel" id="sheet-cancel">Cancel</button>
         </div>
     </div>
 
@@ -1704,9 +1916,135 @@ const firebaseConfig = {
 };
 const USE_FIREBASE = true;
 
+        // ─── Taxonomy ────────────────────────────────────────────────────
+        /**
+         * One source of truth for every dropdown. The <select>s are built from these
+         * lists at start-up rather than written into the markup, so a value can never
+         * exist in the form, the CSV importer and the filter bar in three different
+         * spellings — which is what free-text "Industry" and "Assigned to" produced.
+         *
+         * Stored leads keep the `value`, never the label: renaming a label later
+         * re-renders old leads correctly instead of stranding them.
+         */
+        const ASSIGNEES = [
+            { value: 'haris', label: 'Haris' },
+            { value: 'dq', label: 'DQ' },
+        ];
+
+        /* Cold / warm / referral is not decoration — it picks the opener and the cadence
+           below. See content/outreach-templates.md. */
+        const SOURCES = [
+            { value: 'cold', label: 'Cold lead', emoji: '❄️' },
+            { value: 'warm', label: 'Warm lead', emoji: '🔥' },
+            { value: 'referral', label: 'Referral', emoji: '🤝' },
+        ];
+
+        /* The categories a Malaysian SME seller actually lists under. These match the
+           first half of the Growth Analyst's category field ("Beauty — skincare",
+           "Home — kitchenware"), so a converted lead carries its category straight into
+           the brief instead of being retyped. */
+        const INDUSTRIES = [
+            { value: 'beauty', label: 'Beauty & personal care' },
+            { value: 'health', label: 'Health & supplements' },
+            { value: 'fashion', label: 'Fashion & apparel' },
+            { value: 'jewellery', label: 'Jewellery & accessories' },
+            { value: 'home', label: 'Home & living' },
+            { value: 'furniture', label: 'Furniture & decor' },
+            { value: 'electronics', label: 'Electronics & gadgets' },
+            { value: 'mobile-accessories', label: 'Mobile & computer accessories' },
+            { value: 'baby', label: 'Baby & kids' },
+            { value: 'toys', label: 'Toys, games & hobby' },
+            { value: 'sports', label: 'Sports & outdoor' },
+            { value: 'pet', label: 'Pet supplies' },
+            { value: 'fnb', label: 'Food & beverage' },
+            { value: 'automotive', label: 'Automotive & accessories' },
+            { value: 'books', label: 'Books & stationery' },
+            { value: 'digital', label: 'Digital products & services' },
+            { value: 'other', label: 'Other' },
+        ];
+
+        /* Where they sell. Two or more channels is the whole hook: the same catalogue
+           converts at different rates on each, and nobody has compared them. */
+        const PLATFORMS = [
+            { value: 'shopee', label: 'Shopee' },
+            { value: 'lazada', label: 'Lazada' },
+            { value: 'tiktok', label: 'TikTok Shop' },
+            { value: 'own', label: 'Own web store' },
+            { value: 'social', label: 'Instagram / Facebook' },
+        ];
+
+        /**
+         * The house cadence, lifted from content/outreach-templates.md so the tool cannot
+         * quietly invent a different one: cold gets Email 2 three working days after the
+         * first send, an inbound warm lead is answered the same day, and a referral is
+         * introduced the same day it lands. `days` counts working days.
+         */
+        const CADENCE = {
+            cold: { days: 3, note: 'Email 2, three working days after the first send — same thread.' },
+            warm: { days: 1, note: 'Inbound gets answered the same day (WhatsApp A). Next touch tomorrow.' },
+            referral: { days: 1, note: 'Referral introduction goes out the day it lands (WhatsApp B).' },
+        };
+
+        // ─── Taxonomy helpers ────────────────────────────────────────────
+        /** Label for a stored value, falling back to the raw text so leads typed before
+         *  these lists existed still read correctly instead of showing a blank cell. */
+        function labelOf(list, value) {
+            if (!value) return '';
+            const hit = list.find(o => o.value === value);
+            return hit ? hit.label : value;
+        }
+
+        function optionOf(list, value) {
+            return value ? list.find(o => o.value === value) || null : null;
+        }
+
+        /** Match a free-text cell (a CSV column, an old lead) back onto a list. */
+        function coerce(list, raw) {
+            const t = String(raw || '').trim();
+            if (!t) return '';
+            const k = t.toLowerCase();
+            const hit = list.find(o => o.value === k || o.label.toLowerCase() === k);
+            return hit ? hit.value : t;  // unknown text is kept, never dropped
+        }
+
+        function fillSelect(sel, list, placeholder) {
+            sel.innerHTML = `<option value="">${placeholder}</option>` +
+                list.map(o => `<option value="${o.value}">${o.emoji ? o.emoji + ' ' : ''}${o.label}</option>`).join('');
+        }
+
+        /** Show a stored value the list does not know about rather than silently
+         *  resetting the field to blank when the lead is opened for editing. */
+        function selectValue(sel, list, value) {
+            if (value && !list.some(o => o.value === value)) {
+                sel.insertAdjacentHTML('beforeend', `<option value="${esc(value)}">${esc(value)} (imported)</option>`);
+            }
+            sel.value = value || '';
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        /** Follow-up date the cadence asks for, skipping Saturday and Sunday. */
+        function cadenceDate(source) {
+            const rule = CADENCE[source];
+            if (!rule) return '';
+            const d = new Date();
+            let left = rule.days;
+            while (left > 0) {
+                d.setDate(d.getDate() + 1);
+                if (d.getDay() !== 0 && d.getDay() !== 6) left--;
+            }
+            return d.toISOString().slice(0, 10);
+        }
+
+
         // ─── State ──────────────────────────────────────────────────────
         let leads = [];
         let filter = 'all';
+        let ownerFilter = 'all';
         let searchTerm = '';
         let sortBy = 'created-desc';
         let editingId = null;
@@ -1751,6 +2089,12 @@ const USE_FIREBASE = true;
         const fAssigned = document.getElementById('f-assigned');
         const fFollowup = document.getElementById('f-followup');
         const fNotes = document.getElementById('f-notes');
+        const fPlatforms = document.getElementById('f-platforms');
+        const followupSuggest = document.getElementById('f-followup-suggest');
+        const cadenceHint = document.getElementById('cadence-hint');
+        const openerHint = document.getElementById('opener-hint');
+        const ownerBar = document.getElementById('owner-bar');
+        const ownBtns = ownerBar.querySelectorAll('.own-btn');
         const fabAdd = document.getElementById('fab-add');
         const btnAddLead = document.getElementById('btn-add-lead');
         const toastEl = document.getElementById('toast');
@@ -1936,11 +2280,27 @@ const USE_FIREBASE = true;
         }
 
         // ─── Load / Save ──────────────────────────────────────────────────
+        /**
+         * Leads written before the dropdowns existed carry free text — "Haris", "Tech /
+         * Retail", "LinkedIn DM". Anything that matches a list is snapped onto its code
+         * on the way in, so an old lead answers the owner filter and the label search
+         * like a new one. Anything that matches nothing is left exactly as typed: the
+         * point of the migration is to stop the drift, not to throw away the record.
+         */
+        function migrateLead(lead) {
+            if (!lead || typeof lead !== 'object') return lead;
+            lead.industry = coerce(INDUSTRIES, lead.industry);
+            lead.source = coerce(SOURCES, lead.source);
+            lead.assigned = coerce(ASSIGNEES, lead.assigned);
+            lead.platforms = normalisePlatforms(lead.platforms);
+            return lead;
+        }
+
         async function loadLeads() {
             try {
                 await openDB();
                 const data = await dbGetAll();
-                leads = data || [];
+                leads = (data || []).map(migrateLead);
                 return true;
             } catch (e) {
                 console.warn('IndexedDB load error:', e);
@@ -1948,7 +2308,7 @@ const USE_FIREBASE = true;
                     const raw = localStorage.getItem('leadforge_leads');
                     if (raw) {
                         const parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) leads = parsed;
+                        if (Array.isArray(parsed)) leads = parsed.map(migrateLead);
                     }
                 } catch (e2) { /* ignore */ }
                 return false;
@@ -2005,9 +2365,10 @@ const USE_FIREBASE = true;
                         let changed = false;
                         for (const r of remote) {
                             const local = leads.find(l => l.id === r.id);
-                            if (!local) { leads.push(r);
-                                changed = true; } else if (JSON.stringify(local) !== JSON.stringify(r)) { Object
-                                    .assign(local, r);
+                            const incoming = migrateLead(r);
+                            if (!local) { leads.push(incoming);
+                                changed = true; } else if (JSON.stringify(local) !== JSON.stringify(incoming)) { Object
+                                    .assign(local, incoming);
                                 changed = true; }
                         }
                         if (changed) { await saveLeads();
@@ -2098,6 +2459,16 @@ const USE_FIREBASE = true;
                 const el = document.getElementById('count-' + k);
                 if (el) el.textContent = counts[k];
             });
+
+            // Owner row counts the open pipeline, not the archive: a converted or dead
+            // lead is not work either of them still has to do.
+            const open = leads.filter(l => l.status !== 'converted' && l.status !== 'not-interested');
+            const ownCounts = { all: open.length, unassigned: open.filter(l => !l.assigned).length };
+            for (const a of ASSIGNEES) ownCounts[a.value] = open.filter(l => l.assigned === a.value).length;
+            Object.keys(ownCounts).forEach(k => {
+                const el = document.getElementById('own-count-' + k);
+                if (el) el.textContent = ownCounts[k];
+            });
         }
 
         // ─── Render ──────────────────────────────────────────────────────
@@ -2108,16 +2479,22 @@ const USE_FIREBASE = true;
                     const matchFilter = filter === 'all' || filter === 'overdue' ?
                         (filter === 'overdue' ? (lead.followup && isOverdue(lead.followup)) : true) :
                         lead.status === filter;
+                    const matchOwner = ownerFilter === 'all' ? true :
+                        ownerFilter === 'unassigned' ? !lead.assigned : lead.assigned === ownerFilter;
                     const term = searchTerm.toLowerCase().trim();
+                    // Searching on what is on screen: "beauty", "referral", "shopee" are
+                    // labels, and the lead stores the code behind them.
                     const matchSearch = !term ||
                         (lead.company || '').toLowerCase().includes(term) ||
                         (lead.pic || '').toLowerCase().includes(term) ||
                         (lead.phone || '').includes(term) ||
                         (lead.email || '').toLowerCase().includes(term) ||
-                        (lead.industry || '').toLowerCase().includes(term) ||
+                        labelOf(INDUSTRIES, lead.industry).toLowerCase().includes(term) ||
+                        labelOf(SOURCES, lead.source).toLowerCase().includes(term) ||
+                        (lead.platforms || []).some(v => labelOf(PLATFORMS, v).toLowerCase().includes(term)) ||
                         (lead.notes || '').toLowerCase().includes(term) ||
-                        (lead.assigned || '').toLowerCase().includes(term);
-                    return matchFilter && matchSearch;
+                        labelOf(ASSIGNEES, lead.assigned).toLowerCase().includes(term);
+                    return matchFilter && matchOwner && matchSearch;
                 })
                 .sort(sortFn);
 
@@ -2180,9 +2557,15 @@ const USE_FIREBASE = true;
                         `<div class="followup-badge ${overdue ? 'overdue' : ''}">⏰ ${formatDate(lead.followup)}${overdue ? ' ⚠️ Overdue' : ''}</div>`;
                 }
 
-                const assignedHtml = lead.assigned ?
-                    `<div class="assigned"><span class="avatar">${lead.assigned.charAt(0).toUpperCase()}</span> ${lead.assigned}</div>` :
+                const assignedName = labelOf(ASSIGNEES, lead.assigned);
+                const assignedHtml = assignedName ?
+                    `<div class="assigned"><span class="avatar">${esc(assignedName.charAt(0).toUpperCase())}</span> ${esc(assignedName)}</div>` :
                     '';
+                const sourceOpt = optionOf(SOURCES, lead.source);
+                const sourceHtml = lead.source ?
+                    `<span class="item"><span class="emoji">${sourceOpt ? sourceOpt.emoji : '📌'}</span> ${esc(labelOf(SOURCES, lead.source))}</span>` : '';
+                const platformsHtml = (lead.platforms || []).length ?
+                    `<span class="item"><span class="emoji">🛒</span> ${esc((lead.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' · '))}</span>` : '';
 
                 const companySafe = (lead.company || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 const picSafe = (lead.pic || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2204,8 +2587,9 @@ const USE_FIREBASE = true;
                 <div class="details" onclick="openDetail('${lead.id}')">
                   ${lead.email ? `<span class="item"><span class="emoji">✉</span> ${lead.email}</span>` : ''}
                   ${lead.website ? `<span class="item"><span class="emoji">🌐</span> ${lead.website}</span>` : ''}
-                  ${lead.industry ? `<span class="item"><span class="emoji">🏢</span> ${lead.industry}</span>` : ''}
-                  ${lead.source ? `<span class="item"><span class="emoji">📌</span> ${lead.source}</span>` : ''}
+                  ${lead.industry ? `<span class="item"><span class="emoji">🏢</span> ${esc(labelOf(INDUSTRIES, lead.industry))}</span>` : ''}
+                  ${sourceHtml}
+                  ${platformsHtml}
                   ${lead.createdAt ? `<span class="item"><span class="emoji">📅</span> ${formatDate(lead.createdAt)}</span>` : ''}
                 </div>
                 ${notesHtml}
@@ -2312,6 +2696,15 @@ const USE_FIREBASE = true;
         // ─── CRUD ──────────────────────────────────────────────────────
         function getLead(id) { return leads.find(l => l.id === id); }
 
+        /** Stored in the order PLATFORMS declares them, so two leads on the same two
+         *  channels always render the same way and Email 1 names them in one order. */
+        function normalisePlatforms(list) {
+            const want = new Set((Array.isArray(list) ? list : []).map(v => coerce(PLATFORMS, v)).filter(Boolean));
+            const known = PLATFORMS.filter(pl => want.has(pl.value)).map(pl => pl.value);
+            const rest = [...want].filter(v => !PLATFORMS.some(pl => pl.value === v));
+            return [...known, ...rest];
+        }
+
         async function addLead(data) {
             const newLead = {
                 id: generateId(),
@@ -2324,6 +2717,7 @@ const USE_FIREBASE = true;
                 source: (data.source || '').trim(),
                 status: data.status || 'new',
                 assigned: (data.assigned || '').trim(),
+                platforms: normalisePlatforms(data.platforms),
                 followup: data.followup || null,
                 notes: (data.notes || '').trim(),
                 createdAt: now(),
@@ -2350,6 +2744,7 @@ const USE_FIREBASE = true;
                 source: (data.source || '').trim(),
                 status: data.status || 'new',
                 assigned: (data.assigned || '').trim(),
+                platforms: normalisePlatforms(data.platforms),
                 followup: data.followup || null,
                 notes: (data.notes || '').trim(),
                 updatedAt: now()
@@ -2403,13 +2798,14 @@ const USE_FIREBASE = true;
             const lead = getLead(id);
             if (!lead) return;
             const old = lead.assigned;
-            lead.assigned = name.trim() || '';
+            lead.assigned = coerce(ASSIGNEES, name);
+            if (old === lead.assigned) return;
             lead.history = lead.history || [];
+            const to = labelOf(ASSIGNEES, lead.assigned) || 'unassigned';
             lead.history.push({
                 date: now(),
                 who: userId,
-                note: old ? `Assigned: ${old} → ${lead.assigned || 'unassigned'}` :
-                    `Assigned to ${lead.assigned || 'unassigned'}`
+                note: old ? `Assigned: ${labelOf(ASSIGNEES, old)} → ${to}` : `Assigned to ${to}`
             });
             lead.updatedAt = now();
             await saveLeads();
@@ -2448,15 +2844,18 @@ const USE_FIREBASE = true;
             detailTitle.textContent = lead.company || 'Lead';
             detailStatus.textContent = statusLabel(lead.status);
             detailStatus.className = 'status-badge ' + statusClass(lead.status);
+            const opener = openerFor(lead.platforms);
 
             let html = `
             <div class="field-row"><div class="label">PIC</div><div class="value">${lead.pic || '—'}</div></div>
             <div class="field-row"><div class="label">Phone</div><div class="value">${lead.phone || '—'}</div></div>
             ${lead.email ? `<div class="field-row"><div class="label">Email</div><div class="value">${lead.email}</div></div>` : ''}
             ${lead.website ? `<div class="field-row"><div class="label">Website</div><div class="value">${lead.website}</div></div>` : ''}
-            ${lead.industry ? `<div class="field-row"><div class="label">Industry</div><div class="value">${lead.industry}</div></div>` : ''}
-            ${lead.source ? `<div class="field-row"><div class="label">Source</div><div class="value">${lead.source}</div></div>` : ''}
-            ${lead.assigned ? `<div class="field-row"><div class="label">Assigned</div><div class="value">${lead.assigned}</div></div>` : ''}
+            ${lead.industry ? `<div class="field-row"><div class="label">Industry</div><div class="value">${esc(labelOf(INDUSTRIES, lead.industry))}</div></div>` : ''}
+            ${lead.source ? `<div class="field-row"><div class="label">Source</div><div class="value">${esc(labelOf(SOURCES, lead.source))}</div></div>` : ''}
+            ${(lead.platforms || []).length ? `<div class="field-row"><div class="label">Sells on</div><div class="value">${esc(lead.platforms.map(v => labelOf(PLATFORMS, v)).join(', '))}</div></div>` : ''}
+            ${opener ? `<div class="field-row"><div class="label">Opener</div><div class="value">${esc(opener.text)}</div></div>` : ''}
+            ${lead.assigned ? `<div class="field-row"><div class="label">Assigned</div><div class="value">${esc(labelOf(ASSIGNEES, lead.assigned))}</div></div>` : ''}
             ${lead.followup ? `<div class="field-row"><div class="label">Follow-up</div><div class="value">${formatDate(lead.followup)}${isOverdue(lead.followup) ? ' ⚠️ Overdue' : ''}</div></div>` : ''}
             ${lead.notes ? `<div class="field-row"><div class="label">Notes</div><div class="value">${lead.notes}</div></div>` : ''}
             <div class="field-row"><div class="label">Created</div><div class="value">${formatDateTime(lead.createdAt)}</div></div>
@@ -2592,8 +2991,8 @@ const USE_FIREBASE = true;
         // ─── CSV Export ──────────────────────────────────────────────────
         function exportCSV() {
             if (leads.length === 0) { toast('No leads to export'); return; }
-            const headers = ['Company', 'PIC', 'Phone', 'Email', 'Website', 'Industry', 'Source', 'Status', 'Assigned',
-                'Follow-up', 'Notes', 'Created'
+            const headers = ['Company', 'PIC', 'Phone', 'Email', 'Website', 'Industry', 'Source', 'Platforms',
+                'Status', 'Assigned', 'Follow-up', 'Notes', 'Created'
             ];
             const rows = leads.map(l => [
                 l.company || '',
@@ -2601,13 +3000,14 @@ const USE_FIREBASE = true;
                 l.phone || '',
                 l.email || '',
                 l.website || '',
-                l.industry || '',
-                l.source || '',
+                labelOf(INDUSTRIES, l.industry),
+                labelOf(SOURCES, l.source),
+                (l.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' | '),
                 statusLabel(l.status),
-                l.assigned || '',
-                l.followup ? formatDate(l.followup) : '',
+                labelOf(ASSIGNEES, l.assigned),
+                l.followup || '',
                 (l.notes || '').replace(/,/g, ';'),
-                formatDate(l.createdAt)
+                l.createdAt ? new Date(l.createdAt).toISOString().slice(0, 10) : ''   // createdAt is an epoch
             ]);
             const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
@@ -2620,6 +3020,17 @@ const USE_FIREBASE = true;
             a.remove();
             URL.revokeObjectURL(url);
             toast('CSV exported');
+        }
+
+        /** A date column can arrive as 2026-09-01 or as "01 Sept 2026" from an older
+         *  export. Anything that is neither is dropped rather than stored as a date the
+         *  overdue check will silently read as NaN. */
+        function toISODate(raw) {
+            const t = String(raw || '').trim();
+            if (!t) return null;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+            const d = new Date(t.replace(/Sept\b/i, 'Sep'));
+            return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
         }
 
         // ─── CSV Import ──────────────────────────────────────────────────
@@ -2651,11 +3062,15 @@ const USE_FIREBASE = true;
                             else if (key === 'phone') data.phone = cols[j];
                             else if (key === 'email') data.email = cols[j];
                             else if (key === 'website') data.website = cols[j];
-                            else if (key === 'industry') data.industry = cols[j];
-                            else if (key === 'source') data.source = cols[j];
-                            else if (key === 'status') data.status = statusMap[cols[j].toLowerCase()] || 'new';
-                            else if (key === 'assigned') data.assigned = cols[j];
-                            else if (key === 'follow-up' || key === 'followup') data.followup = cols[j];
+                            // Labels are what a CSV carries; coerce() maps them back onto
+                            // the stored codes and keeps anything it does not recognise.
+                            else if (key === 'industry') data.industry = coerce(INDUSTRIES, cols[j]);
+                            else if (key === 'source') data.source = coerce(SOURCES, cols[j]);
+                            else if (key === 'platforms' || key === 'sells on') {
+                                data.platforms = cols[j].split('|').map(v => v.trim()).filter(Boolean);
+                            } else if (key === 'status') data.status = statusMap[cols[j].toLowerCase()] || 'new';
+                            else if (key === 'assigned') data.assigned = coerce(ASSIGNEES, cols[j]);
+                            else if (key === 'follow-up' || key === 'followup') data.followup = toISODate(cols[j]);
                             else if (key === 'notes') data.notes = cols[j];
                         }
                         if (data.company && data.pic && data.phone) {
@@ -2679,6 +3094,33 @@ const USE_FIREBASE = true;
             }
         });
 
+        // ─── Choice sheet ─────────────────────────────────────────────
+        const sheetOverlay = document.getElementById('sheet-overlay');
+        const sheetTitle = document.getElementById('sheet-title');
+        const sheetOptions = document.getElementById('sheet-options');
+        const sheetCancel = document.getElementById('sheet-cancel');
+
+        function openChoiceSheet(title, options, current, onPick) {
+            sheetTitle.textContent = title;
+            sheetOptions.innerHTML = options.map((o, i) =>
+                `<button type="button" class="sheet-option ${o.value === current ? 'current' : ''}" data-i="${i}">${esc(o.label)}</button>`
+            ).join('');
+            sheetOptions.querySelectorAll('.sheet-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closeChoiceSheet();
+                    onPick(options[Number(btn.dataset.i)].value);
+                });
+            });
+            sheetOverlay.classList.add('open');
+        }
+
+        function closeChoiceSheet() { sheetOverlay.classList.remove('open'); }
+
+        sheetCancel.addEventListener('click', closeChoiceSheet);
+        sheetOverlay.addEventListener('click', (e) => {
+            if (e.target === sheetOverlay) closeChoiceSheet();
+        });
+
         // ─── Dialogs ──────────────────────────────────────────────────
         function openNoteDialog(id) {
             const lead = getLead(id);
@@ -2690,9 +3132,80 @@ const USE_FIREBASE = true;
         function openAssignDialog(id) {
             const lead = getLead(id);
             if (!lead) return;
-            const name = prompt(`Assign "${lead.company}" to:`, lead.assigned || '');
-            if (name !== null) assignLead(id, name);
+            // Two people and an empty state: a picker beats a text box that accepts
+            // "haris", "Haris" and "haris " as three different owners.
+            openChoiceSheet(`Assign "${lead.company}"`,
+                [{ value: '', label: 'Unassigned' }, ...ASSIGNEES],
+                lead.assigned || '',
+                (value) => assignLead(id, value));
         }
+
+        // ─── Form: dropdowns, channel chips and the cadence hint ────────
+        let formPlatforms = new Set();
+
+        function buildForm() {
+            fillSelect(fIndustry, INDUSTRIES, 'Select industry…');
+            fillSelect(fSource, SOURCES, 'Select source…');
+            fillSelect(fAssigned, ASSIGNEES, 'Unassigned');
+            fPlatforms.innerHTML = PLATFORMS.map(pl =>
+                `<button type="button" class="chip" data-platform="${pl.value}">${pl.label}</button>`).join('');
+            fPlatforms.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const v = chip.dataset.platform;
+                    if (formPlatforms.has(v)) formPlatforms.delete(v);
+                    else formPlatforms.add(v);
+                    chip.classList.toggle('on', formPlatforms.has(v));
+                    updateOpenerHint();
+                });
+            });
+        }
+
+        function setFormPlatforms(list) {
+            formPlatforms = new Set(Array.isArray(list) ? list : []);
+            fPlatforms.querySelectorAll('.chip').forEach(chip => {
+                chip.classList.toggle('on', formPlatforms.has(chip.dataset.platform));
+            });
+            updateOpenerHint();
+        }
+
+        /**
+         * Which opener this lead gets. Two or more channels means the cross-platform
+         * conversion gap is available and Email 1 opens with it; one channel means it is
+         * not, and Email 1b exists precisely because using the multi-channel hook on a
+         * single-channel seller reads as a blast.
+         */
+        function openerFor(platforms) {
+            const n = (platforms || []).length;
+            if (n === 0) return null;
+            return n >= 2 ?
+                { label: 'Email 1', text: `Multi-channel (${n}) — open with the ${labelOf(PLATFORMS, platforms[0])} vs ${labelOf(PLATFORMS, platforms[1])} conversion gap (Email 1).` } :
+                { label: 'Email 1b', text: 'Single channel — the conversion-gap hook does not apply. Use Email 1b.' };
+        }
+
+        function updateOpenerHint() {
+            const opener = openerFor([...formPlatforms]);
+            openerHint.textContent = opener ? opener.text : 'Pick every channel they sell on.';
+            openerHint.classList.toggle('on', !!opener);
+        }
+
+        function updateCadenceHint() {
+            const rule = CADENCE[fSource.value];
+            cadenceHint.textContent = rule ? rule.note : 'Pick a lead source for the house cadence.';
+            cadenceHint.classList.toggle('on', !!rule);
+            followupSuggest.style.display = rule ? '' : 'none';
+        }
+
+        fSource.addEventListener('change', () => {
+            updateCadenceHint();
+            // Only ever fills an empty date — a date someone typed is theirs to keep.
+            if (!fFollowup.value) fFollowup.value = cadenceDate(fSource.value);
+        });
+
+        followupSuggest.addEventListener('click', () => {
+            const d = cadenceDate(fSource.value);
+            if (!d) { toast('Pick a lead source first'); return; }
+            fFollowup.value = d;
+        });
 
         // ─── Modal ──────────────────────────────────────────────────────
         function openModal(title, data) {
@@ -2704,12 +3217,13 @@ const USE_FIREBASE = true;
                 fPhone.value = data.phone || '';
                 fEmail.value = data.email || '';
                 fWebsite.value = data.website || '';
-                fIndustry.value = data.industry || '';
-                fSource.value = data.source || '';
+                selectValue(fIndustry, INDUSTRIES, data.industry);
+                selectValue(fSource, SOURCES, data.source);
                 fStatus.value = data.status || 'new';
-                fAssigned.value = data.assigned || '';
+                selectValue(fAssigned, ASSIGNEES, data.assigned);
                 fFollowup.value = data.followup || '';
                 fNotes.value = data.notes || '';
+                setFormPlatforms(data.platforms);
             } else {
                 editIdInput.value = '';
                 fCompany.value = '';
@@ -2717,13 +3231,13 @@ const USE_FIREBASE = true;
                 fPhone.value = '';
                 fEmail.value = '';
                 fWebsite.value = '';
-                fIndustry.value = '';
-                fSource.value = '';
+                buildForm();          // drops any "(imported)" option left by an edit
                 fStatus.value = 'new';
-                fAssigned.value = '';
                 fFollowup.value = '';
                 fNotes.value = '';
+                setFormPlatforms([]);
             }
+            updateCadenceHint();
             modalOverlay.classList.add('open');
             setTimeout(() => fCompany.focus(), 200);
         }
@@ -2751,6 +3265,7 @@ const USE_FIREBASE = true;
                 source: fSource.value,
                 status: fStatus.value,
                 assigned: fAssigned.value,
+                platforms: [...formPlatforms],
                 followup: fFollowup.value || null,
                 notes: fNotes.value
             };
@@ -2775,6 +3290,7 @@ const USE_FIREBASE = true;
         });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') { closeModal();
+                closeChoiceSheet();
                 closeDetail(); }
         });
 
@@ -2799,6 +3315,15 @@ const USE_FIREBASE = true;
                 filterBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 filter = btn.dataset.filter;
+                render();
+            });
+        });
+
+        ownBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ownBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                ownerFilter = btn.dataset.owner;
                 render();
             });
         });
@@ -2863,6 +3388,7 @@ const USE_FIREBASE = true;
 
         // ─── Init ──────────────────────────────────────────────────────
         async function init() {
+            buildForm();
             await loadLeads();
             initFirebase();
             setupCardListeners();
