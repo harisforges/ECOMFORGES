@@ -21,7 +21,7 @@ const TEMPLATE = join(REPO, 'content', 'email-signature.html');
  */
 const PEOPLE = [
   { slug: 'haris', name: 'Haris Haikal', role: 'Co-Founder', email: 'haris@ecomforges.com' },
-  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'daniel@ecomforges.com' },
+  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'dq@ecomforges.com' },
 ];
 
 /** Strip the whole <tr> holding the phone, not just its contents. */
