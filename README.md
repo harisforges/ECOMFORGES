@@ -6,6 +6,7 @@ Internal client decision tools.
 |---|---|---|
 | Client Qualification & Forge Track Selector | `index.html` | [/ECOMFORGES/](https://harisforges.github.io/ECOMFORGES/) |
 | Growth Analyst | `analyst.html` | [/ECOMFORGES/analyst.html](https://harisforges.github.io/ECOMFORGES/analyst.html) |
+| LeadForge — Acquisition Hub | `lead.html` | [/ECOMFORGES/lead.html](https://harisforges.github.io/ECOMFORGES/lead.html) |
 | Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
@@ -50,29 +51,96 @@ The two prose sections (the finding and the 30-day sprint) are the only part tha
 model. Press **Copy for Claude** and paste into the EcomForges Growth Analyst Project — the
 figures are computed in the page, so the Project only writes about them.
 
-### The two tools are separate, and stay separate
+## LeadForge — Acquisition Hub
 
-The calculator qualifies a prospect and picks the Forge Track *before* an engagement runs.
-The analyst scores an engagement that is *already* running. Neither replaces the other, and
-the analyst work has never touched `index.html`.
+`lead.html` — the top of the funnel, before either of the other two tools has anything to
+score. Capture a lead, record who owns it, move it through New → Contacted → Meeting →
+Qualified → Converted, and see the conversion rate and the overdue follow-ups in the header.
 
-They install as two independent home-screen apps, which is why each has its own manifest and
+It stores leads in IndexedDB on the device, with an optional Firebase sync, and exports and
+imports CSV so a pipeline can move between phones.
+
+It wears the EcomForges logo: the lockup on a wide screen, and the mark alone below 620px,
+where the header has to share its row with the sync badge and the action buttons.
+
+### The fields are a list, not a text box
+
+Industry, Lead Source and Assigned To were free text, which is how one pipeline ends up with
+`Haris`, `haris` and `Haris ` as three different owners and `F&B`, `FnB` and `Food` as three
+different categories. All three are now dropdowns built from one table in the page:
+
+| Field | Values |
+|---|---|
+| Assigned to | Haris, DQ (or unassigned) |
+| Lead source | Cold lead, Warm lead, Referral |
+| Industry | the 17 categories a Malaysian SME seller lists under — Beauty & personal care, Health & supplements, Fashion & apparel, Jewellery & accessories, Home & living, Furniture & decor, Electronics & gadgets, Mobile & computer accessories, Baby & kids, Toys/games & hobby, Sports & outdoor, Pet supplies, Food & beverage, Automotive & accessories, Books & stationery, Digital products & services, Other |
+| Sells on | Shopee, Lazada, TikTok Shop, own web store, Instagram / Facebook |
+
+The industry list is deliberately the **same vocabulary as the analyst's category field** —
+`Beauty — skincare` and `Home — kitchenware` are a LeadForge industry plus a sub-category — so
+a lead that converts hands its category to the brief instead of being retyped into it.
+
+A lead stores the value, not the label, so renaming a label later re-renders old leads instead
+of stranding them. Leads typed before the lists existed are matched back onto them when they
+load (`Referral` → Referral, `Haris` → Haris); anything that matches nothing is kept exactly as
+typed and shown in the form as *(imported)*, because the point is to stop the drift, not to
+throw away the record.
+
+### Three things the lists made possible
+
+**The opener picks itself.** *Sells on* is the hook, not an attribute. Two or more channels
+means the cross-platform conversion gap is available and the form says to open with it and
+names the two platforms (Email 1). One channel means it is not available, and the form says so
+(Email 1b) — using the multi-channel hook on a single-channel seller is exactly what reads as a
+blast. Both come from `content/outreach-templates.md`; the tool does not invent a third.
+
+**The follow-up date is the house cadence.** Picking a source fills an empty follow-up date
+with what the templates already say: cold gets Email 2 three working days after the first send,
+an inbound warm lead is answered the same day, a referral introduction goes out the day it
+lands. Working days only, it never overwrites a date someone typed, and **Use cadence** re-fills
+it on demand.
+
+**Owner row.** A second chip row filters by owner and counts the *open* pipeline — converted
+and not-interested leads are not work either of them still has to do. **Assign** is a picker
+now, not a text prompt.
+
+### CSV
+
+The export writes labels (`Food & beverage`, `Shopee | Lazada`) and the import maps them back
+onto the stored values, so a file that leaves the tool can come back into it. Dates go out as
+`YYYY-MM-DD` for the same reason: the old export wrote `01 Sept 2026`, which the importer read
+as no date at all.
+
+### The tools are separate, and stay separate
+
+LeadForge works a prospect who is not a client yet. The calculator qualifies that prospect and
+picks the Forge Track *before* an engagement runs. The analyst scores an engagement that is
+*already* running. None of them replaces another, and neither the analyst nor LeadForge work
+has ever touched `index.html`.
+
+They install as three independent home-screen apps, which is why each has its own manifest and
 its own icon:
 
-| | Calculator | Analyst |
-|---|---|---|
-| Page | `index.html` | `analyst.html` |
-| Manifest | `manifest.webmanifest` | `analyst.webmanifest` |
-| Home-screen label | Forge Tools | Forge Analyst |
-| Icon | cyan hexagon | **amber** hexagon |
+| | Calculator | Analyst | LeadForge |
+|---|---|---|---|
+| Page | `index.html` | `analyst.html` | `lead.html` |
+| Manifest | `manifest.webmanifest` | `analyst.webmanifest` | `lead.webmanifest` |
+| Home-screen label | Forge Tools | Forge Analyst | Forge Leads |
+| Icon | cyan hexagon | **amber** hexagon | **neon green** hexagon |
 
-Add both to your home screen; the colour tells them apart at a glance. The analyst's icons
-are derived from the calculator's by `ecomforges-analyst/scripts/analyst-icons.py`, so the
-mark can never drift from the brand — only its accent moves.
+Add all three to your home screen; the colour tells them apart at a glance. Both derived icon
+sets are recoloured from the calculator's by
+`ecomforges-analyst/scripts/analyst-icons.py` and `scripts/lead-icons.py`, so the mark can
+never drift from the brand — only its accent moves.
+
+The theme's own `--green` (#2DD4A0) is not that accent. At 48px on a navy ground it reads as a
+duller cyan and collides with the calculator, so the icon ramp tops out at #39FF7E instead.
 
 ## Client decks
 
-Every tool produces two PDFs from the same data.
+The two decision tools — the calculator and the analyst — each produce two PDFs from the same
+data. LeadForge produces no deck: a lead is not an engagement yet, and there is nothing to
+report to them.
 
 | Button | Reader | Answers |
 |---|---|---|
@@ -124,6 +192,11 @@ version runs. A clipboard is not a reason to trust the text more. **No checked r
 
 Everything below stays on the device it was typed on. Nothing is uploaded, and the analyst
 stores client **codes**, never business names.
+
+**LeadForge is the exception, and it is opt-in.** Leads live in IndexedDB on the device, but
+`lead.html` also carries a Firebase config: with it reachable, the pipeline syncs to that
+project so the same list opens on a second phone. The header badge says which of the two is
+live — **Local** or **Live**.
 
 **Autosave.** Both tools now save as you type. The calculator offers a part-filled scorecard
 back after a crash rather than restoring it silently — a silent restore would start the next
