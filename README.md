@@ -6,6 +6,7 @@ Internal client decision tools.
 |---|---|---|
 | Client Qualification & Forge Track Selector | `index.html` | [/ECOMFORGES/](https://harisforges.github.io/ECOMFORGES/) |
 | Growth Analyst | `analyst.html` | [/ECOMFORGES/analyst.html](https://harisforges.github.io/ECOMFORGES/analyst.html) |
+| LeadForge — Acquisition Hub | `lead.html` | [/ECOMFORGES/lead.html](https://harisforges.github.io/ECOMFORGES/lead.html) |
 | Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
@@ -50,29 +51,48 @@ The two prose sections (the finding and the 30-day sprint) are the only part tha
 model. Press **Copy for Claude** and paste into the EcomForges Growth Analyst Project — the
 figures are computed in the page, so the Project only writes about them.
 
-### The two tools are separate, and stay separate
+## LeadForge — Acquisition Hub
 
-The calculator qualifies a prospect and picks the Forge Track *before* an engagement runs.
-The analyst scores an engagement that is *already* running. Neither replaces the other, and
-the analyst work has never touched `index.html`.
+`lead.html` — the top of the funnel, before either of the other two tools has anything to
+score. Capture a lead, record who owns it, move it through New → Contacted → Meeting →
+Qualified → Converted, and see the conversion rate and the overdue follow-ups in the header.
 
-They install as two independent home-screen apps, which is why each has its own manifest and
+It stores leads in IndexedDB on the device, with an optional Firebase sync, and exports and
+imports CSV so a pipeline can move between phones.
+
+It wears the EcomForges logo: the lockup on a wide screen, and the mark alone below 620px,
+where the header has to share its row with the sync badge and the action buttons.
+
+### The tools are separate, and stay separate
+
+LeadForge works a prospect who is not a client yet. The calculator qualifies that prospect and
+picks the Forge Track *before* an engagement runs. The analyst scores an engagement that is
+*already* running. None of them replaces another, and neither the analyst nor LeadForge work
+has ever touched `index.html`.
+
+They install as three independent home-screen apps, which is why each has its own manifest and
 its own icon:
 
-| | Calculator | Analyst |
-|---|---|---|
-| Page | `index.html` | `analyst.html` |
-| Manifest | `manifest.webmanifest` | `analyst.webmanifest` |
-| Home-screen label | Forge Tools | Forge Analyst |
-| Icon | cyan hexagon | **amber** hexagon |
+| | Calculator | Analyst | LeadForge |
+|---|---|---|---|
+| Page | `index.html` | `analyst.html` | `lead.html` |
+| Manifest | `manifest.webmanifest` | `analyst.webmanifest` | `lead.webmanifest` |
+| Home-screen label | Forge Tools | Forge Analyst | Forge Leads |
+| Icon | cyan hexagon | **amber** hexagon | **neon green** hexagon |
 
-Add both to your home screen; the colour tells them apart at a glance. The analyst's icons
-are derived from the calculator's by `ecomforges-analyst/scripts/analyst-icons.py`, so the
-mark can never drift from the brand — only its accent moves.
+Add all three to your home screen; the colour tells them apart at a glance. Both derived icon
+sets are recoloured from the calculator's by
+`ecomforges-analyst/scripts/analyst-icons.py` and `scripts/lead-icons.py`, so the mark can
+never drift from the brand — only its accent moves.
+
+The theme's own `--green` (#2DD4A0) is not that accent. At 48px on a navy ground it reads as a
+duller cyan and collides with the calculator, so the icon ramp tops out at #39FF7E instead.
 
 ## Client decks
 
-Every tool produces two PDFs from the same data.
+The two decision tools — the calculator and the analyst — each produce two PDFs from the same
+data. LeadForge produces no deck: a lead is not an engagement yet, and there is nothing to
+report to them.
 
 | Button | Reader | Answers |
 |---|---|---|
@@ -124,6 +144,11 @@ version runs. A clipboard is not a reason to trust the text more. **No checked r
 
 Everything below stays on the device it was typed on. Nothing is uploaded, and the analyst
 stores client **codes**, never business names.
+
+**LeadForge is the exception, and it is opt-in.** Leads live in IndexedDB on the device, but
+`lead.html` also carries a Firebase config: with it reachable, the pipeline syncs to that
+project so the same list opens on a second phone. The header badge says which of the two is
+live — **Local** or **Live**.
 
 **Autosave.** Both tools now save as you type. The calculator offers a part-filled scorecard
 back after a crash rather than restoring it silently — a silent restore would start the next
