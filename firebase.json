@@ -7,10 +7,8 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/",
-        "destination": "/lead.html"
-      }
+      { "source": "/", "destination": "/lead.html" },
+      { "source": "/ecomforges.html", "destination": "/index.html" }
     ]
   }
 }
