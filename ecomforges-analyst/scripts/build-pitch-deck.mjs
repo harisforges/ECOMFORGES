@@ -146,7 +146,7 @@ const SLIDES = [
     at: '15:00', for: '1 min',
     kicker: 'Next step',
     title: 'Send us 30 days',
-    contact: ['haris@ecomforges.com', 'daniel@ecomforges.com'],
+    contact: ['haris@ecomforges.com', 'dq@ecomforges.com'],
     body: [
       'Screenshots of your analytics pages from every channel you sell on. That is the entire ask.',
       'Within two working days you get: which channel is underperforming, what the gap is worth in ringgit, and what we would work on first.',

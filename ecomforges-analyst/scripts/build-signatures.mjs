@@ -21,7 +21,7 @@ const TEMPLATE = join(REPO, 'content', 'email-signature.html');
  */
 const PEOPLE = [
   { slug: 'haris', name: 'Haris Haikal', role: 'Co-Founder', email: 'haris@ecomforges.com' },
-  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'daniel@ecomforges.com' },
+  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'dq@ecomforges.com' },
 ];
 
 /** Strip the whole <tr> holding the phone, not just its contents. */
@@ -43,13 +43,20 @@ const template = readFileSync(TEMPLATE, 'utf8').replace(/^<!--[\s\S]*?-->\n/, ''
  * It used to be typed in both, which drifts the moment one is edited — and a signature is
  * exactly the kind of file where nobody notices for months.
  */
-const TAGLINE = (() => {
-  const rows = [...template.matchAll(/mso-line-height-rule:exactly;">\s*\n\s*([^<\n]+?)\s*\n\s*<\/td>/g)]
-    .map((m) => m[1].trim());
-  const found = rows.find((r) => !r.includes('{{') && !r.includes('SSM'));
-  if (!found) throw new Error('tagline not found in the template — its row shape changed');
-  return found;
-})();
+const ROWS = [...template.matchAll(/mso-line-height-rule:exactly;">\s*\n\s*([^<\n]+?)\s*\n\s*<\/td>/g)]
+  .map((m) => m[1].trim());
+
+function pick(label, match) {
+  const found = ROWS.find(match);
+  if (!found) throw new Error(`${label} not found in the template — its row shape changed`);
+  // The template is HTML; the plain-text version needs the entity back as a character.
+  return found.replace(/&middot;/g, '·').replace(/&amp;/g, '&');
+}
+
+const TAGLINE = pick('tagline', (r) => !r.includes('{{') && !r.includes('SSM'));
+
+/* The company, year, registration and country line. Also written once, in the template. */
+const LEGAL = pick('legal line', (r) => r.includes('SSM'));
 
 for (const p of PEOPLE) {
   let html = p.phone === undefined ? removePhoneRow(template) : template;
@@ -76,7 +83,7 @@ for (const p of PEOPLE) {
     'www.ecomforges.com',
     p.phone === undefined ? p.email : `${p.email} · ${p.phone}`,
     '',
-    'EcomForges · SSM TR0332758-W · Malaysia',
+    LEGAL,
   ].join('\n') + '\n';
   writeFileSync(join(REPO, 'content', `email-signature-${p.slug}.txt`), txt);
 
