@@ -155,7 +155,20 @@ angles, English or BM. Each platform has its own shape: TikTok comes out as a ti
 email as a subject plus body, WhatsApp as a single short message.
 
 Pressing **Generate** again gives different copy. Fragments are drawn from a shuffle bag per
-slot, so repeated presses walk the whole bank instead of landing on the same line twice.
+slot, so repeated presses walk the whole bank instead of landing on the same line twice. Leave
+the angle on **Auto** and it picks a different one each press.
+
+**Saved** keeps copy you want to keep. It lives in that browser only — not synced between
+devices, and gone if you clear site data — so it is a stopgap, not the Firebase work described
+in [`content/forgemarketing-firebase-brief.md`](content/forgemarketing-firebase-brief.md). The
+page still works with storage blocked entirely; saving reports that it could not, rather than
+silently dropping the copy.
+
+Your last selection and tab are remembered, each tab is linkable
+(`forgemarketing.html#conflicts`), and **Ctrl/Cmd+Enter** generates from anywhere in the page.
+Changing any setting clears the copy on screen rather than leaving it attached to the previous
+selection. Each platform carries its own length guide, and the meta row says whether the block
+is inside it.
 
 The remaining seven tabs are the masterbase itself — positioning, voice and rules, messaging,
 hyperlocal angles, the copy banks, objection handling, and the open conflicts — so the
