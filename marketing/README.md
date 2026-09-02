@@ -4,7 +4,7 @@ Central marketing repository for EcomForges.
 
 Core positioning: **We help you think better about ecommerce.**
 
-Primary offer: Ecommerce Consultant — **RM499/month**
+Primary offer: Ecommerce Consultant — **from RM499 a month**, advisory scope
 
 Target: Malaysian SME ecommerce owners, primarily KL/Selangor.
 
@@ -43,14 +43,20 @@ The client-facing copy in [`../content/`](../content/) predates this knowledge
 base and remains in force — `outreach-templates.md` (cold email and WhatsApp)
 and `homepage-faq.md` (the live homepage FAQ).
 
-Three places where the two disagree are documented in
-[`RECONCILIATION.md`](RECONCILIATION.md): **pricing** (flat RM499 vs "from
-RM499"), **scope** (whether ads optimisation is advisory or executed), and
-**brand spelling** (settled — EcomForges).
+Three places where the two once disagreed are recorded in
+[`RECONCILIATION.md`](RECONCILIATION.md) — **pricing**, **scope** and **brand
+spelling**. All three are now resolved, settled by the approved decision table
+at the top of [`../content/homepage-faq.md`](../content/homepage-faq.md):
 
-The first two are unresolved on purpose, because each changes what a customer
-is promised. Nothing in `content/` was edited. New assets here are written to be
-safe under either reading: price as *from RM499 a month*, scope as advisory.
+| Decision | Answer |
+|---|---|
+| What we sell publicly | Advisory only — the client's team executes |
+| Pricing shown | "From RM499 a month" — no full ladder |
+
+The playbook was the source that disagreed, and has been aligned. Nothing in
+`content/` was edited, because it was already right. So the standing rules for
+all copy here are: price as **from RM499 a month**, never a bare flat figure;
+scope as **advisory** — we read, the client's team executes.
 
 ## Proof slots
 

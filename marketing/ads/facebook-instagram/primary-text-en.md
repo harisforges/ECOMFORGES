@@ -3,14 +3,13 @@
 Built from `copy/hooks-en.md`, `copy/headlines-en.md` and `copy/cta-en.md`.
 Every variant follows PAS and makes WIIFM explicit.
 
-**Price wording.** These say *from RM499 a month*, which is true whether the
-offer is read as flat or as an entry tier. See `marketing/RECONCILIATION.md` —
-until that is settled, do not write a bare flat price into a live ad.
+**Price wording.** These say *from RM499 a month*. RM499 is the entry point and
+the full ladder is deliberately unpublished, so a bare flat price in a live ad
+misrepresents the structure. Settled — see `marketing/RECONCILIATION.md`.
 
-**Scope wording.** These say we read the data and your team executes. That is
-the promise already live in `content/homepage-faq.md`. Do not write copy
-implying EcomForges runs ads or edits listings until the scope conflict in the
-reconciliation file is settled.
+**Scope wording.** These say we read the data and your team executes. EcomForges
+does not run ads, log into accounts or edit listings. Never write copy implying
+otherwise.
 
 **Compliance.** No guarantees, no percentages, no timeframes, no invented proof.
 Meta rejects "guaranteed sales" claims, and under Malaysian consumer protection

@@ -271,7 +271,7 @@
         <button class="tab" role="tab" aria-selected="false" data-panel="hyperlocal">Hyperlocal</button>
         <button class="tab" role="tab" aria-selected="false" data-panel="banks">Copy Banks</button>
         <button class="tab" role="tab" aria-selected="false" data-panel="objections">Objections</button>
-        <button class="tab" role="tab" aria-selected="false" data-panel="conflicts">Conflicts</button>
+        <button class="tab" role="tab" aria-selected="false" data-panel="conflicts">Decisions</button>
     </nav>
 </header>
 
@@ -326,9 +326,10 @@
                     <ul>
                         <li>No proof is included, because none is verified yet. Never add a case study,
                             testimonial, statistic or result that is not real, consented and dated.</li>
-                        <li>Price reads <em>from RM499 a month</em> — true whether the offer is flat or an
-                            entry tier. See the Conflicts tab.</li>
-                        <li>Scope reads advisory: we read the data, the client's team executes.</li>
+                        <li>Price reads <em>from RM499 a month</em>. RM499 is the entry point and the
+                            ladder is deliberately unpublished — never write a bare flat price.</li>
+                        <li>Scope reads advisory: we read the data, the client's team executes.
+                            EcomForges does not run ads, log into accounts or edit listings.</li>
                         <li>Read it once as the owner receiving it. If a sentence could not survive
                             "prove it", cut it.</li>
                     </ul>
@@ -1250,7 +1251,7 @@ function renderReference() {
 
         <h3>Offer</h3>
         <div class="callout">
-            <strong>Ecommerce Consultant — from RM499 a month</strong>
+            <strong>Ecommerce Consultant — from RM499 a month</strong>, month to month
             <ul>
                 <li>2 consultation calls every 4 weeks</li>
                 <li>Basic store diagnosis</li>
@@ -1258,9 +1259,16 @@ function renderReference() {
                 <li>Campaign planning &amp; strategy</li>
             </ul>
         </div>
-        <p>Two details here are governed by the Conflicts tab: the price is written <em>from</em> RM499
-           because the live site describes a ladder, and ads work is written as review and
-           recommendations because the live FAQ promises we do not run ads.</p>
+        <p>RM499 is the entry point, not the whole ladder — the price tracks how many sessions a
+           client needs, and the full ladder is deliberately not published. Say "from RM499 a
+           month" and quote the rest per client.</p>
+
+        <h3>Scope</h3>
+        <div class="callout good"><strong>Advisory only. The client's team executes.</strong><br><br>
+           EcomForges does not run ads, log into accounts or edit listings. Ads work is review and
+           recommendation. This is deliberate: a team that knows why a change worked can repeat it
+           without us, and an adviser who logs in creates the dependency the philosophy exists to
+           avoid.</div>
 
         <h3>Audience</h3>
         <p>SME sellers using Shopee, TikTok Shop, Lazada, own websites, Facebook, Instagram and other
@@ -1428,45 +1436,58 @@ function renderReference() {
            pada “apa patut dibuat, kenapa, dan apa perlu fix dahulu”.</p>`;
 
     document.getElementById('ref-conflicts').innerHTML = `
-        <div class="callout warn"><strong>Read this before publishing anything.</strong> Two places where
-           the playbook and the live site say different things. Both change what a customer is promised,
-           so both are business decisions rather than copy fixes. Everything this tool generates is
-           written to be safe under either reading.</div>
+        <div class="callout good"><strong>All three are settled.</strong> The playbook that shipped
+           with this masterbase disagreed with the client-facing copy in three places. The approved
+           decision table at the top of <code>content/homepage-faq.md</code> settles all of them,
+           and the playbook has been aligned. This tab is the record, kept so nobody re-opens a
+           closed question.</div>
 
-        <h3>1 · Pricing — open</h3>
+        <h3>The authority</h3>
         <table>
-            <tr><th>Source</th><th>Says</th></tr>
-            <tr><td>marketing/brand/positioning.md</td><td><strong>RM499/month</strong>, stated flat</td></tr>
-            <tr><td>content/homepage-faq.md</td><td>“<strong>From RM499 a month.</strong> The price tracks how many sessions you need.”</td></tr>
-            <tr><td>content/outreach-templates.md</td><td>“<strong>From RM499 a month</strong>, month to month.”</td></tr>
+            <tr><th>Decision</th><th>Answer</th></tr>
+            <tr><td>What we sell publicly</td><td><strong>Advisory only</strong> — the client's team executes</td></tr>
+            <tr><td>Pricing shown</td><td><strong>“From RM499 a month”</strong> — no full ladder</td></tr>
+            <tr><td>Guarantee</td><td>None. The copy promises the process, never a result</td></tr>
+            <tr><td>Commitment</td><td>Month to month, no lock-in</td></tr>
         </table>
-        <p><strong>Why it matters.</strong> A flat price in an ad, when the real structure is a ladder,
-           is a misleading representation in trade — a risk the outreach file already flags.</p>
-        <p><strong>What this tool does.</strong> Writes <em>from RM499 a month</em>, true under both readings.</p>
+        <p>Marked <em>approved</em> in the repository, so this is a company decision rather than an
+           inference drawn from the copy.</p>
 
-        <h3>2 · Scope — open, and the more consequential</h3>
-        <table>
-            <tr><th>Source</th><th>Says</th></tr>
-            <tr><td>marketing/brand/positioning.md</td><td>Offer includes “<strong>Basic ads optimisation</strong>”</td></tr>
-            <tr><td>content/homepage-faq.md</td><td>“So you don’t run my ads or edit my listings? <strong>No. We are advisers, not an agency.</strong>”</td></tr>
-        </table>
-        <p>These reconcile only if “basic ads optimisation” means <em>advising on</em> ads — reviewing
-           performance and recommending changes the client’s team executes. They do not reconcile if it
-           means logging in and changing campaigns.</p>
-        <p><strong>What this tool does.</strong> Writes scope as advisory — we read the data, your team
-           executes — matching the promise already live.</p>
-        <div class="callout warn">Related and still outstanding: the homepage carries a <strong>“We
-           Execute”</strong> heading that contradicts the advisory FAQ one screen below it.</div>
+        <h3>1 · Pricing — resolved</h3>
+        <p><strong>Write “from RM499 a month”. Never a bare flat price.</strong> RM499 is the entry
+           point; the price tracks how many sessions a client needs and the full ladder is
+           deliberately unpublished, quoted per client instead.</p>
+        <div class="callout warn">A flat price in public copy, against a real ladder, is a
+           misleading representation in trade — a risk <code>content/outreach-templates.md</code>
+           already flags in its own “Do not say” list.</div>
+        <p>Hooks that mention the figure comparatively — “one wrong decision can cost more than
+           RM499” — are fine. They compare against a number rather than stating the price structure.</p>
 
-        <h3>3 · Brand spelling — settled</h3>
-        <p><strong>EcomForges</strong> is authoritative: every page title, the logo lockup, all three
-           email signatures and the SSM registration. The playbook’s lowercase <em>f</em> was the outlier
-           and has been normalised.</p>
+        <h3>2 · Scope — resolved</h3>
+        <p><strong>Advisory only.</strong> EcomForges does not run ads, log into accounts or edit
+           listings. Ads work is review and recommendation; the client's team makes the changes.</p>
+        <p>Three sources pointed the same way — the approved decision record, the homepage FAQ and
+           the outreach templates — against one line in the playbook. The advisory framing is also
+           load-bearing rather than incidental: not touching the account is what keeps a client
+           independent, which is the argument the philosophy already makes.</p>
 
-        <h3>Also outstanding</h3>
-        <div class="callout bad">The homepage claim <strong>“Trusted by 900+ brands”</strong> is flagged
-           as unevidenced in content/outreach-templates.md, and <em>performace</em> is misspelt in that
-           same live heading. Never reuse the 900+ figure in generated copy.</div>`;
+        <h3>3 · Brand spelling — resolved</h3>
+        <p><strong>EcomForges</strong>, authoritative from every page title, the logo lockup, all
+           three email signatures and the SSM registration. The playbook's lowercase <em>f</em> was
+           the outlier and has been normalised.</p>
+
+        <h3>Still outstanding — on the live site</h3>
+        <div class="callout bad">
+           None of these are fixable from this repository; all need applying in Breakdance.
+           <ul style="margin-bottom:0">
+             <li>The homepage FAQ answers are <strong>approved but not yet applied</strong> — the
+                 live page still shows placeholder text from a magazine subscription store.</li>
+             <li>A <strong>“We Execute”</strong> heading contradicts the advisory position.
+                 Suggested: “You Execute” or “We Direct”.</li>
+             <li><strong>“Trusted by 900+ brands”</strong> is unevidenced, and <em>performace</em>
+                 is misspelt in that same live heading. Never reuse the 900+ figure.</li>
+           </ul>
+        </div>`;
 }
 </script>
 </body>

@@ -10,11 +10,13 @@ Tapi kalau masalah sebenar ialah conversion, offer, product page, campaign struc
 
 EcomForges membantu SME ecommerce owners memahami apa yang sebenarnya perlu diperbaiki berdasarkan keadaan store mereka.
 
-RM499/month:
+Dari RM499 sebulan, bulan ke bulan:
 - 2 consultation calls setiap 4 minggu
 - Basic store diagnosis
-- Basic ads optimisation
+- Review dan cadangan untuk ads
 - Campaign planning & strategy
+
+Kami bagi nasihat; team anda yang execute. Takde sesiapa masuk store anda selain anda.
 
 Kami bukan sekadar beritahu apa nak buat.
 

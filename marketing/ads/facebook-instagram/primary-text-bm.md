@@ -7,11 +7,13 @@ Ini adaptasi, bukan terjemahan literal dari versi English. BM di sini ikut cara
 seller Malaysia bercakap — campuran BM dan istilah ecommerce English memang
 biasa dan tak perlu dielakkan.
 
-**Harga.** Semua tulis *dari RM499 sebulan*, yang betul sama ada offer dibaca
-sebagai flat atau sebagai tier permulaan. Lihat `marketing/RECONCILIATION.md`.
+**Harga.** Semua tulis *dari RM499 sebulan*. RM499 ialah harga permulaan dan
+ladder penuh memang tak diterbitkan, jadi harga flat dalam ad mengelirukan
+struktur sebenar. Lihat `marketing/RECONCILIATION.md`.
 
-**Skop.** Semua tulis kami baca data, team anda yang execute — sama dengan janji
-yang sedia ada dalam `content/homepage-faq.md`.
+**Skop.** Semua tulis kami baca data, team anda yang execute. EcomForges tak run
+ads, tak masuk account, tak edit listing. Jangan tulis copy yang bagi maksud
+sebaliknya.
 
 **Compliance.** Tiada guarantee, tiada peratusan, tiada tempoh masa, tiada proof
 rekaan. Representasi mengelirukan dalam perdagangan ialah kesalahan di bawah

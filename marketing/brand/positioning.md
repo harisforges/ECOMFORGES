@@ -9,12 +9,32 @@ EcomForges is an ecommerce consultancy focused on educating SME owners and helpi
 **Understand first. Fix second. Scale third.**
 
 ## Offer
-**RM499/month**
+**From RM499 a month**, month to month. No lock-in, no notice period.
+
+At the RM499 entry:
 - 2 consultation calls every 4 weeks
 - Basic store diagnosis
-- Basic ads optimisation
+- Ads review and recommendations
 - Campaign planning
 - Campaign strategy
+
+RM499 is the entry point, not the whole ladder: the price tracks how many
+sessions a client needs. **The full ladder is deliberately not published** — say
+"from RM499 a month" and quote the rest per client. Writing a bare flat price
+into public copy misrepresents the structure.
+
+## Scope
+
+**Advisory only. The client's team executes.**
+
+EcomForges does not run ads, log into accounts or edit listings. Ads work is
+review and recommendation; the client's team makes the changes. This is
+deliberate rather than a limitation — a team that knows why a change worked can
+repeat it without us, and an adviser who logs in creates the dependency the
+philosophy exists to avoid.
+
+Never write copy implying EcomForges executes. Both decisions above are recorded
+as approved in `content/homepage-faq.md`.
 
 ## Audience
 SME sellers using Shopee, TikTok Shop, Lazada, own websites, Facebook, Instagram and other ecommerce channels.

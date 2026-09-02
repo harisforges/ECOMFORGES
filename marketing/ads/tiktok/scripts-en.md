@@ -5,8 +5,8 @@ on the problem, in the seller's own words, and only name EcomForges once the
 point has already been made.
 
 Same constraints as every other channel: PAS, explicit WIIFM, one CTA, no
-invented proof, no guarantees. Price is written *from RM499 a month* — true
-under either reading of the offer while `marketing/RECONCILIATION.md` is open.
+invented proof, no guarantees. Price is written *from RM499 a month* and scope
+as advisory, per the approved decisions in `marketing/RECONCILIATION.md`.
 
 **Format notes.** 20–35 seconds. Talking head or screen-share of a dashboard
 with figures blurred. Never show a real client's dashboard, even blurred,

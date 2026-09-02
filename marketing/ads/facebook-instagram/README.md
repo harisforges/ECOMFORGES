@@ -8,8 +8,8 @@
 The four angles are stuck store, cost of the wrong decision, anti-guru, and the
 multi-channel benchmark. Each follows PAS with an explicit WIIFM and one CTA.
 
-Price is written *from RM499 a month* and scope is written as advisory while
-[`../../RECONCILIATION.md`](../../RECONCILIATION.md) is open.
+Price is written *from RM499 a month* and scope as advisory, per the approved
+decisions recorded in [`../../RECONCILIATION.md`](../../RECONCILIATION.md).
 
 <!--
 Assets added here must follow marketing/brand/copywriting-rules.md and the
