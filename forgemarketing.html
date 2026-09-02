@@ -207,6 +207,23 @@
         .bank-list { columns: 2; column-gap: 22px; }
         .bank-list li { break-inside: avoid; margin-bottom: 7px; font-size: 13.5px; }
 
+        /* ── Saved copy ─────────────────────────────────────────────── */
+        .tab-count {
+            display: inline-block; min-width: 17px; padding: 0 5px;
+            margin-left: 3px; border-radius: 999px;
+            background: var(--red-dim); color: var(--red-bright);
+            font-size: 10.5px; font-weight: 700; line-height: 16px; text-align: center;
+        }
+        .tab-count:empty { display: none; }
+        .saved-item {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 13px; margin-bottom: 12px; background: var(--panel);
+        }
+        .saved-item .out-head { margin-bottom: 9px; padding-bottom: 8px; }
+        .saved-text { font-size: 13.5px; max-height: 220px; overflow-y: auto; }
+        .saved-item .actions { margin-top: 10px; }
+        .btn-sm { padding: 6px 13px; font-size: 12.5px; }
+
         .toast {
             position: fixed; left: 50%; bottom: calc(22px + var(--safe-bottom));
             transform: translateX(-50%) translateY(12px);
@@ -247,6 +264,7 @@
     </div>
     <nav class="tabs" role="tablist" aria-label="Sections">
         <button class="tab" role="tab" aria-selected="true"  data-panel="generate">Generate</button>
+        <button class="tab" role="tab" aria-selected="false" data-panel="saved">Saved <span class="tab-count" id="tab-count"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-panel="positioning">Positioning</button>
         <button class="tab" role="tab" aria-selected="false" data-panel="voice">Voice &amp; Rules</button>
         <button class="tab" role="tab" aria-selected="false" data-panel="messaging">Messaging</button>
@@ -295,6 +313,7 @@
             <div class="actions">
                 <button class="btn btn-primary" id="btn-generate">Generate</button>
                 <button class="btn btn-ghost" id="btn-copy" disabled>Copy</button>
+                <button class="btn btn-ghost" id="btn-save" disabled>Save</button>
                 <span class="variant-note" id="variant-note"></span>
             </div>
 
@@ -315,6 +334,16 @@
                     </ul>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="panel-body" id="panel-saved" role="tabpanel">
+        <div class="card">
+            <h2><span class="dot"></span>Saved copy</h2>
+            <p class="sub">Kept in this browser only — not synced between devices, and cleared if you
+                clear site data. Syncing is the Firebase work described in
+                <code>content/forgemarketing-firebase-brief.md</code>.</p>
+            <div id="saved-list"></div>
         </div>
     </section>
 
@@ -343,12 +372,17 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 const PLATFORMS = [
-    { id: 'meta',        label: 'Facebook / Instagram', hint: 'Primary text. PAS, roughly 110–150 words, one CTA.' },
-    { id: 'tiktok',      label: 'TikTok',               hint: 'Timed script with beats. Opens on the problem, never on the brand.' },
-    { id: 'whatsapp',    label: 'WhatsApp',             hint: 'Short. Needs an existing basis to message — see the compliance note.' },
-    { id: 'email',       label: 'Email',                hint: 'Subject line plus body.' },
-    { id: 'landing',     label: 'Landing page',         hint: 'Hero, problem, approach, offer, CTA.' },
-    { id: 'retargeting', label: 'Retargeting ad',       hint: 'Short and specific. Never urgent — there is no deadline to invent.' }
+    { id: 'meta',        label: 'Facebook / Instagram', hint: 'Primary text. PAS, roughly 110–150 words, one CTA.',
+      guide: { unit: 'words', max: 160, note: 'Meta truncates around 125 words on mobile — front-load the hook.' } },
+    { id: 'tiktok',      label: 'TikTok',               hint: 'Timed script with beats. Opens on the problem, never on the brand.',
+      guide: { unit: 'words', max: 110, note: 'Roughly 35 seconds read aloud.' } },
+    { id: 'whatsapp',    label: 'WhatsApp',             hint: 'Short. Needs an existing basis to message — see the compliance note.',
+      guide: { unit: 'chars', max: 300, note: 'A wall of text reads as a template.' } },
+    { id: 'email',       label: 'Email',                hint: 'Subject line plus body.',
+      guide: { unit: 'words', max: 260, note: null } },
+    { id: 'landing',     label: 'Landing page',         hint: 'Hero, problem, approach, offer, CTA.', guide: null },
+    { id: 'retargeting', label: 'Retargeting ad',       hint: 'Short and specific. Never urgent — there is no deadline to invent.',
+      guide: { unit: 'words', max: 95, note: 'They have seen the offer already. Be specific, not longer.' } }
 ];
 
 const AUDIENCES = [
@@ -358,6 +392,8 @@ const AUDIENCES = [
     { id: 'quiet',     label: 'Enquired, went quiet',   hint: 'Replied at least once, then stalled on the decision.' },
     { id: 'past',      label: 'Past client',            hint: 'Worked with us before. Knows the method.' }
 ];
+
+const ANGLE_AUTO = { id: 'auto', label: 'Auto — pick for me', hint: 'Chooses an angle at random each time you generate.' };
 
 const ANGLES = [
     { id: 'stuck',     label: 'Stuck store',                hint: 'Sales exist, the business still feels stalled.' },
@@ -677,6 +713,52 @@ bm: {
 }
 };
 
+/* ── Local storage ───────────────────────────────────────────────────────
+   Two jobs: remember what you had selected, and keep generations you chose to
+   save. Both are per-browser and never leave the device — the same promise the
+   header makes. Every access is wrapped, because localStorage throws outright
+   in some private-browsing modes rather than returning null.
+
+   This is deliberately not a substitute for the Firebase work in
+   content/forgemarketing-firebase-brief.md: saved copy here does not sync
+   between devices, and the anti-repeat bag is still per-session.
+   ──────────────────────────────────────────────────────────────────────── */
+const LS_KEY = 'forgemarketing.v1';
+const SAVED_CAP = 60;
+
+function lsRead() {
+    try {
+        const raw = localStorage.getItem(LS_KEY);
+        const o = raw ? JSON.parse(raw) : {};
+        return { prefs: o.prefs || {}, saved: Array.isArray(o.saved) ? o.saved : [] };
+    } catch (e) {
+        return { prefs: {}, saved: [] };
+    }
+}
+
+function lsWrite(state) {
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify(state));
+        return true;
+    } catch (e) {
+        // Quota or a blocked store. Saving is a convenience, never a blocker.
+        return false;
+    }
+}
+
+let store = { prefs: {}, saved: [] };
+
+function savePrefs() {
+    store.prefs = {
+        platform: document.getElementById('f-platform').value,
+        audience: document.getElementById('f-audience').value,
+        language: document.getElementById('f-language').value,
+        angle:    document.getElementById('f-angle').value,
+        tab:      (document.querySelector('.tab[aria-selected="true"]') || {}).dataset?.panel || 'generate'
+    };
+    lsWrite(store);
+}
+
 /* ── Variation ───────────────────────────────────────────────────────────
    A shuffle bag per slot. Fragments are drawn without replacement until the
    slot is exhausted, then reshuffled — so pressing Generate repeatedly walks
@@ -724,13 +806,16 @@ const TEMPLATES = {
     },
 
     tiktok(L, a, ang) {
+        // Beat names stay in English for Problem/Agitate/Solution/WIIFM/CTA —
+        // those are the terms the team already uses in both languages — but the
+        // shot direction is worth having in the language the script is in.
         const beats = [
-            ['0:00', L.k === 'bm' ? 'Hook' : 'Hook', pick(`hook.${ang}.${L.k}`, L.b.hook[ang])],
-            ['0:04', 'Problem', pick(`prob.${ang}.${L.k}`, L.b.problem[ang])],
-            ['0:12', 'Agitate', pick(`agit.${ang}.${L.k}`, L.b.agitate[ang])],
+            ['0:00', 'Hook',     pick(`hook.${ang}.${L.k}`, L.b.hook[ang])],
+            ['0:04', 'Problem',  pick(`prob.${ang}.${L.k}`, L.b.problem[ang])],
+            ['0:12', 'Agitate',  pick(`agit.${ang}.${L.k}`, L.b.agitate[ang])],
             ['0:20', 'Solution', pick(`sol.${L.k}`, L.b.solution)],
-            ['0:27', 'WIIFM', pick(`wiifm.${L.k}`, L.b.wiifm)],
-            ['0:32', 'CTA', pick(`cta.${L.k}`, L.b.cta.generic) + ' ' + L.b.offer]
+            ['0:27', 'WIIFM',    pick(`wiifm.${L.k}`, L.b.wiifm)],
+            ['0:32', 'CTA',      pick(`cta.${L.k}`, L.b.cta.generic) + ' ' + L.b.offer]
         ];
         return {
             title: 'TikTok — script, roughly 35 seconds',
@@ -832,12 +917,16 @@ const TEMPLATES = {
 
 /* ── Generate ───────────────────────────────────────────────────────────── */
 let generateCount = 0;
+let lastGen = null;
 
 function generate() {
     const platform = document.getElementById('f-platform').value;
     const audience = document.getElementById('f-audience').value;
     const language = document.getElementById('f-language').value;
-    const angle    = document.getElementById('f-angle').value;
+    let   angle    = document.getElementById('f-angle').value;
+
+    // "Auto" resolves per press, so repeated generates walk the angles too.
+    if (angle === 'auto') angle = ANGLES[Math.floor(Math.random() * ANGLES.length)].id;
 
     const L = { k: language, b: BANK[language] };
     const result = TEMPLATES[platform](L, audience, angle);
@@ -877,8 +966,12 @@ function generate() {
     const meta = document.getElementById('out-meta');
     meta.innerHTML = '';
     const bits = [`${words} words`, `${plain.length} characters`];
-    if (platform === 'whatsapp') {
-        bits.push(plain.length <= 300 ? '✓ under the 300-character guide' : '⚠ over 300 characters — trim it');
+    if (P.guide) {
+        const val = P.guide.unit === 'chars' ? plain.length : words;
+        const unit = P.guide.unit === 'chars' ? 'character' : 'word';
+        const ok = val <= P.guide.max;
+        bits.push(`${ok ? '✓ within' : '⚠ over'} the ${P.guide.max}-${unit} guide${ok ? '' : ' — trim it'}`);
+        if (P.guide.note) bits.push(P.guide.note);
     }
     if (result.note) bits.push(result.note);
     bits.forEach(b => {
@@ -890,6 +983,15 @@ function generate() {
     document.getElementById('out-wrap').classList.add('show');
     document.getElementById('btn-copy').disabled = false;
     document.getElementById('btn-copy').dataset.text = plain;
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('btn-save').textContent = 'Save';
+    lastGen = { platform, audience, language, angle, text: plain, title: result.title };
+
+    // On a phone the controls fill the screen, so the output would otherwise
+    // appear below the fold and look like nothing happened.
+    if (window.matchMedia('(max-width: 720px)').matches) {
+        document.getElementById('out-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     generateCount++;
     document.getElementById('variant-note').textContent =
@@ -929,6 +1031,120 @@ function fallbackCopy(text, done) {
     document.body.removeChild(ta);
 }
 
+/* ── Saved copy ─────────────────────────────────────────────────────────── */
+
+/* Written out rather than left to toLocaleDateString: the browser's default
+   would render 2 September as "9/2/2026" on a US locale, which reads as
+   9 February here. An explicit month name cannot be misread either way. */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(ms) {
+    const d = new Date(ms);
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function saveCurrent() {
+    if (!lastGen) return;
+    // Same text twice is not worth two entries.
+    if (store.saved.some(e => e.text === lastGen.text)) {
+        showToast('Already saved');
+        return;
+    }
+    store.saved.unshift(Object.assign({ id: 'g' + Date.now(), at: Date.now() }, lastGen));
+    if (store.saved.length > SAVED_CAP) store.saved.length = SAVED_CAP;
+
+    if (lsWrite(store)) {
+        showToast('Saved');
+        document.getElementById('btn-save').textContent = 'Saved ✓';
+    } else {
+        // Storage refused — say so rather than pretending it worked.
+        store.saved.shift();
+        showToast('Could not save — storage unavailable');
+    }
+    renderSaved();
+}
+
+function deleteSaved(id) {
+    store.saved = store.saved.filter(e => e.id !== id);
+    lsWrite(store);
+    renderSaved();
+}
+
+function renderSaved() {
+    const wrap = document.getElementById('saved-list');
+    const count = document.getElementById('tab-count');
+    count.textContent = store.saved.length ? String(store.saved.length) : '';
+    wrap.innerHTML = '';
+
+    if (!store.saved.length) {
+        const empty = document.createElement('p');
+        empty.className = 'hint';
+        empty.textContent = 'Nothing saved yet. Generate something and press Save.';
+        wrap.appendChild(empty);
+        return;
+    }
+
+    store.saved.forEach(entry => {
+        const P = PLATFORMS.find(x => x.id === entry.platform);
+        const A = AUDIENCES.find(x => x.id === entry.audience);
+        const G = ANGLES.find(x => x.id === entry.angle);
+
+        const item = document.createElement('div');
+        item.className = 'saved-item';
+
+        const head = document.createElement('div');
+        head.className = 'out-head';
+        [[P ? P.label : entry.platform, true], [A ? A.label : entry.audience, false],
+         [G ? G.label : entry.angle, false], [entry.language === 'bm' ? 'BM' : 'English', false],
+         [fmtDate(entry.at), false]]
+            .forEach(([label, accent]) => {
+                const c = document.createElement('span');
+                c.className = 'chip' + (accent ? ' accent' : '');
+                c.textContent = label;
+                head.appendChild(c);
+            });
+
+        const body = document.createElement('div');
+        body.className = 'out saved-text';
+        body.textContent = entry.text;      // textContent, never innerHTML
+
+        const row = document.createElement('div');
+        row.className = 'actions';
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-ghost btn-sm';
+        copyBtn.textContent = 'Copy';
+        copyBtn.addEventListener('click', () => {
+            const t = document.getElementById('btn-copy');
+            const prev = t.dataset.text;
+            t.dataset.text = entry.text;
+            copyOut();
+            t.dataset.text = prev;
+        });
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-ghost btn-sm';
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', () => deleteSaved(entry.id));
+        row.appendChild(copyBtn);
+        row.appendChild(delBtn);
+
+        item.appendChild(head);
+        item.appendChild(body);
+        item.appendChild(row);
+        wrap.appendChild(item);
+    });
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+function showTab(name) {
+    const tab = document.querySelector(`.tab[data-panel="${name}"]`);
+    const panel = document.getElementById('panel-' + name);
+    if (!tab || !panel) return false;
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+    tab.setAttribute('aria-selected', 'true');
+    document.querySelectorAll('.panel-body').forEach(pn => pn.classList.remove('active'));
+    panel.classList.add('active');
+    return true;
+}
+
 /* ── Wiring ─────────────────────────────────────────────────────────────── */
 function fillSelect(id, items, hintId) {
     const sel = document.getElementById(id);
@@ -947,24 +1163,74 @@ function fillSelect(id, items, hintId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    store = lsRead();
+
     fillSelect('f-platform', PLATFORMS, 'hint-platform');
     fillSelect('f-audience', AUDIENCES, 'hint-audience');
-    fillSelect('f-angle',    ANGLES,    'hint-angle');
+    fillSelect('f-angle',    [ANGLE_AUTO].concat(ANGLES), 'hint-angle');
+
+    // Restore the last selection, ignoring anything no longer in the list.
+    const setIf = (id, val) => {
+        const sel = document.getElementById(id);
+        if (val && [...sel.options].some(o => o.value === val)) {
+            sel.value = val;
+            sel.dispatchEvent(new Event('change'));
+        }
+    };
+    setIf('f-platform', store.prefs.platform);
+    setIf('f-audience', store.prefs.audience);
+    setIf('f-language', store.prefs.language);
+    setIf('f-angle',    store.prefs.angle);
 
     document.getElementById('btn-generate').addEventListener('click', generate);
     document.getElementById('btn-copy').addEventListener('click', copyOut);
+    document.getElementById('btn-save').addEventListener('click', saveCurrent);
+
+    // Changing a setting makes the copy on screen stale, so it stops being
+    // offered for copying rather than quietly belonging to the old selection.
+    ['f-platform', 'f-audience', 'f-language', 'f-angle'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+            savePrefs();
+            const wrap = document.getElementById('out-wrap');
+            if (wrap.classList.contains('show')) {
+                wrap.classList.remove('show');
+                document.getElementById('btn-copy').disabled = true;
+                document.getElementById('btn-save').disabled = true;
+                lastGen = null;
+            }
+        });
+    });
 
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
-            tab.setAttribute('aria-selected', 'true');
-            document.querySelectorAll('.panel-body').forEach(p => p.classList.remove('active'));
-            document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+            showTab(tab.dataset.panel);
+            history.replaceState(null, '', '#' + tab.dataset.panel);
+            savePrefs();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 
+    // Ctrl/Cmd+Enter regenerates without reaching for the mouse.
+    document.addEventListener('keydown', e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+            e.preventDefault();
+            if (showTab('generate')) generate();
+        }
+    });
+
     renderReference();
+    renderSaved();
+
+    // A URL hash wins over the remembered tab, so a link opens where it says.
+    const fromHash = (location.hash || '').replace('#', '');
+    if (!showTab(fromHash)) showTab(store.prefs.tab || 'generate');
+
+    // The hash can also change without a reload — an in-page link, the back
+    // button, or someone editing the address bar — so honour it then too.
+    window.addEventListener('hashchange', () => {
+        const name = (location.hash || '').replace('#', '');
+        if (name) showTab(name);
+    });
 });
 
 /* ── Reference tabs ─────────────────────────────────────────────────────
@@ -1114,9 +1380,9 @@ function renderReference() {
            generated block is not what you want.</p>
 
         <h3>Hooks — English</h3>
-        ${bank('By angle', Object.keys(BANK.en.hook).flatMap(k => BANK.en.hook[k]))}
+        ${ANGLES.map(a => bank(a.label, BANK.en.hook[a.id])).join('')}
         <h3>Hooks — BM</h3>
-        ${bank('Ikut angle', Object.keys(BANK.bm.hook).flatMap(k => BANK.bm.hook[k]))}
+        ${ANGLES.map(a => bank(a.label, BANK.bm.hook[a.id])).join('')}
 
         <h3>Headlines — English</h3>
         ${bank('Diagnostic', ['What’s actually broken in your ecommerce business?', 'Does your store need more traffic — or a diagnosis?', 'Before increasing your budget, find the bottleneck.', 'Don’t optimise what you haven’t diagnosed.', 'Know what needs fixing first.'])}
