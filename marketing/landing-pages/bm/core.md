@@ -3,9 +3,9 @@
 ## Hero
 **Sales ada. Tapi anda tahu tak apa sebenarnya yang perlu diperbaiki?**
 
-Ecomforges membantu SME ecommerce owners memahami apa yang berlaku dalam store mereka, prioritise apa yang perlu diperbaiki dan membuat keputusan ecommerce dengan lebih yakin.
+EcomForges membantu SME ecommerce owners memahami apa yang berlaku dalam store mereka, prioritise apa yang perlu diperbaiki dan membuat keputusan ecommerce dengan lebih yakin.
 
-**CTA: WhatsApp Ecomforges**
+**CTA: WhatsApp EcomForges**
 
 ## Problem
 Banyak perkara boleh nampak “salah” dalam ecommerce. Tetapi tanpa diagnosis, owner mudah lompat daripada satu tactic ke tactic lain.
@@ -27,7 +27,7 @@ Matlamat kami bukan menjadikan owner bergantung kepada consultant.
 
 Matlamat kami ialah membantu owner **think better about ecommerce**.
 
-**CTA: WhatsApp Ecomforges**
+**CTA: WhatsApp EcomForges**
 Website: www.ecomforges.com
 
 ## Proof

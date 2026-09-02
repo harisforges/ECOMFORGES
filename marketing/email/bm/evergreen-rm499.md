@@ -8,7 +8,7 @@ Bila sales turun, jawapan paling mudah ialah “tambah budget”.
 
 Tapi kalau masalah sebenar ialah conversion, offer, product page, campaign structure atau customer journey, lebih banyak traffic mungkin cuma membesarkan masalah yang sama.
 
-Ecomforges membantu SME ecommerce owners memahami apa yang sebenarnya perlu diperbaiki berdasarkan keadaan store mereka.
+EcomForges membantu SME ecommerce owners memahami apa yang sebenarnya perlu diperbaiki berdasarkan keadaan store mereka.
 
 RM499/month:
 - 2 consultation calls setiap 4 minggu
@@ -22,7 +22,7 @@ Kami bantu owner faham kenapa.
 
 **Understand first. Fix second. Scale third.**
 
-WhatsApp Ecomforges atau lihat www.ecomforges.com
+WhatsApp EcomForges atau lihat www.ecomforges.com
 
 <!--
 PROOF SLOT — sengaja dikosongkan.

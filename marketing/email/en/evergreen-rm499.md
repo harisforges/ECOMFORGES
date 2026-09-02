@@ -8,7 +8,7 @@ When sales drop, the easiest answer is often “increase the budget”.
 
 But if the real problem is conversion, the offer, product page, campaign structure or customer journey, more traffic may simply amplify the same problem.
 
-Ecomforges helps SME ecommerce owners understand what actually needs fixing based on the condition of their store.
+EcomForges helps SME ecommerce owners understand what actually needs fixing based on the condition of their store.
 
 RM499/month:
 - 2 consultation calls every 4 weeks
@@ -22,7 +22,7 @@ We help them understand why.
 
 **Understand first. Fix second. Scale third.**
 
-WhatsApp Ecomforges or visit www.ecomforges.com
+WhatsApp EcomForges or visit www.ecomforges.com
 
 <!--
 PROOF SLOT — intentionally empty.

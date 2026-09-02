@@ -1,9 +1,9 @@
-# Ecomforges Positioning
+# EcomForges Positioning
 
 ## Core
 **We help you think better about ecommerce.**
 
-Ecomforges is an ecommerce consultancy focused on educating SME owners and helping them identify what needs to be fixed based on the actual condition of their store.
+EcomForges is an ecommerce consultancy focused on educating SME owners and helping them identify what needs to be fixed based on the actual condition of their store.
 
 ## Philosophy
 **Understand first. Fix second. Scale third.**

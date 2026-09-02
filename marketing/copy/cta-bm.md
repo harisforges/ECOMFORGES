@@ -6,7 +6,7 @@
 4. Mari tengok apa sebenarnya yang berlaku dalam ecommerce anda.
 5. Jangan terus tambah budget. Diagnose dulu.
 6. Nak kami tengok keadaan store anda? WhatsApp sekarang.
-7. Start dengan clarity. WhatsApp Ecomforges.
-8. Lihat bagaimana Ecomforges boleh bantu.
-9. Kenali Ecomforges di www.ecomforges.com
+7. Start dengan clarity. WhatsApp EcomForges.
+8. Lihat bagaimana EcomForges boleh bantu.
+9. Kenali EcomForges di www.ecomforges.com
 10. Berhenti meneka. Mula diagnose.

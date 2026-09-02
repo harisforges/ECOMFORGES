@@ -1,6 +1,6 @@
-# Ecomforges Marketing Knowledge Base
+# EcomForges Marketing Knowledge Base
 
-Central marketing repository for Ecomforges.
+Central marketing repository for EcomForges.
 
 Core positioning: **We help you think better about ecommerce.**
 
@@ -16,25 +16,41 @@ for the canonical messaging system.
 
 | Path | What lives here |
 |---|---|
-| `brand/` | Positioning, voice, messaging and copywriting rules — read these first |
+| `RECONCILIATION.md` | **Open conflicts with `content/` — read before publishing anything** |
+| `brand/` | Positioning, voice, messaging, copywriting rules, hyperlocal angles |
 | `copy/` | Reusable banks: headlines, hooks, CTAs (EN/BM) and objection handling |
 | `landing-pages/` | Core page copy, `en/` and `bm/` |
-| `email/` | Campaign email copy, `en/` and `bm/` |
-| `ads/` | Approved ad assets by channel — Facebook/Instagram, TikTok, retargeting |
-| `whatsapp/` | Approved WhatsApp copy, `en/` and `bm/` |
-| `campaigns/` | `active/`, `evergreen/` and `archive/` campaign assets |
+| `email/` | Evergreen RM499 email, `en/` and `bm/` |
+| `ads/` | Facebook/Instagram primary text, TikTok scripts, retargeting copy — EN and BM |
+| `whatsapp/` | BM outreach adaptations and education follow-ups, `en/` and `bm/` |
+| `campaigns/` | `evergreen/` always-on campaign; `active/` and `archive/` for seasonal |
 
-Directories carrying only a placeholder README have no approved assets yet.
+Every directory README indexes its own files. `campaigns/archive/` is the only
+one still carrying a placeholder, because it is genuinely empty.
+
+### Where outreach lives
+
+The five approved WhatsApp outreach templates and the cold email sequence are
+**not** in this directory. They live in
+[`../content/outreach-templates.md`](../content/outreach-templates.md), which is
+the operational source and carries the WhatsApp compliance rules — opt-in,
+template approval, PDPA, ban risk. `whatsapp/bm/outreach-templates.md` holds BM
+adaptations of those five and inherits those rules rather than restating them.
 
 ## Relationship to `content/`
 
-The client-facing copy already in [`../content/`](../content/) predates this
-knowledge base and remains in force — in particular
-[`outreach-templates.md`](../content/outreach-templates.md) (cold email and
-WhatsApp) and [`homepage-faq.md`](../content/homepage-faq.md). Those files
-describe pricing as "from RM499 a month" against a session ladder, where the
-canonical offer here is stated flat at RM499/month; reconcile deliberately
-rather than assuming either one is stale.
+The client-facing copy in [`../content/`](../content/) predates this knowledge
+base and remains in force — `outreach-templates.md` (cold email and WhatsApp)
+and `homepage-faq.md` (the live homepage FAQ).
+
+Three places where the two disagree are documented in
+[`RECONCILIATION.md`](RECONCILIATION.md): **pricing** (flat RM499 vs "from
+RM499"), **scope** (whether ads optimisation is advisory or executed), and
+**brand spelling** (settled — EcomForges).
+
+The first two are unresolved on purpose, because each changes what a customer
+is promised. Nothing in `content/` was edited. New assets here are written to be
+safe under either reading: price as *from RM499 a month*, scope as advisory.
 
 ## Proof slots
 
@@ -50,6 +66,10 @@ They currently sit in:
 | `copy/objections.md` | A real cost-of-a-wrong-decision example; measured outcomes |
 | `landing-pages/en/core.md`, `landing-pages/bm/core.md` | On-page social proof |
 | `email/en/evergreen-rm499.md`, `email/bm/evergreen-rm499.md` | One proof point in the body |
+| `brand/hyperlocal.md` | A verified Klang Valley difference |
+| `ads/**` | Verified results — the highest-risk slots; see note below |
+| `whatsapp/**` | A verified example in the diagnosis or benchmark message |
+| `campaigns/evergreen/rm499-always-on.md` | The campaign's own funnel numbers |
 
 A slot may only be filled with proof that is **real, verified, consented and
 dated**: case studies the client agreed to, testimonials in the client's own
@@ -63,6 +83,16 @@ all copy here is written to stand without it.
 
 Adding proof never converts an answer into a promise. The answer to "can you
 guarantee sales?" stays no, however much data accumulates.
+
+Two slots carry extra warnings. The **ads** slots are the highest risk: Meta
+rejects guarantee claims, and under Malaysian consumer protection law a
+misleading representation in trade is an offence. The **campaign** slot draws a
+distinction worth keeping — EcomForges' own funnel numbers can inform internal
+decisions immediately, but they are never publishable as a client result.
+
+The unevidenced **"900+ brands"** homepage claim, flagged in
+`../content/outreach-templates.md`, is named in several slots as an example of
+exactly what not to reuse.
 
 ## Using this repository
 

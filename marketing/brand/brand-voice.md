@@ -1,6 +1,6 @@
 # Brand Voice
 
-Ecomforges sounds:
+EcomForges sounds:
 - Direct
 - Intelligent
 - Honest

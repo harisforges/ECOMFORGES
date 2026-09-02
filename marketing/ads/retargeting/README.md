@@ -1,6 +1,13 @@
-# Placeholder
+# Retargeting
 
-Add approved campaign assets here.
+| File | Contents |
+|---|---|
+| `copy-en-bm.md` | Three audiences, EN and BM, with an audience table |
+
+Retargeting replaces urgency with specificity — there is no deadline on a
+monthly subscription, so inventing one breaks `../../brand/copywriting-rules.md`.
+
+People who explicitly declined are out of the pool.
 
 <!--
 Assets added here must follow marketing/brand/copywriting-rules.md and the

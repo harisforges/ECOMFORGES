@@ -1,6 +1,11 @@
-# Placeholder
+# Evergreen Campaigns
 
-Add approved campaign assets here.
+| File | Contents |
+|---|---|
+| `rm499-always-on.md` | The always-on campaign: full asset sequence and rules |
+
+Campaigns here have no end date. Anything time-bound belongs in `../active/`
+and moves to `../archive/` when it ends.
 
 <!--
 Assets added here must follow marketing/brand/copywriting-rules.md and the

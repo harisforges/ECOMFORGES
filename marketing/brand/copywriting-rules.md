@@ -19,6 +19,6 @@ Rules:
 - Never invent proof.
 - Never invent statistics.
 - Never promise guaranteed performance.
-- Do not portray Ecomforges as a generic agency.
+- Do not portray EcomForges as a generic agency.
 - Sell clarity and decision quality, not call count.
 - Keep CTAs clear.

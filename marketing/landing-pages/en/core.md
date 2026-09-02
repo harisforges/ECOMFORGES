@@ -3,9 +3,9 @@
 ## Hero
 **You have sales. But do you know what actually needs fixing?**
 
-Ecomforges helps SME ecommerce owners understand what’s happening in their store, prioritise what needs fixing and make better ecommerce decisions.
+EcomForges helps SME ecommerce owners understand what’s happening in their store, prioritise what needs fixing and make better ecommerce decisions.
 
-**CTA: Talk to Ecomforges**
+**CTA: Talk to EcomForges**
 
 ## Approach
 **Understand first. Fix second. Scale third.**
@@ -24,7 +24,7 @@ The goal is not to make owners dependent on consultants.
 
 The goal is to help owners **think better about ecommerce**.
 
-**CTA: Talk to Ecomforges**
+**CTA: Talk to EcomForges**
 Website: www.ecomforges.com
 
 ## Proof
