@@ -108,9 +108,25 @@ repository name and its `ECOMFORGES` heading.
 
 ---
 
-## Also outstanding, not a conflict
+## The live homepage — now fixed
 
-`content/outreach-templates.md` flags the homepage claim **"Trusted by 900+
-brands"** as unevidenced, and separately notes *performace* is misspelt in that
-same live heading. Both are still on the site. The 900+ figure is named in
-several proof slots here as an example of exactly what not to reuse.
+Everything the earlier revisions listed as outstanding on ecomforges.com has
+been applied:
+
+| Was | Now |
+|---|---|
+| "Trusted by 900+ brands…" | "We help you think better about ecommerce." |
+| "Clear Strategy. Immediate Action. **Guaranteed.**" | "…Every cycle." |
+| "Wondering how we works?" | "Wondering how we work?" |
+| "store owner wasting" ×4 | "store owners wasting" |
+| "We Execute" | "You Execute" — already applied before this pass |
+| "performace" | "performance" — already applied before this pass |
+| FAQ placeholder copy | The approved eight answers — already live before this pass |
+
+The 900+ figure stays named in the proof slots here as the example of what not
+to reuse, even though it is off the site.
+
+**Still open, by decision:** the homepage stats band (eight animated counters)
+is confirmed as real internal data and stays. It must be evidenceable if
+challenged, and one line reads "delivered by execution", which sits awkwardly
+against advisory-only.
