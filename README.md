@@ -11,6 +11,11 @@ Internal client decision tools.
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
+Marketing guidelines — positioning, voice, copywriting rules and the EN/BM copy
+banks — live in [`marketing/`](marketing/), with the copywriter system prompt in
+[`prompts/ecomforges-copywriter.md`](prompts/ecomforges-copywriter.md). Treat those
+as canonical before writing anything client-facing.
+
 ## Client Qualification & Forge Track Selector
 
 `index.html` — a single self-contained page, no build step and no external
