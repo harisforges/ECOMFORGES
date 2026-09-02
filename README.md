@@ -8,6 +8,7 @@ Internal client decision tools.
 | Growth Analyst | `analyst.html` | [/ECOMFORGES/analyst.html](https://harisforges.github.io/ECOMFORGES/analyst.html) |
 | LeadForge — Acquisition Hub | `lead.html` | [/ECOMFORGES/lead.html](https://harisforges.github.io/ECOMFORGES/lead.html) |
 | Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
+| ForgeMarketing — Marketing Masterbase | `forgemarketing.html` | [/ECOMFORGES/forgemarketing.html](https://harisforges.github.io/ECOMFORGES/forgemarketing.html) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
@@ -140,6 +141,40 @@ never drift from the brand — only its accent moves.
 
 The theme's own `--green` (#2DD4A0) is not that accent. At 48px on a navy ground it reads as a
 duller cyan and collides with the calculator, so the icon ramp tops out at #39FF7E instead.
+
+## ForgeMarketing — Marketing Masterbase
+
+`forgemarketing.html` — the marketing knowledge base as a tool rather than a folder of
+Markdown. Same shape as the others: one self-contained page, no build step, no external
+requests, nothing uploaded.
+
+**Generate** takes four choices — platform, audience, language and angle — and assembles
+copy you can paste straight into the channel. Six platforms (Facebook/Instagram, TikTok,
+WhatsApp, email, landing page, retargeting), five audiences from cold to past client, five
+angles, English or BM. Each platform has its own shape: TikTok comes out as a timed script,
+email as a subject plus body, WhatsApp as a single short message.
+
+Pressing **Generate** again gives different copy. Fragments are drawn from a shuffle bag per
+slot, so repeated presses walk the whole bank instead of landing on the same line twice.
+
+The remaining seven tabs are the masterbase itself — positioning, voice and rules, messaging,
+hyperlocal angles, the copy banks, objection handling, and the open conflicts — so the
+reasoning is one tap away from the copy rather than in another repository.
+
+### What it will not write
+
+The generator carries no proof, because none is verified yet: no case studies, testimonials,
+statistics, guarantees or performance claims. Every fragment is written to stand without them,
+and each generated block ends with the checks to run before it ships.
+
+Two live contradictions are handled rather than hidden. Price is written **from RM499 a
+month**, true whether the offer is flat or an entry tier, and scope is written as advisory —
+we read the data, the client's team executes — matching the promise on the live FAQ. Both are
+documented in [`marketing/RECONCILIATION.md`](marketing/RECONCILIATION.md) and in the tool's
+own Conflicts tab. Settle them before publishing anything.
+
+The written masterbase lives in [`marketing/`](marketing/); the tool mirrors it. When the
+Markdown changes, the tool's banks need the same change.
 
 ## Client decks
 
