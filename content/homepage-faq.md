@@ -1,7 +1,13 @@
 # Homepage FAQ — approved replacement copy
 
-Status: **approved, not yet applied.** Replaces the FAQ block on the Homepage
-(Breakdance post 18), in the section headed "Wondering how we works?".
+Status: **applied.** Live on the Homepage (Breakdance post 18), in the section
+now headed "Wondering how we work?". The eight answers below are what the page
+serves today — verified against the rendered front end, not just the builder.
+
+The old placeholder questions still sit in the element's stored data under a
+legacy key that nothing renders. Harmless, but if a future Breakdance version
+starts reading that key again, the magazine copy would reappear; worth clearing
+next time the element is edited by hand.
 
 ## Why this exists
 
@@ -85,14 +91,37 @@ point you at what to do instead.
 
 ---
 
-## Two other homepage fixes, same pass
+## Homepage copy fixes — all applied
 
-1. **"We Execute"** — a heading in the four-step band. Now that the public
-   promise is advisory-only, it contradicts the FAQ one screen below it. Should
-   become "You Execute" or "We Direct".
+1. **"We Execute"** → **"You Execute"**. Applied. Only an invisible HTML comment
+   and some CSS class names still carry the old wording; nothing a visitor sees.
 
-2. **"Trusted by 900+ brands to scale their e-commerce performace"** — missing an
-   `r` in *performance*. Live on the homepage.
+2. **"performace"** → **"performance"**. Applied.
+
+3. **"Trusted by 900+ brands…"** → **"We help you think better about ecommerce."**
+   The 900+ figure was unevidenced, and an unevidenceable social-proof claim is
+   a misleading representation in trade. Replaced with the canonical positioning
+   rather than a smaller number nobody can evidence either.
+
+4. **"Clear Strategy. Immediate Action. Guaranteed."** → **"…Every cycle."**
+   A guarantee in an h1, directly against the decision table above, which says
+   the copy promises the process and never a result. "Every cycle" promises the
+   cadence, which is true.
+
+5. **"a lot of ecommerce store owner wasting"** → **"store owners"**. The same
+   sentence appears four times on the page; all four were corrected.
+
+## Still open on the homepage
+
+- **The stats band.** Eight animated counters — 92% achieve measurable growth,
+  up to 200% growth, and so on. Confirmed by Haris as real internal figures, so
+  they stay. Two notes: they must be evidenceable if a prospect or a regulator
+  asks, and one line reads "driven by strategy, **delivered by execution**",
+  which sits awkwardly against advisory-only. Wording left as-is by decision.
+- **Heading levels.** Several sections use `h1`, so the page has multiple
+  top-level headings. Bad for SEO and screen readers, but changing the tags
+  would change their styling, so it needs a design pass rather than a find and
+  replace.
 
 ## Applying it
 
