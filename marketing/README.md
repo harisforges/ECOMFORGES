@@ -36,6 +36,34 @@ describe pricing as "from RM499 a month" against a session ladder, where the
 canonical offer here is stated flat at RM499/month; reconcile deliberately
 rather than assuming either one is stale.
 
+## Proof slots
+
+Several files carry a `PROOF SLOT` comment — an HTML comment marking where
+verified proof belongs once it exists. They render as nothing, so an unfilled
+slot never reaches a reader.
+
+They currently sit in:
+
+| File | What goes in |
+|---|---|
+| `brand/positioning.md` | The canonical proof section for the whole brand |
+| `copy/objections.md` | A real cost-of-a-wrong-decision example; measured outcomes |
+| `landing-pages/en/core.md`, `landing-pages/bm/core.md` | On-page social proof |
+| `email/en/evergreen-rm499.md`, `email/bm/evergreen-rm499.md` | One proof point in the body |
+
+A slot may only be filled with proof that is **real, verified, consented and
+dated**: case studies the client agreed to, testimonials in the client's own
+words, or performance figures that were actually measured, carrying their
+source and date range.
+
+Never fill one with projections, illustrative or composite examples, "typical
+client" figures, or numbers carried over from a pitch deck. An empty slot is
+the correct state until real proof exists — it is not a gap to paper over, and
+all copy here is written to stand without it.
+
+Adding proof never converts an answer into a promise. The answer to "can you
+guarantee sales?" stays no, however much data accumulates.
+
 ## Using this repository
 
 New copy is generated against

@@ -23,3 +23,14 @@ Kami bantu owner faham kenapa.
 **Understand first. Fix second. Scale third.**
 
 WhatsApp Ecomforges atau lihat www.ecomforges.com
+
+<!--
+PROOF SLOT — sengaja dikosongkan.
+
+Satu proof point yang disahkan sesuai diletak antara senarai offer dan ayat
+"Kami bukan sekadar beritahu apa nak buat": case study yang dinamakan,
+testimonial dengan kebenaran, atau hasil yang diukur beserta sumber dan tarikh.
+
+Biarkan email ini seadanya sehingga proof point itu wujud. Copy ini ditulis
+supaya berdiri sendiri tanpa proof, jadi tiada apa yang kurang buat masa ini.
+-->

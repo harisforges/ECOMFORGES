@@ -26,3 +26,16 @@ The goal is to help owners **think better about ecommerce**.
 
 **CTA: Talk to Ecomforges**
 Website: www.ecomforges.com
+
+## Proof
+
+<!--
+PROOF SLOT — intentionally empty. Nothing renders here yet.
+
+When verified proof exists, this is where it belongs on the page: named case
+studies (with consent), client testimonials (own words, consent, dated), or
+measured results (with source and date range).
+
+Until then this section stays out of the published page. Do not substitute
+stock testimonials, "results may vary" numbers, or invented client logos.
+-->

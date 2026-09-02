@@ -29,3 +29,16 @@ Matlamat kami ialah membantu owner **think better about ecommerce**.
 
 **CTA: WhatsApp Ecomforges**
 Website: www.ecomforges.com
+
+## Proof
+
+<!--
+PROOF SLOT — sengaja dikosongkan. Tiada apa-apa dirender di sini buat masa ini.
+
+Bila proof yang disahkan sudah ada, di sinilah tempatnya pada page: case study
+(dengan kebenaran client), testimonial (perkataan client sendiri, ada kebenaran
+dan tarikh), atau hasil yang benar-benar diukur (dengan sumber dan julat tarikh).
+
+Sebelum itu, section ini tidak masuk ke page yang diterbitkan. Jangan ganti
+dengan testimonial stock, nombor "results may vary", atau logo client rekaan.
+-->
