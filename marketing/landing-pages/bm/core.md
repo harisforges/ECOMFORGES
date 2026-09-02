@@ -16,11 +16,13 @@ Banyak perkara boleh nampak “salah” dalam ecommerce. Tetapi tanpa diagnosis,
 Kami tengok keadaan sebenar store, identify masalah dan explain kenapa sesuatu tindakan dicadangkan.
 
 ## Offer
-**Ecommerce Consultant — RM499/month**
-- 2 consultation calls / 4 weeks
+**Ecommerce Consultant — dari RM499 sebulan**, bulan ke bulan
+- 2 consultation calls / 4 minggu
 - Basic store diagnosis
-- Basic ads optimisation
+- Review dan cadangan untuk ads
 - Campaign planning & strategy
+
+Kami bagi nasihat; team anda yang execute. Takde sesiapa masuk store anda selain anda.
 
 ## Philosophy
 Matlamat kami bukan menjadikan owner bergantung kepada consultant.

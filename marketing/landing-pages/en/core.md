@@ -13,11 +13,13 @@ EcomForges helps SME ecommerce owners understand what’s happening in their sto
 We look at the actual condition of the store, identify what needs attention and explain why a particular action is recommended.
 
 ## Offer
-**Ecommerce Consultant — RM499/month**
+**Ecommerce Consultant — from RM499 a month**, month to month
 - 2 consultation calls / 4 weeks
 - Basic store diagnosis
-- Basic ads optimisation
+- Ads review and recommendations
 - Campaign planning & strategy
+
+We advise; your team executes. Nobody logs into your store but you.
 
 ## Philosophy
 The goal is not to make owners dependent on consultants.

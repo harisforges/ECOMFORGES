@@ -41,10 +41,12 @@ evergreen email. No new offer, no discount, no deadline.
   none. Seasonal pushes belong in `campaigns/active/` and archive when they end.
 - **One language end to end.** A lead who arrives in BM stays in BM.
 - **One CTA per asset.** Every piece ends in a single next step.
-- **Price wording is `from RM499 a month`** until `../../RECONCILIATION.md` § 1
-  is settled.
-- **Scope wording is advisory** — we read, the client's team executes — until
-  `../../RECONCILIATION.md` § 2 is settled.
+- **Price wording is `from RM499 a month`**, never a bare flat figure. RM499 is
+  the entry point and the ladder is deliberately unpublished.
+- **Scope wording is advisory** — we read, the client's team executes. Never
+  imply EcomForges runs ads, logs into accounts or edits listings.
+
+  Both are settled decisions, recorded in `../../RECONCILIATION.md`.
 
 ## What is measured
 
