@@ -12,6 +12,9 @@ Internal client decision tools.
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
+Where the toolset is going — the planned super app, and the one gap worth filling
+before it — is in [`ROADMAP.md`](ROADMAP.md).
+
 Marketing guidelines — positioning, voice, copywriting rules and the EN/BM copy
 banks — live in [`marketing/`](marketing/), with the copywriter system prompt in
 [`prompts/ecomforges-copywriter.md`](prompts/ecomforges-copywriter.md). Treat those
