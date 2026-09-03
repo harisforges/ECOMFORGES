@@ -161,10 +161,19 @@
         .tab {
             appearance: none; border: none; background: none;
             color: var(--text-soft); font: inherit; font-size: 13px; font-weight: 600;
-            padding: 10px 14px; cursor: pointer; white-space: nowrap;
+            /* 11 tabs at 14px of side padding overflowed 1080px and clipped the
+               last one on a full-width desktop window. */
+            padding: 10px 10px; cursor: pointer; white-space: nowrap;
             border-bottom: 2px solid transparent; transition: var(--transition);
         }
         .tab:hover { color: var(--text); }
+        .tab:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; border-radius: 4px; }
+
+        /* Visible to screen readers only. */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+        }
         .tab[aria-selected="true"] { color: var(--red-bright); border-bottom-color: var(--red); }
 
         main { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
@@ -188,13 +197,20 @@
             display: block; font-size: 11px; text-transform: uppercase;
             letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700;
         }
-        select, input[type="text"], input[type="date"] {
+        /* Every input type the app actually uses. Listing only text and date left
+           the email and number fields with the browser's white default, which
+           looked broken against the dark form around them. */
+        select,
+        input[type="text"], input[type="email"], input[type="number"],
+        input[type="date"], input[type="tel"], input[type="search"] {
             width: 100%; font: inherit; font-size: 14px;
             background: var(--row-alt); color: var(--text);
             border: 1px solid var(--border); border-radius: var(--radius-sm);
             padding: 9px 11px; transition: var(--transition);
         }
         select:focus, input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+        /* Dark form controls: makes the native date picker and number spinners legible. */
+        .collab-form input, .collab-form select, .collab-form textarea { color-scheme: dark; }
         .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
 
         .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
@@ -433,23 +449,23 @@
             </div>
         </div>
         <nav class="tabs" role="tablist" aria-label="Sections">
-            <button class="tab" role="tab" aria-selected="true"  data-panel="generate">Generate</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="saved">Saved <span class="tab-count" id="tab-count"></span></button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="collaborators">Collaborators <span class="tab-count" id="collab-count"></span></button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="conditions">Conditions</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="positioning">Positioning</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="voice">Voice &amp; Rules</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="messaging">Messaging</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="hyperlocal">Hyperlocal</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="banks">Copy Banks</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="objections">Objections</button>
-            <button class="tab" role="tab" aria-selected="false" data-panel="conflicts">Decisions</button>
+            <button class="tab" role="tab" aria-selected="true"  id="tab-generate" aria-controls="panel-generate" data-panel="generate">Generate</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-saved" aria-controls="panel-saved" data-panel="saved">Saved <span class="tab-count" id="tab-count"></span></button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-collaborators" aria-controls="panel-collaborators" data-panel="collaborators">Collaborators <span class="tab-count" id="collab-count"></span></button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-conditions" aria-controls="panel-conditions" data-panel="conditions">Conditions</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-positioning" aria-controls="panel-positioning" data-panel="positioning">Positioning</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-voice" aria-controls="panel-voice" data-panel="voice">Voice &amp; Rules</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-messaging" aria-controls="panel-messaging" data-panel="messaging">Messaging</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-hyperlocal" aria-controls="panel-hyperlocal" data-panel="hyperlocal">Hyperlocal</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-banks" aria-controls="panel-banks" data-panel="banks">Copy Banks</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-objections" aria-controls="panel-objections" data-panel="objections">Objections</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-conflicts" aria-controls="panel-conflicts" data-panel="conflicts">Decisions</button>
         </nav>
     </header>
 
     <main>
         <!-- GENERATE -->
-        <section class="panel-body active" id="panel-generate" role="tabpanel">
+        <section class="panel-body active" id="panel-generate" role="tabpanel" aria-labelledby="tab-generate">
             <div class="card">
                 <h2><span class="dot"></span>Generate copy</h2>
                 <p class="sub">Pick the platform, who it is for and the language. Every press assembles a
@@ -518,7 +534,7 @@
         </section>
 
         <!-- SAVED -->
-        <section class="panel-body" id="panel-saved" role="tabpanel">
+        <section class="panel-body" id="panel-saved" role="tabpanel" aria-labelledby="tab-saved">
             <div class="card">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                     <h2 style="margin-bottom:0;"><span class="dot"></span>Saved copy</h2>
@@ -531,7 +547,7 @@
 
         <!-- CONDITIONS -->
         <!-- COLLABORATORS -->
-        <section class="panel-body" id="panel-collaborators" role="tabpanel">
+        <section class="panel-body" id="panel-collaborators" role="tabpanel" aria-labelledby="tab-collaborators">
             <div class="card">
                 <h2><span class="dot"></span>Collaborators</h2>
                 <p class="sub">Reviewers, creators and freelancers, with what they cost and where they
@@ -628,21 +644,32 @@
             <div class="card">
                 <h2><span class="dot"></span>The list</h2>
                 <div class="actions" style="margin-top:0;margin-bottom:12px">
-                    <input type="text" id="collab-search" placeholder="Search name, handle or notes" style="max-width:260px" />
-                    <select id="collab-filter" style="max-width:180px">
+                    <label for="collab-search" class="sr-only">Search collaborators</label>
+                    <input type="text" id="collab-search" placeholder="Search name, handle or notes"
+                           aria-label="Search collaborators" style="max-width:260px" />
+                    <label for="collab-filter" class="sr-only">Filter by status</label>
+                    <select id="collab-filter" style="max-width:180px" aria-label="Filter by status">
                         <option value="all">All statuses</option>
                         <option value="active">Active</option>
                         <option value="prospect">Prospect</option>
                         <option value="paused">Paused</option>
                         <option value="declined">Declined</option>
                     </select>
+                    <label for="collab-sort" class="sr-only">Sort by</label>
+                    <select id="collab-sort" aria-label="Sort by" style="max-width:180px">
+                        <option value="name">Sort: name</option>
+                        <option value="rate">Sort: rate, high to low</option>
+                        <option value="recent">Sort: recently contacted</option>
+                        <option value="added">Sort: recently added</option>
+                    </select>
+                    <button type="button" class="btn btn-ghost btn-sm" id="collab-export">Export CSV</button>
                     <span class="variant-note" id="collab-summary"></span>
                 </div>
                 <div id="collab-list"></div>
             </div>
         </section>
 
-        <section class="panel-body" id="panel-conditions" role="tabpanel">
+        <section class="panel-body" id="panel-conditions" role="tabpanel" aria-labelledby="tab-conditions">
             <div class="card">
                 <h2><span class="dot"></span>Current Condition</h2>
                 <p class="sub">Set the season, what you're pushing, and a favoured angle. This shapes every generation across all devices.</p>
@@ -694,13 +721,13 @@
         </section>
 
         <!-- REFERENCE TABS -->
-        <section class="panel-body" id="panel-positioning" role="tabpanel"><div class="card ref" id="ref-positioning"></div></section>
-        <section class="panel-body" id="panel-voice"       role="tabpanel"><div class="card ref" id="ref-voice"></div></section>
-        <section class="panel-body" id="panel-messaging"   role="tabpanel"><div class="card ref" id="ref-messaging"></div></section>
-        <section class="panel-body" id="panel-hyperlocal"  role="tabpanel"><div class="card ref" id="ref-hyperlocal"></div></section>
-        <section class="panel-body" id="panel-banks"       role="tabpanel"><div class="card ref" id="ref-banks"></div></section>
-        <section class="panel-body" id="panel-objections"  role="tabpanel"><div class="card ref" id="ref-objections"></div></section>
-        <section class="panel-body" id="panel-conflicts"   role="tabpanel"><div class="card ref" id="ref-conflicts"></div></section>
+        <section class="panel-body" id="panel-positioning" role="tabpanel" aria-labelledby="tab-positioning"><div class="card ref" id="ref-positioning"></div></section>
+        <section class="panel-body" id="panel-voice"       role="tabpanel" aria-labelledby="tab-voice"><div class="card ref" id="ref-voice"></div></section>
+        <section class="panel-body" id="panel-messaging"   role="tabpanel" aria-labelledby="tab-messaging"><div class="card ref" id="ref-messaging"></div></section>
+        <section class="panel-body" id="panel-hyperlocal"  role="tabpanel" aria-labelledby="tab-hyperlocal"><div class="card ref" id="ref-hyperlocal"></div></section>
+        <section class="panel-body" id="panel-banks"       role="tabpanel" aria-labelledby="tab-banks"><div class="card ref" id="ref-banks"></div></section>
+        <section class="panel-body" id="panel-objections"  role="tabpanel" aria-labelledby="tab-objections"><div class="card ref" id="ref-objections"></div></section>
+        <section class="panel-body" id="panel-conflicts"   role="tabpanel" aria-labelledby="tab-conflicts"><div class="card ref" id="ref-conflicts"></div></section>
     </main>
 
     <div class="toast" id="toast">Copied</div>
@@ -763,7 +790,6 @@ let usageMap = {};
 let condition = null;
 let lastPicked = {};
 let lastGenerationKey = null;
-let lastGenData = null;
 
 // ─── Saved generations (synced from Firebase) ──────────────────────
 let savedGenerations = [];
@@ -1049,7 +1075,6 @@ async function fmRecord(gen) {
             saved: false
         }));
         lastGenerationKey = ref.key;
-        lastGenData = gen;
         // Now that the record exists, Save has something to attach to.
         const saveBtn = document.getElementById('btn-save');
         if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
@@ -1648,7 +1673,6 @@ function savePrefs() {
 
 // ─── Generate ──────────────────────────────────────────────────────
 let generateCount = 0;
-let lastGen = null;
 
 function generate() {
     const platform = document.getElementById('f-platform').value;
@@ -1733,8 +1757,6 @@ function generate() {
     document.getElementById('btn-mark-used').textContent = '✅ Used';
     document.getElementById('btn-mark-discard').textContent = '❌ Discard';
     const author = currentAuthor();
-    lastGen = { platform, audience, language, angle, text: plain, title: result.title, author: author.id };
-    lastGenData = { platform, audience, language, angle, text: plain, author: author.id };
 
     generateCount++;
     document.getElementById('variant-note').textContent =
@@ -1950,6 +1972,19 @@ async function collabSubmit(e) {
     if (!data.name) { toast('A name is required'); return; }
 
     const id = document.getElementById('collab-id').value;
+
+    // Adding someone already on the list is nearly always a mistake — two
+    // cards for one person means two rates and two histories.
+    const clash = collaborators.find(c =>
+        c.id !== id && (c.name || '').trim().toLowerCase() === data.name.toLowerCase());
+    if (clash) {
+        const go = window.confirm(
+            data.name + ' is already on the list' +
+            (collabRateText(clash) ? ' at ' + collabRateText(clash) : '') +
+            '.\n\nAdd a second entry anyway?');
+        if (!go) { collabEdit(clash.id); return; }
+    }
+
     const now = Date.now();
     const author = currentAuthor();
 
@@ -2010,6 +2045,36 @@ function collabRateText(c) {
     return 'RM' + Number(c.rate).toLocaleString('en-MY') + ' / ' + (c.unit || 'review');
 }
 
+// Export the list as CSV, matching how LeadForge hands data over.
+function collabExportCSV() {
+    if (!collaborators.length) { toast('Nothing to export'); return; }
+    const cols = ['name','type','email','phone','handle','rate','unit','status',
+                  'lastContact','disclosed','notes'];
+    // A leading =, +, - or @ makes a spreadsheet treat a cell as a formula, so
+    // those are prefixed with an apostrophe. A phone number starting "+60" is
+    // the common case here, not a hypothetical one.
+    const cell = v => {
+        let t = v == null ? '' : String(v);
+        if (/^[=+\-@]/.test(t)) t = "'" + t;
+        return '"' + t.replace(/"/g, '""') + '"';
+    };
+    const rows = [cols.join(',')].concat(
+        collaborators.slice()
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map(c => cols.map(k => cell(c[k])).join(','))
+    );
+    const stamp = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(['\ufeff' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ecomforges-collaborators-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast(`Exported ${collaborators.length} collaborators`);
+}
+
 function renderCollaborators() {
     const wrap = document.getElementById('collab-list');
     const countEl = document.getElementById('collab-count');
@@ -2025,7 +2090,14 @@ function renderCollaborators() {
     if (q) list = list.filter(c => [c.name, c.handle, c.notes, c.email, c.phone]
         .filter(Boolean).join(' ').toLowerCase().includes(q));
 
-    list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    const sort = (document.getElementById('collab-sort') || {}).value || 'name';
+    const num = v => (v == null || v === '' || isNaN(v)) ? -1 : Number(v);
+    list.sort((a, b) => {
+        if (sort === 'rate')   return num(b.rate) - num(a.rate);
+        if (sort === 'recent') return (b.lastContact || '').localeCompare(a.lastContact || '');
+        if (sort === 'added')  return (b.createdAt || 0) - (a.createdAt || 0);
+        return (a.name || '').localeCompare(b.name || '');
+    });
 
     // A running total of what the active people cost, so the page answers the
     // question anyone opening this tab actually has.
@@ -2145,12 +2217,22 @@ function renderCollaborators() {
 }
 
 // ─── Tabs ──────────────────────────────────────────────────────────
-function showTab(name) {
+function showTab(name, focusTab) {
     const tab = document.querySelector(`.tab[data-panel="${name}"]`);
     const panel = document.getElementById('panel-' + name);
     if (!tab || !panel) return false;
-    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+    // Roving tabindex: only the selected tab is in the tab order, so Tab moves
+    // past the whole strip and the arrow keys move within it.
+    document.querySelectorAll('.tab').forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.tabIndex = -1;
+    });
     tab.setAttribute('aria-selected', 'true');
+    tab.tabIndex = 0;
+    if (focusTab) {
+        tab.focus();
+        tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
     document.querySelectorAll('.panel-body').forEach(pn => pn.classList.remove('active'));
     panel.classList.add('active');
     // If the Saved tab is shown, re-render
@@ -2219,6 +2301,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('collab-cancel').addEventListener('click', collabResetForm);
     document.getElementById('collab-search').addEventListener('input', renderCollaborators);
     document.getElementById('collab-filter').addEventListener('change', renderCollaborators);
+    document.getElementById('collab-sort').addEventListener('change', renderCollaborators);
+    document.getElementById('collab-export').addEventListener('click', collabExportCSV);
     collaborators = collabLocalRead();
     renderCollaborators();
 
@@ -2232,18 +2316,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('btn-save').disabled = true;
                 document.getElementById('btn-mark-used').disabled = true;
                 document.getElementById('btn-mark-discard').disabled = true;
-                lastGen = null;
                 lastGenerationKey = null;
             }
         });
     });
 
-    document.querySelectorAll('.tab').forEach(tab => {
+    const tabEls = [...document.querySelectorAll('.tab')];
+    const goTab = (name, focusTab) => {
+        showTab(name, focusTab);
+        history.replaceState(null, '', '#' + name);
+        savePrefs();
+    };
+    tabEls.forEach(tab => {
         tab.addEventListener('click', () => {
-            showTab(tab.dataset.panel);
-            history.replaceState(null, '', '#' + tab.dataset.panel);
-            savePrefs();
+            goTab(tab.dataset.panel, false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        // Arrow keys move between tabs, Home/End jump to the ends — the tablist
+        // carried role="tab" without any of this, which promises a keyboard
+        // interface that was not there.
+        tab.addEventListener('keydown', e => {
+            const i = tabEls.indexOf(tab);
+            let j = null;
+            if (e.key === 'ArrowRight') j = (i + 1) % tabEls.length;
+            else if (e.key === 'ArrowLeft') j = (i - 1 + tabEls.length) % tabEls.length;
+            else if (e.key === 'Home') j = 0;
+            else if (e.key === 'End') j = tabEls.length - 1;
+            if (j === null) return;
+            e.preventDefault();
+            goTab(tabEls[j].dataset.panel, true);
         });
     });
 

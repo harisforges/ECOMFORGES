@@ -181,6 +181,8 @@ what the active monthly commitments come to, and flags any paid arrangement wher
 hasn't been agreed in writing — a paid review is an advertisement, and presenting one as an
 ordinary customer opinion is the same misrepresentation the copy rules already forbid. The
 list syncs to Firebase for everyone signed in, and falls back to this browser when offline.
+Sort by name, rate or last contact, search across it, and export the whole thing to CSV —
+phone numbers starting `+` are escaped so a spreadsheet reads them as text, not a formula.
 
 The remaining seven tabs are the masterbase itself — positioning, voice and rules, messaging,
 hyperlocal angles, the copy banks, objection handling, and the open conflicts — so the
