@@ -116,6 +116,36 @@ it on demand.
 and not-interested leads are not work either of them still has to do. **Assign** is a picker
 now, not a text prompt.
 
+### Quick Add
+
+Typing a lead out of a Facebook or Google Maps listing is the slow part, so **Quick Add** takes
+a paste and fills the form from it. It reads two kinds of paste:
+
+**A link** gets a partial fill from the shape of the URL alone. `facebook.com/acmebeauty`,
+`tiktok.com/@acme.my`, `shopee.com.my/acme_beauty` and `lazada.com.my/shop/acme-my` each give a
+company name and set *Sells on* to that channel; a full Google Maps place URL carries the
+business name outright (`/maps/place/Acme+Beauty+Sdn+Bhd/`). Shortened links —
+`maps.app.goo.gl`, `bit.ly`, `vt.tiktok.com` — hold nothing to read, and the preview says so
+rather than failing quietly.
+
+**The page text** gets a much fuller one. Open the About tab or the Maps panel, select all,
+paste. Phone numbers are found and normalised to `+60 12 345 6789` (mobile and landline
+grouping differ, and `011`/`015` carry an extra digit), emails and websites are picked out,
+*Industry* is guessed from keywords against the same seventeen options the form offers, and a
+`PIC:` or `Contact person -` label yields the name. The address line and any extra phones or
+emails go to *Notes* along with the source link, so nothing found is thrown away.
+
+Names are ranked rather than taken first-come: a real account handle beats pasted text, pasted
+text beats a stem squeezed out of a domain, and a multi-word name from the page ("Acme Home &
+Living") beats a squashed marketplace handle ("acmehome").
+
+Nothing is fetched. Facebook, TikTok and Google all refuse cross-origin reads, so a tool that
+pulled those pages itself would need a server, a headless browser and a willingness to breach
+their terms — the paste is the part that legitimately works, and it works offline. What comes
+back is a preview showing which of the seven fields filled and which did not, and **Fill the
+form** hands it to the normal Add Lead form for a human to confirm. It prefills; it never saves
+a lead on its own, and the missing required fields are named in a toast.
+
 ### CSV
 
 The export writes labels (`Food & beverage`, `Shopee | Lazada`) and the import maps them back

@@ -1813,6 +1813,106 @@
                 border: 1px solid #ccc !important;
             }
         }
+
+        /* ── Quick Add ── */
+        .btn-quick {
+            background: var(--panel);
+            color: var(--cyan);
+            border: 1.5px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+            white-space: nowrap;
+            min-height: 44px;
+        }
+        .btn-quick:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px var(--cyan-dim);
+        }
+        .modal .qa-intro {
+            font-size: 12px;
+            line-height: 1.55;
+            color: var(--text-soft);
+            margin-bottom: 14px;
+        }
+        .modal .qa-intro strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .modal #qa-input {
+            min-height: 130px;
+            font-size: 13px;
+        }
+        .qa-result {
+            display: none;
+            margin-top: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--panel);
+            overflow: hidden;
+        }
+        .qa-result.on {
+            display: block;
+        }
+        .qa-result-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-soft);
+        }
+        .qa-result-head .qa-score {
+            color: var(--cyan);
+            letter-spacing: 0;
+            text-transform: none;
+            font-size: 12px;
+        }
+        .qa-rows {
+            max-height: 34vh;
+            overflow-y: auto;
+        }
+        .qa-row {
+            display: flex;
+            gap: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--row-alt);
+        }
+        .qa-row:last-child {
+            border-bottom: none;
+        }
+        .qa-row .qa-label {
+            flex: 0 0 96px;
+            color: var(--text-soft);
+            font-size: 11.5px;
+            font-weight: 600;
+            padding-top: 1px;
+        }
+        .qa-row .qa-value {
+            flex: 1;
+            color: var(--text);
+            word-break: break-word;
+        }
+        .qa-row .qa-value.qa-miss {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .qa-empty {
+            padding: 14px 12px;
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -1923,6 +2023,7 @@
                 </select>
             </div>
             <button class="btn-add" id="btn-add-lead"><span>+</span> Add</button>
+            <button class="btn-quick" id="btn-quick-add">⚡ Quick Add</button>
         </div>
 
         <!-- ─── Filters ─── -->
@@ -2064,6 +2165,36 @@
             </div>
         </div>
 
+        <!-- ─── Quick Add (paste a link or page text) ─── -->
+        <div class="modal-overlay" id="qa-overlay">
+            <div class="modal" id="qa-modal">
+                <div class="modal-head">
+                    <h2>Quick Add</h2>
+                    <button class="close" id="qa-close">✕</button>
+                </div>
+                <p class="qa-intro">
+                    Paste a <strong>link</strong> (Facebook, Instagram, TikTok, Shopee, Lazada, Google Maps)
+                    for a partial fill — or open the page, select all, and paste the <strong>whole text</strong>
+                    for a much fuller one. Nothing leaves your device.
+                </p>
+                <div class="form-group">
+                    <label for="qa-input">Paste here</label>
+                    <textarea id="qa-input" placeholder="https://www.facebook.com/acmebeauty&#10;&#10;…or the whole About page you copied."></textarea>
+                </div>
+                <div class="qa-result" id="qa-result">
+                    <div class="qa-result-head">
+                        <span>What I found</span>
+                        <span class="qa-score" id="qa-score"></span>
+                    </div>
+                    <div class="qa-rows" id="qa-rows"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" id="qa-cancel">Cancel</button>
+                    <button type="button" class="btn btn-submit" id="qa-use">Fill the form</button>
+                </div>
+            </div>
+        </div>
+
         <!-- ─── Choice sheet ─── -->
         <div class="sheet-overlay" id="sheet-overlay">
             <div class="sheet">
@@ -2114,9 +2245,19 @@
         const MAX_ATTEMPTS = 5;
 
         // ─── INITIALIZE FIREBASE FIRST ──────────────────────────────────
+        // The SDK comes from a CDN, which can be blocked, offline, or fail to load.
+        // Everything below used to assume it was there, so one missing script threw
+        // at the top level and stopped the rest of this file from running at all —
+        // leaving a dead page. Check once, then degrade visibly instead.
+        const firebaseAvailable = typeof firebase !== 'undefined' && typeof firebase.auth === 'function';
+
         try {
-            firebase.initializeApp(firebaseConfig);
-            console.log('🔥 Firebase initialized successfully');
+            if (firebaseAvailable) {
+                firebase.initializeApp(firebaseConfig);
+                console.log('🔥 Firebase initialized successfully');
+            } else {
+                console.warn('Firebase SDK did not load — sign-in is unavailable.');
+            }
         } catch (e) {
             console.warn('Firebase init (maybe already initialized):', e.message);
         }
@@ -2206,6 +2347,8 @@
                 return;
             }
 
+            if (!firebaseAvailable) { showSignInUnavailable(); return; }
+
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, password);
                 // onAuthStateChanged will handle the rest
@@ -2240,11 +2383,24 @@
 
         // ─── Logout ────────────────────────────────────────────────────────
         logoutBtn.addEventListener('click', () => {
-            firebase.auth().signOut();
+            if (firebaseAvailable) firebase.auth().signOut();
         });
 
         // ─── Auth state listener ──────────────────────────────────────────
-        firebase.auth().onAuthStateChanged((user) => {
+        // No SDK means no way to verify who this is. The gate stays shut: show the
+        // login screen with a reason instead of opening the app unauthenticated.
+        function showSignInUnavailable() {
+            showLogin();
+            loginSubmit.disabled = true;
+            showLoginError(
+                'Cannot reach the sign-in service.',
+                'Check your connection and reload the page. Leads already saved on this device are untouched.'
+            );
+        }
+
+        if (!firebaseAvailable) showSignInUnavailable();
+
+        if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
             if (user && isAllowedEmail(user.email)) {
                 currentUser = user;
                 showApp();
@@ -2270,7 +2426,7 @@
         const syncLabel = document.getElementById('sync-label');
 
         function initFirebaseDB() {
-            if (!USE_FIREBASE) {
+            if (!USE_FIREBASE || !firebaseAvailable) {
                 syncDot.className = 'dot';
                 syncLabel.textContent = 'Local';
                 return;
@@ -2450,6 +2606,15 @@
         const ownBtns = ownerBar.querySelectorAll('.own-btn');
         const fabAdd = document.getElementById('fab-add');
         const btnAddLead = document.getElementById('btn-add-lead');
+        const qaOverlay = document.getElementById('qa-overlay');
+        const qaInput = document.getElementById('qa-input');
+        const qaResult = document.getElementById('qa-result');
+        const qaRows = document.getElementById('qa-rows');
+        const qaScore = document.getElementById('qa-score');
+        const qaCloseBtn = document.getElementById('qa-close');
+        const qaCancelBtn = document.getElementById('qa-cancel');
+        const qaUseBtn = document.getElementById('qa-use');
+        const btnQuickAdd = document.getElementById('btn-quick-add');
         const toastEl = document.getElementById('toast');
         const toastMsg = document.getElementById('toast-msg');
         const toastUndo = document.getElementById('toast-undo');
@@ -3516,6 +3681,412 @@
         }
 
         function openAdd() { openModal('Add Lead', null); }
+        // ─── Quick Add: offline paste parser ────────────────────────────
+        // Everything here runs in the browser on text the user already has.
+        // Nothing is fetched: Facebook, TikTok and Google all refuse cross-origin
+        // reads, so we parse the link shape and whatever page text was pasted.
+
+        const QA_FB_RESERVED = new Set([
+            'profile.php', 'people', 'pages', 'pg', 'groups', 'marketplace', 'watch',
+            'events', 'share', 'permalink.php', 'story.php', 'photo', 'photo.php',
+            'reel', 'reels', 'videos', 'media', 'posts', 'login', 'help', 'search',
+            'hashtag', 'notes', 'settings', 'privacy', 'policies',
+        ]);
+        const QA_IG_RESERVED = new Set([
+            'p', 'reel', 'reels', 'tv', 'stories', 'explore', 'accounts', 'directory',
+        ]);
+        const QA_WORD_CASE = {
+            my: 'MY', hq: 'HQ', co: 'Co', sdn: 'Sdn', bhd: 'Bhd', plt: 'PLT',
+            enterprise: 'Enterprise', official: 'Official', kl: 'KL', jb: 'JB',
+        };
+        const QA_STATES = [
+            'johor', 'kedah', 'kelantan', 'melaka', 'malacca', 'negeri sembilan',
+            'pahang', 'perak', 'perlis', 'penang', 'pulau pinang', 'sabah', 'sarawak',
+            'selangor', 'terengganu', 'kuala lumpur', 'labuan', 'putrajaya',
+        ];
+        const QA_INDUSTRY_HINTS = {
+            beauty: ['beauty', 'skincare', 'skin care', 'cosmetic', 'makeup', 'serum', 'facial', 'haircare', 'hair care', 'perfume', 'fragrance', 'kecantikan', 'solek'],
+            health: ['supplement', 'vitamin', 'health', 'herbal', 'wellness', 'nutrition', 'pharmacy', 'farmasi', 'kesihatan', 'organic'],
+            fashion: ['fashion', 'apparel', 'clothing', 'boutique', 'baju', 'tudung', 'hijab', 'muslimah', 'streetwear', 'tshirt', 't-shirt', 'dress', 'pakaian', 'kurung'],
+            jewellery: ['jewellery', 'jewelry', 'emas', 'gold', 'silver', 'necklace', 'earring', 'bracelet', 'watches', 'barang kemas'],
+            home: ['homeware', 'household', 'kitchen', 'bedding', 'cleaning', 'home essentials', 'home decor', 'home & living', 'home and living', 'peralatan rumah'],
+            furniture: ['furniture', 'decor', 'sofa', 'interior', 'perabot', 'mattress'],
+            electronics: ['electronic', 'gadget', 'laptop', 'camera', 'audio', 'smart home', 'appliance', 'elektrik'],
+            'mobile-accessories': ['phone case', 'casing', 'mobile accessor', 'charger', 'powerbank', 'power bank', 'screen protector', 'earbud'],
+            baby: ['baby', 'infant', 'diaper', 'stroller', 'maternity', 'bayi', 'ibu dan anak'],
+            toys: ['toy', 'hobby', 'puzzle', 'lego', 'collectible', 'figurine', 'board game', 'permainan'],
+            sports: ['sport', 'fitness', 'gym', 'outdoor', 'cycling', 'running', 'hiking', 'yoga', 'sukan'],
+            pet: ['pet ', 'pets', 'dog', 'cat food', 'aquarium', 'haiwan', 'grooming'],
+            fnb: ['food', 'beverage', 'snack', 'cafe', 'restaurant', 'kuih', 'coffee', 'bakery', 'catering', 'makanan', 'frozen', 'minuman', 'sambal'],
+            automotive: ['automotive', 'motorcycle', 'tyre', 'vehicle', 'workshop', 'kereta', 'motosikal', 'car accessor'],
+            books: ['bookstore', 'stationery', 'buku', 'printing', 'notebook', 'alat tulis'],
+            digital: ['software', 'saas', 'agency', 'online course', 'ebook', 'consulting', 'digital marketing', 'web design'],
+        };
+
+        function qaCleanName(s) {
+            let t = String(s || '').replace(/\s+/g, ' ').trim();
+            t = t.replace(/\s*[|·•]\s*(facebook|instagram|tiktok|shopee|lazada|google\s*maps?).*$/i, '');
+            t = t.replace(/\s*[-–]\s*(home|about|posts|photos|videos|shop)\s*$/i, '');
+            t = t.replace(/\s*\(@[^)]*\)\s*$/, '');
+            t = t.replace(/[-_]\d{6,}$/, '');
+            t = t.replace(/^[@\s]+/, '');
+            return t.trim();
+        }
+
+        function qaTitleCase(handle) {
+            return String(handle || '')
+                .replace(/[-_.+]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .split(' ')
+                .filter(w => w && !/^\d{3,}$/.test(w))
+                .map(w => {
+                    const low = w.toLowerCase();
+                    if (QA_WORD_CASE[low]) return QA_WORD_CASE[low];
+                    return w.charAt(0).toUpperCase() + w.slice(1);
+                })
+                .join(' ')
+                .trim();
+        }
+
+        function qaNormalisePhone(raw) {
+            let d = String(raw).replace(/\D/g, '');
+            if (d.startsWith('60')) d = d.slice(2);
+            else if (d.startsWith('0')) d = d.slice(1);
+            else return String(raw).replace(/\s+/g, ' ').trim();
+            if (!d) return '';
+            if (d[0] === '1') {
+                if (d.length === 9) return `+60 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}`;
+                if (d.length === 10) return `+60 ${d.slice(0, 2)} ${d.slice(2, 6)} ${d.slice(6)}`;
+            } else {
+                if (d.length === 9) return `+60 ${d.slice(0, 1)} ${d.slice(1, 5)} ${d.slice(5)}`;
+                if (d.length === 8) return `+60 ${d.slice(0, 1)} ${d.slice(1, 4)} ${d.slice(4)}`;
+            }
+            return '+60 ' + d;
+        }
+
+        function qaFindPhones(text) {
+            const out = [];
+            const re = /(?:\+?60|0)[\d \t().\-]{7,16}\d/g;
+            let m;
+            while ((m = re.exec(text))) {
+                const before = m.index > 0 ? text[m.index - 1] : '';
+                if (/[\d]/.test(before)) continue;
+                const digits = m[0].replace(/\D/g, '');
+                if (digits.length < 9 || digits.length > 12) continue;
+                const norm = qaNormalisePhone(m[0]);
+                if (norm) out.push(norm);
+            }
+            return [...new Set(out)];
+        }
+
+        function qaFindEmails(text) {
+            const re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+            const hits = (text.match(re) || [])
+                .map(e => e.toLowerCase().replace(/[.,;:]+$/, ''))
+                .filter(e => !/\.(png|jpe?g|gif|webp|svg)$/i.test(e));
+            return [...new Set(hits)];
+        }
+
+        function qaFindUrls(text) {
+            const out = [];
+            const full = text.match(/\bhttps?:\/\/[^\s<>"')\]]+/gi) || [];
+            for (const u of full) out.push(u.replace(/[.,;:)\]]+$/, ''));
+            // Bare domains ("acmebeauty.com.my"). The leading boundary excludes the
+            // domain half of an email address, which must not become a website.
+            const bareRe = /(?:^|[\s(,;:|])((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|net|org|my|co|shop|store|biz|io|me|asia)(?:\.[a-z]{2})?(?:\/[^\s<>"')\]]*)?)/gi;
+            let bm;
+            while ((bm = bareRe.exec(text))) {
+                const clean = bm[1].replace(/[.,;:)\]]+$/, '');
+                if (!out.some(u => u.toLowerCase().includes(clean.toLowerCase()))) {
+                    out.push('https://' + clean);
+                }
+            }
+            return [...new Set(out)];
+        }
+
+        // Reads what a link's shape can tell us. No network call is made or possible.
+        function qaParseUrl(raw) {
+            let u;
+            try { u = new URL(raw); } catch (e) { return null; }
+            if (!/^https?:$/.test(u.protocol)) return null;
+            const host = u.hostname.toLowerCase().replace(/^(www|m|web|mobile)\./, '');
+            const segs = u.pathname.split('/').filter(Boolean).map(s => {
+                try { return decodeURIComponent(s); } catch (e) { return s; }
+            });
+            const out = { url: raw, host, platform: '', company: '', website: '', label: host, shortLink: false };
+
+            if (/(^|\.)(goo\.gl|bit\.ly|tinyurl\.com|t\.co|s\.shopee\.|invol\.co|vt\.tiktok\.com)/.test(host) ||
+                host === 'maps.app.goo.gl') {
+                out.shortLink = true;
+                out.label = 'shortened link';
+                return out;
+            }
+
+            if (/(^|\.)google\./.test(host)) {
+                out.label = 'Google Maps';
+                const i = segs.indexOf('place');
+                if (i >= 0 && segs[i + 1]) {
+                    out.company = qaCleanName(segs[i + 1].replace(/\+/g, ' '));
+                    return out;
+                }
+                const q = u.searchParams.get('q') || u.searchParams.get('query') || '';
+                if (q && !/^[\d.,\s-]+$/.test(q)) out.company = qaCleanName(q.replace(/\+/g, ' '));
+                return out;
+            }
+
+            if (/(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(host)) {
+                out.platform = 'social';
+                out.label = 'Facebook';
+                let seg = segs[0] || '';
+                if (seg === 'p' && segs[1]) seg = segs[1];
+                if (seg && !QA_FB_RESERVED.has(seg.toLowerCase())) out.company = qaTitleCase(seg);
+                return out;
+            }
+
+            if (/(^|\.)instagram\.com$/.test(host)) {
+                out.platform = 'social';
+                out.label = 'Instagram';
+                const seg = segs[0] || '';
+                if (seg && !QA_IG_RESERVED.has(seg.toLowerCase())) out.company = qaTitleCase(seg);
+                return out;
+            }
+
+            if (/(^|\.)tiktok\.com$/.test(host)) {
+                out.platform = 'tiktok';
+                out.label = 'TikTok';
+                const at = segs.find(s => s.startsWith('@'));
+                if (at) out.company = qaTitleCase(at.slice(1));
+                return out;
+            }
+
+            if (/(^|\.)shopee\./.test(host)) {
+                out.platform = 'shopee';
+                out.label = 'Shopee';
+                let seg = segs[0] || '';
+                if (seg === 'shop' && segs[1]) seg = segs[1];
+                seg = seg.replace(/-i\.\d+.*$/, '').replace(/-cat\..*$/, '');
+                if (seg && !/^(search|mall|daily-discover|buyer|user)$/i.test(seg)) out.company = qaTitleCase(seg);
+                return out;
+            }
+
+            if (/(^|\.)lazada\./.test(host)) {
+                out.platform = 'lazada';
+                out.label = 'Lazada';
+                let seg = segs[0] || '';
+                if (seg === 'shop' && segs[1]) seg = segs[1];
+                seg = seg.replace(/-i\d+.*$/, '').replace(/\.html$/, '');
+                if (seg && !/^(catalog|products|search)$/i.test(seg)) out.company = qaTitleCase(seg);
+                return out;
+            }
+
+            // Anything else is treated as the prospect's own store. A name squeezed
+            // out of a domain is a poor guess, so it is flagged weak and only used
+            // when nothing better turns up.
+            out.platform = 'own';
+            out.website = u.origin + (u.pathname === '/' ? '' : u.pathname);
+            out.company = qaTitleCase(host.replace(/\.(com|net|org|my|co|shop|store|biz|io|me|asia)(\.[a-z]{2})?$/, ''));
+            out.weakCompany = true;
+            out.label = host;
+            return out;
+        }
+
+        function qaGuessIndustry(text) {
+            const hay = ' ' + text.toLowerCase() + ' ';
+            let best = '', bestScore = 0;
+            for (const [key, words] of Object.entries(QA_INDUSTRY_HINTS)) {
+                let score = 0;
+                for (const w of words) {
+                    let from = 0, i;
+                    while ((i = hay.indexOf(w, from)) !== -1) { score++; from = i + w.length; }
+                }
+                if (score > bestScore) { bestScore = score; best = key; }
+            }
+            return bestScore > 0 ? best : '';
+        }
+
+        function qaGuessPic(text) {
+            const re = /\b(?:pic|person in charge|contact person|contact|owner|founder|manager|attn|nama)\s*[:\-]\s*([^\n\r,|]{2,60})/i;
+            const m = text.match(re);
+            if (!m) return '';
+            let name = m[1].trim().replace(/[.;:]+$/, '');
+            if (/[@\d]/.test(name)) return '';
+            if (/^(us|me|form|below|whatsapp|dm)$/i.test(name)) return '';
+            const words = name.split(/\s+/);
+            if (words.length > 5) return '';
+            return name;
+        }
+
+        function qaGuessAddress(text) {
+            for (const line of text.split(/[\n\r]+/)) {
+                const t = line.trim();
+                if (t.length < 12 || t.length > 160) continue;
+                if (!/\b\d{5}\b/.test(t)) continue;
+                const low = t.toLowerCase();
+                if (QA_STATES.some(s => low.includes(s))) return t.replace(/\s+/g, ' ');
+            }
+            return '';
+        }
+
+        function qaGuessCompanyFromText(text) {
+            const candidates = [];
+            for (const line of text.split(/[\n\r]+/)) {
+                const t = qaCleanName(line);
+                if (t.length < 2 || t.length > 70) continue;
+                if (/^https?:\/\//i.test(t) || /^www\./i.test(t)) continue;
+                if (/@/.test(t)) continue;
+                if (/^\+?[\d ().\-]+$/.test(t)) continue;
+                if (/^(home|about|posts|photos|videos|reviews|menu|shop|follow|message|like|share|log in|sign up|see all|directions|save|website|overview)$/i.test(t)) continue;
+                if (/^\d+(\.\d+)?\s*(star|review|follower|like)/i.test(t)) continue;
+                candidates.push(t);
+                if (candidates.length >= 3) break;
+            }
+            if (!candidates.length) return '';
+            // A first line like "acme.my" is the handle; prefer a real name below it.
+            const named = candidates.find(c => /\s/.test(c) && !/^@/.test(c));
+            return named || candidates[0];
+        }
+
+        /**
+         * Parse pasted text — a link, a page dump, or both — into lead fields.
+         * Returns the same shape openModal() accepts, plus a `found` list for the preview.
+         */
+        function parseLeadPaste(raw) {
+            const text = String(raw || '').replace(/\u00A0/g, ' ').trim();
+            const result = {
+                company: '', pic: '', phone: '', email: '', website: '',
+                industry: '', source: 'cold', status: 'new', assigned: '',
+                platforms: [], followup: '', notes: '',
+                found: [], links: [], shortLinks: [],
+            };
+            if (!text) return result;
+
+            const urls = qaFindUrls(text);
+            const parsedUrls = urls.map(qaParseUrl).filter(Boolean);
+            const platforms = new Set();
+            let urlCompany = '', weakCompany = '', website = '';
+
+            for (const p of parsedUrls) {
+                if (p.shortLink) { result.shortLinks.push(p.url); continue; }
+                if (p.platform) platforms.add(p.platform);
+                if (p.company) {
+                    if (p.weakCompany) { if (!weakCompany) weakCompany = p.company; }
+                    else if (!urlCompany) urlCompany = p.company;
+                }
+                if (p.website && !website) website = p.website;
+                result.links.push({ url: p.url, label: p.label });
+            }
+
+            // Marketplaces named in the text but not linked still count as channels.
+            const low = text.toLowerCase();
+            if (/\bshopee\b/.test(low)) platforms.add('shopee');
+            if (/\blazada\b/.test(low)) platforms.add('lazada');
+            if (/\btiktok\b/.test(low)) platforms.add('tiktok');
+            if (/\b(instagram|facebook)\b/.test(low)) platforms.add('social');
+
+            const phones = qaFindPhones(text);
+            const emails = qaFindEmails(text);
+            const isLinkOnly = urls.length > 0 && text.replace(/\bhttps?:\/\/[^\s]+/gi, '').trim().length < 12;
+
+            // Name precedence: a real account handle beats pasted text, which beats a
+            // domain stem — except that a multi-word name from the page ("Acme Home &
+            // Living") reads better than a squashed marketplace handle ("acmehome").
+            const textCompany = isLinkOnly ? '' : qaGuessCompanyFromText(text);
+            const textReadsBetter = textCompany && /\s/.test(textCompany) && urlCompany && !/\s/.test(urlCompany);
+            result.company = textReadsBetter ? textCompany : (urlCompany || textCompany || weakCompany);
+            result.pic = isLinkOnly ? '' : qaGuessPic(text);
+            result.phone = phones[0] || '';
+            result.email = emails[0] || '';
+            result.website = website;
+            result.industry = qaGuessIndustry(isLinkOnly ? (urlCompany + ' ' + urls.join(' ')) : text);
+            result.platforms = normalisePlatforms([...platforms]);
+
+            // Notes carry the provenance plus anything we found but could not slot.
+            const notes = [];
+            if (result.links.length) {
+                notes.push('Source links:');
+                for (const l of result.links) notes.push(`• ${l.label}: ${l.url}`);
+            }
+            for (const s of result.shortLinks) notes.push(`• Shortened link (open it and paste the full URL): ${s}`);
+            const address = isLinkOnly ? '' : qaGuessAddress(text);
+            if (address) notes.push(`Address: ${address}`);
+            if (phones.length > 1) notes.push(`Other phones: ${phones.slice(1).join(', ')}`);
+            if (emails.length > 1) notes.push(`Other emails: ${emails.slice(1).join(', ')}`);
+            notes.push(`Captured via Quick Add on ${new Date().toISOString().slice(0, 10)}.`);
+            result.notes = notes.join('\n');
+
+            result.followup = cadenceDate(result.source);
+            result.found = ['company', 'pic', 'phone', 'email', 'website', 'industry']
+                .filter(k => !!result[k]);
+            if (result.platforms.length) result.found.push('platforms');
+            return result;
+        }
+
+        // ─── Quick Add UI ───────────────────────────────────────────────
+        let qaParsed = null;
+        let qaTimer = null;
+
+        function qaRenderPreview(p) {
+            const rows = [
+                ['Company', p.company],
+                ['PIC', p.pic],
+                ['Phone', p.phone],
+                ['Email', p.email],
+                ['Website', p.website],
+                ['Industry', labelOf(INDUSTRIES, p.industry)],
+                ['Sells On', p.platforms.map(v => labelOf(PLATFORMS, v)).join(', ')],
+            ];
+            const filled = rows.filter(r => r[1]).length;
+            qaScore.textContent = `${filled} of ${rows.length} filled`;
+            qaRows.innerHTML = rows.map(([label, value]) => `
+                <div class="qa-row">
+                    <div class="qa-label">${esc(label)}</div>
+                    <div class="qa-value${value ? '' : ' qa-miss'}">${value ? esc(value) : 'not found — add it yourself'}</div>
+                </div>`).join('');
+            if (p.shortLinks.length) {
+                qaRows.innerHTML += `<div class="qa-empty">That is a shortened link, so there is nothing in it to read.
+                    Open it in your browser and paste the full address instead.</div>`;
+            }
+            qaResult.classList.add('on');
+        }
+
+        function qaHandleInput() {
+            const text = qaInput.value.trim();
+            if (!text) {
+                qaParsed = null;
+                qaResult.classList.remove('on');
+                return;
+            }
+            qaParsed = parseLeadPaste(text);
+            qaRenderPreview(qaParsed);
+        }
+
+        function openQuickAdd() {
+            qaInput.value = '';
+            qaParsed = null;
+            qaResult.classList.remove('on');
+            qaOverlay.classList.add('open');
+            setTimeout(() => qaInput.focus(), 200);
+        }
+
+        function closeQuickAdd() { qaOverlay.classList.remove('open'); }
+
+        function qaUse() {
+            const text = qaInput.value.trim();
+            if (!text) { toast('Paste a link or some page text first'); return; }
+            if (!qaParsed) qaParsed = parseLeadPaste(text);
+            const p = qaParsed;
+            if (!p.found.length) {
+                toast('Nothing recognisable in that paste — filling what I can', 3000);
+            }
+            closeQuickAdd();
+            openModal('Add Lead', p);
+            const missing = ['company', 'pic', 'phone'].filter(k => !p[k]);
+            if (missing.length) {
+                toast(`Still needs: ${missing.join(', ')}`, 3500);
+            }
+        }
+
 
         // ─── Form submit ──────────────────────────────────────────────
         leadForm.addEventListener('submit', async (e) => {
@@ -3555,12 +4126,24 @@
         });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') { closeModal();
+                closeQuickAdd();
                 closeChoiceSheet();
                 closeDetail(); }
         });
 
         fabAdd.addEventListener('click', openAdd);
         btnAddLead.addEventListener('click', openAdd);
+        btnQuickAdd.addEventListener('click', openQuickAdd);
+        qaCloseBtn.addEventListener('click', closeQuickAdd);
+        qaCancelBtn.addEventListener('click', closeQuickAdd);
+        qaUseBtn.addEventListener('click', qaUse);
+        qaInput.addEventListener('input', () => {
+            clearTimeout(qaTimer);
+            qaTimer = setTimeout(qaHandleInput, 180);
+        });
+        qaOverlay.addEventListener('click', (e) => {
+            if (e.target === qaOverlay) closeQuickAdd();
+        });
 
         // ─── Search ──────────────────────────────────────────────────
         searchInput.addEventListener('input', () => {
