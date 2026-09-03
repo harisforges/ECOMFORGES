@@ -111,6 +111,38 @@ point you at what to do instead.
 5. **"a lot of ecommerce store owner wasting"** → **"store owners"**. The same
    sentence appears four times on the page; all four were corrected.
 
+## "You Execute" heading on phones — fixed
+
+The animated "You Execute" block pinned its heading at `top: 50px` with a fixed
+`30.738px` font, over an SVG that scales with its container. On desktop that put
+the label 13% down the artwork. By 360px the artwork had shrunk to 209px tall
+while the label stayed at 50px, so it sat **24% down — on top of the animated
+paths** — and wrapped onto two lines.
+
+Fixed by making the label proportional instead of fixed: `top: 13.09%` is the
+desktop ratio (50/382), the font clamps between 15px and 30.738px, and
+`white-space: nowrap` stops the two-word label ever splitting.
+
+Measured across widths, the heading now sits at a constant 13.2–13.4% down on
+one line, from 1200px to 320px. Desktop is unchanged.
+
+### Two things worth knowing before editing this
+
+**The override lives in the site stylesheet, not the block.** It is in the
+Breakdance selectors under the "Homepage fixes" collection, as
+`.we-execute-container .we-execute-wrapper h1`. That two-class-plus-tag selector
+outranks the block's own `.we-execute-wrapper h1`, which is what makes it win
+despite the block's `<style>` loading later. It was done this way deliberately:
+editing the block means re-sending 14KB of SVG path data to a live page, and a
+single wrong digit there breaks the artwork. Overriding never touches the SVG.
+
+**Breakdance's CSS importer does not understand container-query units.** The
+first attempt used `font-size: 5.123cqw`, which the importer stored as the
+number `"5.123 cqw"` and emitted as `font-size:5.123 cqw` — a space inside the
+value, so invalid, so silently ignored. `clamp()` with `vw` survives intact.
+Check the emitted `selectors.css` after importing anything with an unusual unit;
+the import reports success either way.
+
 ## Still open on the homepage
 
 - **The stats band.** Eight animated counters — 92% achieve measurable growth,
