@@ -20,9 +20,25 @@ const TEMPLATE = join(REPO, 'content', 'email-signature.html');
  * a signature with a blank row where a number should be looks unfinished.
  */
 const PEOPLE = [
-  { slug: 'haris', name: 'Haris Haikal', role: 'Co-Founder', email: 'haris@ecomforges.com' },
-  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'dq@ecomforges.com' },
+  { slug: 'haris', name: 'Haris Haikal', role: 'Co-Founder', email: 'haris@ecomforges.com',
+    phone: '+60 11-5376 7895', phoneE164: '+601153767895' },
+  { slug: 'daniel', name: 'Daniel Qayyum', role: 'Founder', email: 'dq@ecomforges.com',
+    phone: '+60 11-5357 6265', phoneE164: '+601153576265' },
 ];
+
+/*
+ * The tel: link must be bare digits with the country code and nothing else — a phone dialling
+ * "+60 11-5376 7895" verbatim fails. So each person carries both: the readable form for the
+ * page and the E.164 form for the link. This check keeps them from disagreeing, which is the
+ * kind of fault nobody notices until a prospect taps the number and it does not ring.
+ */
+for (const p of PEOPLE) {
+  if (p.phone === undefined) continue;
+  const digits = p.phone.replace(/[^0-9]/g, '');
+  if (p.phoneE164 !== `+${digits}`) {
+    throw new Error(`${p.slug}: tel link ${p.phoneE164} does not match the printed ${p.phone}`);
+  }
+}
 
 /** Strip the whole <tr> holding the phone, not just its contents. */
 function removePhoneRow(html) {
