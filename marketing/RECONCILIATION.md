@@ -126,7 +126,7 @@ been applied:
 The 900+ figure stays named in the proof slots here as the example of what not
 to reuse, even though it is off the site.
 
-**Still open, by decision:** the homepage stats band (eight animated counters)
-is confirmed as real internal data and stays. It must be evidenceable if
-challenged, and one line reads "delivered by execution", which sits awkwardly
-against advisory-only.
+**The stats band** (eight animated counters) is confirmed as real internal data
+and stays; it must be evidenceable if challenged. Its one wording problem is
+fixed — "delivered by execution" now reads "delivered by your team", so the band
+no longer implies EcomForges does the executing.

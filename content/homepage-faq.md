@@ -115,9 +115,12 @@ point you at what to do instead.
 
 - **The stats band.** Eight animated counters — 92% achieve measurable growth,
   up to 200% growth, and so on. Confirmed by Haris as real internal figures, so
-  they stay. Two notes: they must be evidenceable if a prospect or a regulator
-  asks, and one line reads "driven by strategy, **delivered by execution**",
-  which sits awkwardly against advisory-only. Wording left as-is by decision.
+  they stay. They must be evidenceable if a prospect or a regulator asks.
+
+  The one wording problem is fixed: "driven by strategy, **delivered by
+  execution**" now reads "delivered by **your team**", which names who does the
+  executing and agrees with advisory-only. The other two mentions of execution
+  in that band already refer to the client's own execution and were left alone.
 - **Heading levels.** Several sections use `h1`, so the page has multiple
   top-level headings. Bad for SEO and screen readers, but changing the tags
   would change their styling, so it needs a design pass rather than a find and
