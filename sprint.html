@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>EcomForges ForgeSprint — Cycle Tracker</title>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <link rel="icon" type="image/png" href="sprint-favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="sprint-apple-touch-icon.png" />
+    <link rel="manifest" href="sprint.webmanifest" />
+    <meta name="theme-color" content="#162840" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ForgeSprint" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <style>
+        /* same as before — exactly as you had */
+        :root {
+            --navy: #162840;
+            --main-blue: #1C3350;
+            --panel: #1A2E46;
+            --row-alt: #132238;
+            --border: #1E4060;
+            --border-light: #2A5A7A;
+            --text: #FFFFFF;
+            --text-soft: #708CA8;
+            --text-muted: #4A6A8A;
+            --red: #A855F7;
+            --red-bright: #C084FC;
+            --dark-red: #6B21A8;
+            --red-dim: rgba(168, 85, 247, 0.12);
+            --red-glow: rgba(168, 85, 247, 0.25);
+            --green: #2DD4A0;
+            --green-dim: rgba(45, 212, 160, 0.12);
+            --amber: #F6B83D;
+            --amber-dim: rgba(246, 184, 61, 0.12);
+            --cyan: #20F6F8;
+            --cyan-dim: rgba(32, 246, 248, 0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --transition: 0.2s ease;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--navy);
+            color: var(--text);
+            line-height: 1.55;
+            font-size: 15px;
+            min-height: 100vh;
+            padding-bottom: calc(24px + var(--safe-bottom));
+        }
+
+        /* ── Login overlay ── */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 600; padding: 20px; backdrop-filter: blur(4px);
+        }
+        #login-overlay.hidden { display: none; }
+        .login-box {
+            background: var(--main-blue); padding: 32px 28px;
+            border-radius: var(--radius); border: 1px solid var(--border-light);
+            width: 100%; max-width: 380px; text-align: center;
+            box-shadow: var(--shadow);
+        }
+        /* Login brand — same treatment as LeadForge's login screen: the real
+           EcomForges lockup at 180px, centred, with the tool name beneath it.
+           The mark keeps ForgeMarketing's red so the box matches its own header
+           and its red controls, rather than borrowing LeadForge's green. */
+        .login-box .login-brand { margin-bottom: 16px; }
+        .login-box .login-lockup {
+            max-width: 180px; width: 100%; height: auto;
+            display: block; margin: 0 auto 6px;
+        }
+        .login-box .login-brand-row {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 2px; flex-wrap: wrap;
+        }
+        .login-box .brand-text { font-size: 20px; font-weight: 700; color: var(--text); }
+        .login-box .brand-text span { color: var(--red); }
+        .login-box .brand-badge {
+            /* display is restated because the header's mobile rule hides
+               .brand-badge, and the login screen has room for it at any width. */
+            display: inline-block;
+            font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-soft); background: var(--navy);
+            padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border);
+        }
+        .login-box .sub { font-size: 13px; color: var(--text-soft); margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 12px 14px; margin-bottom: 12px;
+            border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+            background: var(--panel); color: var(--text); font-size: 14px;
+            outline: none; transition: var(--transition); min-height: 44px;
+        }
+        .login-box input:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+        .login-box .login-error { display: none; color: var(--red); font-size: 13px; margin-bottom: 12px; }
+        .login-box .login-error.show { display: block; }
+        .login-box .btn-login {
+            width: 100%; padding: 12px; background: var(--red); color: #1E0033;
+            border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: var(--transition); min-height: 48px;
+        }
+        .login-box .btn-login:hover { background: var(--red-bright); }
+        .login-box .login-footer { margin-top: 16px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 14px; }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(180deg, var(--main-blue) 0%, var(--navy) 100%);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 50;
+        }
+        .top {
+            max-width: 1080px; margin: 0 auto;
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-lockup { height: 26px; width: auto; display: block; }
+        .brand-mark { display: none; height: 26px; width: auto; }
+        .brand-rule { width: 1px; height: 22px; background: var(--border-light); flex: none; }
+        .brand-text { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; white-space: nowrap; }
+        .brand-text span { color: var(--red); }
+        .brand-badge {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+            padding: 3px 8px; border-radius: 999px;
+            background: var(--red-dim); color: var(--red-bright);
+            border: 1px solid rgba(255, 61, 87, 0.3); white-space: nowrap;
+        }
+        .header-actions {
+            display: flex; align-items: center; gap: 8px; margin-left: auto;
+        }
+        .header-note {
+            font-size: 11px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .header-note .dot-status {
+            display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+            background: var(--text-muted); flex: none;
+        }
+        .header-note .dot-status.live { background: var(--green); }
+        .header-note .dot-status.local { background: var(--amber); }
+        .btn-logout {
+            background: var(--red-dim); color: var(--red); border: 1px solid transparent;
+            padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm);
+            cursor: pointer; font-family: inherit; transition: var(--transition); min-height: 34px;
+        }
+        .btn-logout:hover { background: var(--red); color: var(--navy); }
+
+        /* ── Tabs ── */
+        .tabs {
+            max-width: 1080px; margin: 0 auto; padding: 0 16px;
+            display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            appearance: none; border: none; background: none;
+            color: var(--text-soft); font: inherit; font-size: 13px; font-weight: 600;
+            /* 11 tabs at 14px of side padding overflowed 1080px and clipped the
+               last one on a full-width desktop window. */
+            padding: 10px 10px; cursor: pointer; white-space: nowrap;
+            border-bottom: 2px solid transparent; transition: var(--transition);
+        }
+        .tab:hover { color: var(--text); }
+        .tab:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; border-radius: 4px; }
+
+        /* Visible to screen readers only. */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+        }
+        .tab[aria-selected="true"] { color: var(--red-bright); border-bottom-color: var(--red); }
+
+        main { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
+        .panel-body { display: none; }
+        .panel-body.active { display: block; animation: fade 0.18s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+        .card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px; margin-bottom: 16px;
+        }
+        .card h2 {
+            font-size: 15px; font-weight: 700; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card h2 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex: none; }
+        .card .sub { font-size: 12.5px; color: var(--text-soft); margin-bottom: 14px; }
+
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+        .field label {
+            display: block; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700;
+        }
+        /* Every input type the app actually uses. Listing only text and date left
+           the email and number fields with the browser's white default, which
+           looked broken against the dark form around them. */
+        select,
+        input[type="text"], input[type="email"], input[type="number"],
+        input[type="date"], input[type="tel"], input[type="search"] {
+            width: 100%; font: inherit; font-size: 14px;
+            background: var(--row-alt); color: var(--text);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 9px 11px; transition: var(--transition);
+        }
+        select:focus, input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+        /* Dark form controls: makes the native date picker and number spinners legible. */
+        .collab-form input, .collab-form select, .collab-form textarea { color-scheme: dark; }
+        .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+        .btn {
+            appearance: none; font: inherit; font-size: 14px; font-weight: 600;
+            border-radius: var(--radius-sm); padding: 10px 18px; cursor: pointer;
+            border: 1px solid transparent; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-primary { background: var(--red); color: #1E0033; border-color: var(--red); }
+        .btn-primary:hover { background: var(--red-bright); }
+        .btn-ghost { background: transparent; color: var(--text-soft); border-color: var(--border-light); }
+        .btn-ghost:hover { color: var(--text); border-color: var(--red); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-sm { padding: 6px 13px; font-size: 12.5px; }
+        .btn-success { background: var(--green); color: #062B20; border-color: var(--green); }
+        .btn-success:hover { background: #4AE0B0; }
+        .variant-note { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+        .out-wrap { margin-top: 18px; display: none; }
+        .out-wrap.show { display: block; }
+        .out-head {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+        }
+        .chip {
+            font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: var(--row-alt); color: var(--text-soft); border: 1px solid var(--border);
+        }
+        .chip.accent { background: var(--red-dim); color: var(--red-bright); border-color: rgba(168,85,247,0.3); }
+        .out {
+            background: var(--row-alt); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 16px;
+            font-size: 14.5px; line-height: 1.65; white-space: pre-wrap;
+            word-wrap: break-word; font-family: inherit;
+        }
+        .out .beat { color: var(--red-bright); font-weight: 700; }
+        .meta-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--text-muted); }
+
+        .guard {
+            margin-top: 14px; padding: 12px 14px;
+            background: var(--amber-dim); border: 1px solid rgba(246,184,61,0.3);
+            border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.5;
+        }
+        .guard strong { color: var(--amber); }
+        .guard ul { margin: 6px 0 0 18px; }
+        .guard li { margin-bottom: 3px; }
+
+        .ref h3 { font-size: 14px; font-weight: 700; margin: 18px 0 7px; color: var(--red-bright); }
+        .ref h3:first-child { margin-top: 0; }
+        .ref h4 { font-size: 12.5px; font-weight: 700; margin: 14px 0 5px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.6px; }
+        .ref p { margin-bottom: 10px; font-size: 14px; }
+        .ref ul, .ref ol { margin: 0 0 12px 20px; }
+        .ref li { margin-bottom: 4px; font-size: 14px; }
+        .ref .lead { font-size: 15px; font-weight: 600; }
+        .ref code {
+            background: var(--row-alt); padding: 1px 5px; border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--cyan);
+        }
+        .ref table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 13px; }
+        .ref th, .ref td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .ref th { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; }
+        .callout {
+            padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 14px;
+            border: 1px solid var(--border); background: var(--row-alt); font-size: 13.5px;
+        }
+        .callout.warn { background: var(--amber-dim); border-color: rgba(246,184,61,0.3); }
+        .callout.good { background: var(--green-dim); border-color: rgba(45,212,160,0.3); }
+        .callout.bad  { background: var(--red-dim); border-color: rgba(168,85,247,0.3); }
+        .bank-list { columns: 2; column-gap: 22px; }
+        .bank-list li { break-inside: avoid; margin-bottom: 7px; font-size: 13.5px; }
+
+        .tab-count {
+            display: inline-block; min-width: 17px; padding: 0 5px;
+            margin-left: 3px; border-radius: 999px;
+            background: var(--red-dim); color: var(--red-bright);
+            font-size: 10.5px; font-weight: 700; line-height: 16px; text-align: center;
+        }
+        .tab-count:empty { display: none; }
+        .saved-item {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 13px; margin-bottom: 12px; background: var(--panel);
+        }
+        .saved-item .out-head { margin-bottom: 9px; padding-bottom: 8px; }
+        .saved-text { font-size: 13.5px; max-height: 220px; overflow-y: auto; }
+        .saved-item .actions { margin-top: 10px; }
+        .badge-used { color: var(--green); }
+        .badge-discarded { color: var(--text-muted); }
+
+        .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .cond-grid .field { margin-bottom: 0; }
+        .cond-actions { margin-top: 14px; }
+        .cond-status {
+            font-size: 12px; color: var(--text-soft);
+            padding: 8px 12px; background: var(--row-alt);
+            border-radius: var(--radius-sm); margin-bottom: 12px;
+            border-left: 2px solid var(--red);
+        }
+        .cond-status .label { color: var(--text-muted); font-weight: 600; }
+
+        /* ── Cycles ─────────────────────────────────────────────────── */
+        .cycle-item { border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 14px; margin-bottom: 12px; background: var(--panel); }
+        .cycle-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 7px; }
+        .cycle-code { font-weight: 700; font-size: 15px; letter-spacing: 0.3px; }
+        .cycle-meta { font-size: 12.5px; color: var(--text-soft); margin-bottom: 10px; }
+        .cycle-note { font-size: 13px; color: var(--text-soft); margin-top: 8px; white-space: pre-wrap; }
+        .cycle-exec { margin-left: auto; font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+        .cycle-exec.good { color: var(--green); }
+        .cycle-exec.part { color: var(--amber); }
+        .cycle-exec.none { color: var(--text-muted); }
+
+        .pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+            padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+            background: var(--row-alt); color: var(--text-soft); }
+        .pill.ok   { background: var(--green-dim); color: var(--green); border-color: rgba(45,212,160,.3); }
+        .pill.soon { background: var(--amber-dim); color: var(--amber); border-color: rgba(246,184,61,.3); }
+        .pill.over { background: rgba(255,107,107,.12); color: #FF8A8A; border-color: rgba(255,107,107,.3); }
+
+        .move-row { display: flex; align-items: center; gap: 10px; padding: 7px 0;
+            border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .move-n { width: 20px; height: 20px; flex: none; border-radius: 50%;
+            background: var(--row-alt); color: var(--text-soft);
+            font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+        .move-text { flex: 1 1 260px; font-size: 13.5px; line-height: 1.45; min-width: 0; }
+        .move-text.is-done { color: var(--text-muted); text-decoration: line-through; }
+
+        .seg { display: flex; gap: 0; flex: none; border: 1px solid var(--border);
+            border-radius: 999px; overflow: hidden; }
+        .seg-btn { appearance: none; border: none; background: transparent; cursor: pointer;
+            font: inherit; font-size: 11px; font-weight: 600; padding: 5px 11px;
+            color: var(--text-soft); transition: var(--transition); white-space: nowrap; }
+        .seg-btn:hover { color: var(--text); background: var(--row-alt); }
+        .seg-btn.on { background: var(--red); color: #1E0033; }
+
+        /* ── Close dialog ───────────────────────────────────────────── */
+        #close-overlay { position: fixed; inset: 0; z-index: 500;
+            background: rgba(10, 18, 32, 0.82); backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #close-overlay.hidden { display: none; }
+        .close-box { background: var(--main-blue); border: 1px solid var(--border-light);
+            border-radius: var(--radius); padding: 24px; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
+        .close-box h2 { font-size: 17px; margin-bottom: 4px; }
+        .close-box .sub { font-size: 13px; color: var(--text-soft); margin-bottom: 16px; }
+        .close-box textarea { width: 100%; font: inherit; font-size: 14px; background: var(--row-alt);
+            color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 9px 11px; resize: vertical; color-scheme: dark; }
+        .field-label { display: block; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 7px; font-weight: 700; }
+        .radio-row { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0;
+            font-size: 13.5px; cursor: pointer; flex-wrap: wrap; }
+        .radio-row.disabled { color: var(--text-muted); cursor: not-allowed; }
+        .radio-row input { margin-top: 3px; accent-color: var(--red); flex: none; }
+        .radio-why { flex: 1 1 100%; font-size: 12px; color: var(--amber); padding-left: 24px; }
+
+        .toast {
+            position: fixed; left: 50%; bottom: calc(22px + var(--safe-bottom));
+            transform: translateX(-50%) translateY(12px);
+            background: var(--green); color: #062B20; font-weight: 700; font-size: 13.5px;
+            padding: 10px 20px; border-radius: 999px; box-shadow: var(--shadow);
+            opacity: 0; pointer-events: none; transition: var(--transition); z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%); }
+
+        @media (max-width: 720px) {
+            .brand-lockup { display: none; }
+            .brand-mark { display: block; }
+            .bank-list { columns: 1; }
+            .header-note {
+                font-size: 10px;
+                gap: 4px;
+            }
+            .header-note #status-label {
+                display: none;
+            }
+            .header-note .dot-status {
+                width: 8px;
+                height: 8px;
+            }
+            .header-note #condition-badge {
+                font-size: 8px;
+                padding: 1px 5px;
+                margin-left: 4px !important;
+            }
+            main { padding: 16px 12px; }
+            .card { padding: 15px; }
+            .cond-grid { grid-template-columns: 1fr; }
+            .brand-badge { display: none; }
+        }
+
+        @media (max-width: 420px) {
+            .header-actions {
+                gap: 4px;
+            }
+            .btn-logout {
+                font-size: 10px;
+                padding: 2px 6px;
+                min-height: 28px;
+            }
+            .header-note .dot-status {
+                width: 6px;
+                height: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── LOGIN OVERLAY ─── -->
+<div id="login-overlay">
+    <div class="login-box">
+        <div class="login-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" class="login-lockup" role="img" aria-label="EcomForges" focusable="false">
+                                <defs><linearGradient id="fs-login-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#3B0764"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs>
+                                <path fill="url(#fs-login-lockup-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                                <path fill="#FFFFFF" d="M580.93 0.33c-0.03 0.17 -1.20 0.47 -2.53 0.67c-1.37 0.17 -2.73 0.50 -3.07 0.67c-0.33 0.20 -0.87 0.33 -1.13 0.33c-1.00 -0.00 -5.40 2.33 -7.37 3.90c-5.03 4.07 -7.37 10.70 -7.60 21.77l-0.07 3.17l-4.33 0.17l-4.33 0.17l0.00 6.33l0.00 6.33l4.33 0.17l4.33 0.17l0.17 31.83l0.17 31.83l8.00 -0.00l8.00 -0.00l0.07 -31.63c0.07 -17.43 0.20 -31.77 0.37 -31.93c0.13 -0.13 3.33 -0.30 7.07 -0.33l6.83 -0.10l0.00 -6.33l0.00 -6.33l-6.83 -0.10c-3.73 -0.03 -6.97 -0.23 -7.13 -0.40c-0.37 -0.37 -0.37 -5.33 -0.03 -8.37c0.60 -5.33 3.07 -7.80 8.67 -8.63c3.97 -0.60 4.07 -0.63 4.20 -1.07c0.07 -0.23 0.10 -3.17 0.03 -6.53l-0.10 -6.07l-3.80 -0.00c-2.13 -0.00 -3.83 0.13 -3.90 0.33zM202.67 29.97c-19.93 1.80 -33.27 17.53 -33.37 39.40c-0.07 14.27 5.63 26.27 15.87 33.33c7.13 4.90 12.73 6.47 22.83 6.43c5.40 -0.00 7.33 -0.13 9.17 -0.60c8.27 -2.13 12.37 -4.43 18.07 -10.27c3.27 -3.33 5.20 -6.30 7.27 -11.03c1.00 -2.27 1.13 -2.23 -7.97 -2.23c-8.17 -0.00 -8.17 -0.00 -9.57 2.07c-3.90 5.70 -8.73 8.43 -15.70 8.83c-10.67 0.63 -19.80 -5.67 -22.63 -15.57c-0.63 -2.20 -0.83 -4.67 -0.37 -4.67c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.90 -0.03 29.00 -0.17 29.33 -0.50c0.30 -0.30 0.40 -2.10 0.40 -7.00c0.00 -6.97 -0.53 -10.47 -2.13 -14.73c-0.40 -1.00 -0.83 -2.20 -0.97 -2.67c-0.27 -0.80 -2.33 -4.33 -3.80 -6.47c-0.40 -0.57 -1.93 -2.30 -3.40 -3.80c-7.67 -8.00 -18.87 -11.60 -32.17 -10.43zM211.97 43.63c8.73 1.70 14.77 7.33 16.27 15.17c0.47 2.33 0.47 2.90 0.13 3.33c-0.67 0.80 -41.93 0.80 -42.23 0.03c-0.47 -1.20 1.57 -6.80 3.60 -10.00c1.53 -2.37 7.17 -7.17 8.40 -7.17c0.17 -0.00 0.73 -0.23 1.30 -0.50c3.20 -1.47 7.77 -1.77 12.53 -0.87zM282.83 29.97c-4.13 0.43 -8.37 1.63 -12.23 3.53c-15.07 7.40 -22.87 24.27 -19.97 43.17c0.60 4.00 2.03 9.40 2.97 11.20c0.17 0.33 0.67 1.30 1.07 2.13c4.10 8.00 11.63 14.53 19.93 17.30c5.93 2.00 17.03 2.60 22.73 1.20c11.07 -2.67 18.63 -8.43 23.43 -17.83c1.67 -3.23 2.60 -6.03 2.20 -6.53c-0.37 -0.47 -14.67 -0.67 -16.17 -0.27c-0.37 0.13 -1.10 1.13 -1.77 2.57c-5.27 11.00 -22.20 12.97 -31.50 3.70c-5.40 -5.37 -7.73 -14.00 -6.77 -25.13c1.03 -11.70 7.17 -19.43 17.03 -21.47c9.30 -1.90 17.70 1.97 21.67 9.97c0.37 0.73 0.83 1.43 1.00 1.57c0.67 0.47 16.53 0.30 16.57 -0.17c0.20 -2.03 -2.37 -7.90 -5.07 -11.57c-7.30 -9.97 -20.10 -14.83 -35.13 -13.37zM363.00 29.97c-3.27 0.33 -9.20 1.73 -10.17 2.40c-0.20 0.13 -1.00 0.47 -1.77 0.73c-3.03 1.03 -7.80 4.30 -10.90 7.40c-8.77 8.77 -12.47 19.97 -11.23 33.83c1.43 15.70 10.93 28.27 24.87 32.87c5.37 1.77 6.47 1.90 13.37 1.93c12.40 -0.00 20.97 -3.30 28.83 -11.13c5.53 -5.53 8.30 -10.60 10.53 -19.50c0.87 -3.33 0.87 -14.20 0.00 -18.00c-0.63 -2.87 -1.67 -6.47 -2.17 -7.43c-0.13 -0.30 -0.60 -1.33 -1.03 -2.23c-3.07 -6.93 -9.47 -13.30 -17.20 -17.10c-3.10 -1.53 -4.30 -1.93 -9.30 -3.20c-2.33 -0.60 -10.27 -0.90 -13.83 -0.57zM374.83 44.67c10.37 3.60 16.17 12.47 16.17 24.67c-0.03 17.10 -11.97 28.13 -27.90 25.80c-7.47 -1.10 -14.47 -7.30 -16.70 -14.80c-0.20 -0.63 -0.53 -1.77 -0.73 -2.50c-0.70 -2.30 -0.83 -12.63 -0.20 -15.17c2.00 -8.10 5.60 -13.43 10.87 -16.17c2.13 -1.10 2.40 -1.23 3.80 -1.73c3.53 -1.30 11.13 -1.33 14.70 -0.10zM452.00 30.00c-5.23 0.53 -11.97 3.53 -15.87 7.10c-2.43 2.20 -2.57 2.07 -2.53 -2.10c0.00 -2.33 -0.10 -3.57 -0.37 -3.73c-0.53 -0.33 -14.97 -0.33 -15.47 -0.00c-0.33 0.20 -0.40 8.33 -0.33 38.43l0.07 38.13l8.00 -0.00l8.00 -0.00l0.07 -22.17c0.03 -12.20 0.13 -23.37 0.27 -24.83c0.57 -7.73 5.37 -14.07 12.33 -16.33c2.87 -0.93 10.83 -0.97 13.50 -0.03c5.80 2.03 10.03 6.63 11.87 13.03c0.53 1.80 0.60 4.37 0.70 25.83c0.07 13.10 0.10 24.03 0.10 24.23c0.00 0.33 1.80 0.43 7.83 0.43l7.83 -0.00l0.03 -22.60c0.03 -12.40 0.10 -23.00 0.17 -23.50c1.47 -12.50 8.83 -18.83 21.13 -18.10c3.77 0.23 5.80 0.80 8.67 2.43c2.27 1.27 5.47 4.67 6.40 6.73c0.37 0.83 0.87 1.97 1.10 2.53c1.33 3.07 1.50 6.17 1.50 29.73l0.00 22.77l7.83 -0.00c6.03 -0.00 7.83 -0.10 7.83 -0.43c0.17 -17.70 -0.07 -49.60 -0.37 -51.57c-2.07 -13.50 -10.40 -22.60 -23.47 -25.53c-3.83 -0.87 -12.40 -0.80 -15.67 0.13c-8.10 2.30 -15.17 7.20 -18.00 12.50c-0.87 1.63 -1.17 1.57 -2.50 -0.53c-1.47 -2.30 -6.50 -7.20 -8.47 -8.23c-0.87 -0.47 -2.00 -1.03 -2.47 -1.30c-4.60 -2.47 -12.90 -3.73 -19.73 -3.03zM627.67 29.97c-17.50 1.47 -30.93 14.17 -33.83 32.03c-3.37 20.57 6.87 39.33 24.67 45.30c6.07 2.00 16.50 2.60 22.33 1.23c12.43 -2.90 21.73 -9.97 27.03 -20.60c0.63 -1.20 1.13 -2.37 1.13 -2.57c0.00 -0.20 0.20 -0.83 0.47 -1.43c3.80 -8.77 3.03 -24.03 -1.63 -33.30c-3.13 -6.17 -9.83 -13.47 -14.33 -15.53c-0.53 -0.23 -1.23 -0.60 -1.50 -0.77c-5.07 -3.27 -15.37 -5.13 -24.33 -4.37zM639.17 44.53c2.67 0.90 5.50 2.43 7.50 3.97c2.27 1.80 2.27 1.77 5.73 6.90c0.33 0.50 0.60 1.10 0.60 1.37c0.00 0.23 0.13 0.57 0.30 0.73c1.00 1.10 2.13 7.37 2.13 11.83c0.07 16.93 -10.97 27.57 -26.93 25.90c-9.80 -1.03 -17.50 -9.33 -18.70 -20.23c-0.70 -6.40 0.17 -15.17 1.77 -17.50c0.23 -0.37 0.43 -0.83 0.43 -1.10c0.00 -0.83 2.97 -4.90 5.07 -6.97c2.83 -2.77 6.53 -4.63 10.77 -5.47c2.27 -0.43 9.47 -0.10 11.33 0.57zM717.00 30.00c-4.37 0.37 -9.90 2.73 -13.40 5.67c-1.90 1.57 -4.33 4.40 -4.73 5.47c-0.53 1.47 -0.87 -0.27 -0.93 -4.97l-0.10 -5.00l-7.83 -0.00l-7.83 -0.00l0.00 38.33l0.00 38.33l7.93 0.10l7.90 0.07l0.03 -22.07c0.03 -23.13 0.03 -22.87 0.63 -25.87c1.97 -9.67 7.23 -13.53 18.83 -13.83l3.33 -0.07l0.00 -8.17c0.00 -9.37 0.47 -8.40 -3.83 -8.00zM757.00 29.97c-11.97 1.17 -23.97 10.03 -28.47 21.03c-0.33 0.83 -0.80 1.93 -1.03 2.50c-0.43 1.00 -1.10 3.43 -1.87 6.83c-0.77 3.50 -0.77 13.03 0.00 17.17c0.87 4.73 2.30 9.53 3.07 10.30c0.17 0.20 0.30 0.53 0.30 0.77c0.00 1.87 6.37 10.03 10.20 13.13c6.70 5.37 12.90 7.43 22.13 7.43c7.00 -0.00 9.47 -0.50 14.67 -2.90c3.73 -1.70 10.37 -6.80 10.83 -8.27c1.30 -4.10 1.80 13.17 0.53 18.27c-2.07 8.17 -5.97 12.50 -13.70 15.17c-4.10 1.40 -13.13 1.00 -17.17 -0.77c-0.37 -0.17 -1.07 -0.43 -1.53 -0.60c-3.83 -1.37 -9.30 -6.87 -10.10 -10.13c-0.20 -0.90 -0.20 -0.90 -8.03 -0.90c-7.83 -0.00 -7.83 -0.00 -7.83 1.50c0.00 0.83 0.23 2.07 0.50 2.73c0.27 0.63 0.50 1.40 0.50 1.70c0.00 0.90 2.60 5.90 4.03 7.77c4.03 5.17 10.70 9.57 17.47 11.50c8.60 2.50 22.47 2.47 29.27 -0.07c6.47 -2.40 12.37 -6.50 15.67 -10.87c3.40 -4.53 4.77 -7.37 6.93 -14.60c0.33 -1.20 0.47 -9.77 0.53 -44.60l0.13 -43.07l-7.93 0.07l-7.93 0.10l-0.10 5.07c-0.10 5.47 -0.30 6.03 -1.57 4.00c-0.63 -1.00 -4.97 -4.60 -6.33 -5.27c-0.37 -0.17 -1.27 -0.63 -2.00 -1.07c-5.87 -3.30 -13.27 -4.67 -21.17 -3.93zM771.50 44.60c2.93 1.10 3.63 1.43 5.33 2.47c3.90 2.43 7.73 7.20 9.33 11.63c1.33 3.63 1.57 4.97 1.73 9.80c0.17 5.27 -0.20 7.77 -1.83 12.03c-3.30 8.73 -11.67 14.73 -20.67 14.87c-5.07 0.07 -7.83 -0.67 -13.00 -3.37c-0.50 -0.27 -2.10 -1.70 -3.57 -3.17c-5.00 -5.03 -7.53 -11.73 -7.53 -19.70c0.03 -11.87 6.07 -20.90 16.37 -24.53c3.23 -1.10 10.83 -1.13 13.83 -0.03zM847.50 29.97c-2.93 0.23 -3.83 0.43 -8.10 1.73c-10.23 3.13 -19.10 11.73 -22.63 21.93c-3.73 10.90 -3.17 25.07 1.40 34.90c4.07 8.70 12.00 15.73 21.17 18.80c6.30 2.10 18.57 2.63 23.50 1.03c0.57 -0.20 2.00 -0.63 3.27 -1.00c1.23 -0.40 2.50 -0.83 2.83 -1.00c0.30 -0.17 0.93 -0.47 1.40 -0.67c4.10 -1.77 10.60 -7.33 13.30 -11.40c1.80 -2.67 4.47 -8.20 4.23 -8.80c-0.17 -0.43 -1.40 -0.50 -8.30 -0.50c-8.07 -0.00 -8.13 -0.00 -8.83 0.77c-0.40 0.43 -0.73 0.97 -0.73 1.17c0.00 0.60 -4.30 5.03 -5.83 6.03c-5.70 3.70 -14.83 4.00 -21.67 0.67c-3.03 -1.47 -7.90 -6.20 -9.27 -9.03c-1.73 -3.63 -2.93 -8.93 -1.97 -8.93c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.77 -0.03 29.00 -0.17 29.33 -0.50c0.67 -0.67 0.53 -13.63 -0.20 -16.40c-2.27 -8.60 -5.20 -13.97 -10.27 -18.87c-7.87 -7.63 -18.43 -10.90 -31.77 -9.83zM856.37 43.50c2.87 0.53 4.13 0.97 7.30 2.47c2.10 1.00 6.87 5.57 7.70 7.37c1.77 3.77 2.77 8.50 1.93 9.03c-0.27 0.17 -9.80 0.30 -21.23 0.30c-23.67 -0.00 -21.53 0.33 -20.57 -3.27c2.07 -7.83 8.40 -14.23 15.50 -15.70c1.00 -0.20 2.13 -0.43 2.50 -0.50c1.50 -0.30 4.27 -0.17 6.87 0.30zM921.83 30.00c-15.77 1.60 -25.83 12.13 -24.10 25.17c1.03 7.73 5.03 12.23 14.77 16.50c0.60 0.27 4.87 1.67 8.50 2.80c0.83 0.23 2.47 0.73 3.67 1.03c9.20 2.50 15.00 5.10 16.43 7.43c2.43 3.83 0.63 8.90 -4.00 11.30c-4.60 2.40 -13.07 2.23 -17.87 -0.33c-3.17 -1.67 -6.23 -5.67 -6.23 -8.10c0.00 -1.27 -1.03 -1.43 -8.40 -1.43c-7.77 -0.00 -8.27 0.07 -8.27 1.13c0.00 5.67 4.07 12.73 9.83 17.07c6.40 4.83 12.23 6.53 22.17 6.57c9.53 -0.00 14.80 -1.40 20.43 -5.40c4.20 -2.97 8.23 -8.47 8.23 -11.20c0.00 -0.40 0.23 -1.03 0.50 -1.40c0.67 -0.90 0.67 -7.93 0.00 -9.13c-0.27 -0.47 -0.50 -1.13 -0.50 -1.50c-0.10 -2.70 -4.80 -8.43 -8.83 -10.73c-1.50 -0.83 -4.93 -2.47 -6.27 -2.97c-3.00 -1.07 -7.50 -2.50 -9.90 -3.17c-1.37 -0.37 -3.10 -0.87 -3.83 -1.10c-0.73 -0.23 -2.90 -0.93 -4.83 -1.57c-1.93 -0.60 -3.73 -1.30 -4.03 -1.53c-0.27 -0.23 -0.70 -0.43 -0.90 -0.43c-0.23 -0.00 -1.30 -0.90 -2.37 -1.97c-1.67 -1.67 -2.03 -2.23 -2.23 -3.53c-0.93 -6.40 3.83 -10.33 12.53 -10.30c8.10 0.07 12.77 3.20 14.50 9.80c0.37 1.50 0.37 1.50 8.10 1.57c7.43 0.07 7.70 0.03 7.90 -0.60c0.30 -0.93 -0.70 -6.37 -1.50 -7.93c-0.13 -0.30 -0.50 -1.10 -0.80 -1.80c-1.40 -3.23 -5.80 -7.97 -9.57 -10.20c-5.67 -3.40 -14.47 -4.93 -23.13 -4.03z"/>
+                            </svg>
+            <div class="login-brand-row">
+                <span class="brand-text">Forge<span>Sprint</span></span>
+                <span class="brand-badge">Delivery</span>
+            </div>
+        </div>
+        <p class="sub">Sign in with your EcomForges account</p>
+        <form id="login-form">
+            <input type="email" id="login-email" placeholder="you@ecomforges.com" required autocomplete="username" />
+            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
+            <div class="login-error" id="login-error"></div>
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+        <div class="login-footer">Only @ecomforges.com accounts are allowed</div>
+    </div>
+</div>
+
+<!-- ─── APP ROOT ─── -->
+<div id="app-root" style="display:none;">
+
+    <header>
+        <div class="top">
+            <div class="brand">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" width="958" height="147" class="brand-lockup" role="img" aria-label="EcomForges" focusable="false">
+                    <defs><linearGradient id="fs-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#3B0764"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs>
+                    <path fill="url(#fs-lockup-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                    <path fill="#FFFFFF" d="M580.93 0.33c-0.03 0.17 -1.20 0.47 -2.53 0.67c-1.37 0.17 -2.73 0.50 -3.07 0.67c-0.33 0.20 -0.87 0.33 -1.13 0.33c-1.00 -0.00 -5.40 2.33 -7.37 3.90c-5.03 4.07 -7.37 10.70 -7.60 21.77l-0.07 3.17l-4.33 0.17l-4.33 0.17l0.00 6.33l0.00 6.33l4.33 0.17l4.33 0.17l0.17 31.83l0.17 31.83l8.00 -0.00l8.00 -0.00l0.07 -31.63c0.07 -17.43 0.20 -31.77 0.37 -31.93c0.13 -0.13 3.33 -0.30 7.07 -0.33l6.83 -0.10l0.00 -6.33l0.00 -6.33l-6.83 -0.10c-3.73 -0.03 -6.97 -0.23 -7.13 -0.40c-0.37 -0.37 -0.37 -5.33 -0.03 -8.37c0.60 -5.33 3.07 -7.80 8.67 -8.63c3.97 -0.60 4.07 -0.63 4.20 -1.07c0.07 -0.23 0.10 -3.17 0.03 -6.53l-0.10 -6.07l-3.80 -0.00c-2.13 -0.00 -3.83 0.13 -3.90 0.33zM202.67 29.97c-19.93 1.80 -33.27 17.53 -33.37 39.40c-0.07 14.27 5.63 26.27 15.87 33.33c7.13 4.90 12.73 6.47 22.83 6.43c5.40 -0.00 7.33 -0.13 9.17 -0.60c8.27 -2.13 12.37 -4.43 18.07 -10.27c3.27 -3.33 5.20 -6.30 7.27 -11.03c1.00 -2.27 1.13 -2.23 -7.97 -2.23c-8.17 -0.00 -8.17 -0.00 -9.57 2.07c-3.90 5.70 -8.73 8.43 -15.70 8.83c-10.67 0.63 -19.80 -5.67 -22.63 -15.57c-0.63 -2.20 -0.83 -4.67 -0.37 -4.67c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.90 -0.03 29.00 -0.17 29.33 -0.50c0.30 -0.30 0.40 -2.10 0.40 -7.00c0.00 -6.97 -0.53 -10.47 -2.13 -14.73c-0.40 -1.00 -0.83 -2.20 -0.97 -2.67c-0.27 -0.80 -2.33 -4.33 -3.80 -6.47c-0.40 -0.57 -1.93 -2.30 -3.40 -3.80c-7.67 -8.00 -18.87 -11.60 -32.17 -10.43zM211.97 43.63c8.73 1.70 14.77 7.33 16.27 15.17c0.47 2.33 0.47 2.90 0.13 3.33c-0.67 0.80 -41.93 0.80 -42.23 0.03c-0.47 -1.20 1.57 -6.80 3.60 -10.00c1.53 -2.37 7.17 -7.17 8.40 -7.17c0.17 -0.00 0.73 -0.23 1.30 -0.50c3.20 -1.47 7.77 -1.77 12.53 -0.87zM282.83 29.97c-4.13 0.43 -8.37 1.63 -12.23 3.53c-15.07 7.40 -22.87 24.27 -19.97 43.17c0.60 4.00 2.03 9.40 2.97 11.20c0.17 0.33 0.67 1.30 1.07 2.13c4.10 8.00 11.63 14.53 19.93 17.30c5.93 2.00 17.03 2.60 22.73 1.20c11.07 -2.67 18.63 -8.43 23.43 -17.83c1.67 -3.23 2.60 -6.03 2.20 -6.53c-0.37 -0.47 -14.67 -0.67 -16.17 -0.27c-0.37 0.13 -1.10 1.13 -1.77 2.57c-5.27 11.00 -22.20 12.97 -31.50 3.70c-5.40 -5.37 -7.73 -14.00 -6.77 -25.13c1.03 -11.70 7.17 -19.43 17.03 -21.47c9.30 -1.90 17.70 1.97 21.67 9.97c0.37 0.73 0.83 1.43 1.00 1.57c0.67 0.47 16.53 0.30 16.57 -0.17c0.20 -2.03 -2.37 -7.90 -5.07 -11.57c-7.30 -9.97 -20.10 -14.83 -35.13 -13.37zM363.00 29.97c-3.27 0.33 -9.20 1.73 -10.17 2.40c-0.20 0.13 -1.00 0.47 -1.77 0.73c-3.03 1.03 -7.80 4.30 -10.90 7.40c-8.77 8.77 -12.47 19.97 -11.23 33.83c1.43 15.70 10.93 28.27 24.87 32.87c5.37 1.77 6.47 1.90 13.37 1.93c12.40 -0.00 20.97 -3.30 28.83 -11.13c5.53 -5.53 8.30 -10.60 10.53 -19.50c0.87 -3.33 0.87 -14.20 0.00 -18.00c-0.63 -2.87 -1.67 -6.47 -2.17 -7.43c-0.13 -0.30 -0.60 -1.33 -1.03 -2.23c-3.07 -6.93 -9.47 -13.30 -17.20 -17.10c-3.10 -1.53 -4.30 -1.93 -9.30 -3.20c-2.33 -0.60 -10.27 -0.90 -13.83 -0.57zM374.83 44.67c10.37 3.60 16.17 12.47 16.17 24.67c-0.03 17.10 -11.97 28.13 -27.90 25.80c-7.47 -1.10 -14.47 -7.30 -16.70 -14.80c-0.20 -0.63 -0.53 -1.77 -0.73 -2.50c-0.70 -2.30 -0.83 -12.63 -0.20 -15.17c2.00 -8.10 5.60 -13.43 10.87 -16.17c2.13 -1.10 2.40 -1.23 3.80 -1.73c3.53 -1.30 11.13 -1.33 14.70 -0.10zM452.00 30.00c-5.23 0.53 -11.97 3.53 -15.87 7.10c-2.43 2.20 -2.57 2.07 -2.53 -2.10c0.00 -2.33 -0.10 -3.57 -0.37 -3.73c-0.53 -0.33 -14.97 -0.33 -15.47 -0.00c-0.33 0.20 -0.40 8.33 -0.33 38.43l0.07 38.13l8.00 -0.00l8.00 -0.00l0.07 -22.17c0.03 -12.20 0.13 -23.37 0.27 -24.83c0.57 -7.73 5.37 -14.07 12.33 -16.33c2.87 -0.93 10.83 -0.97 13.50 -0.03c5.80 2.03 10.03 6.63 11.87 13.03c0.53 1.80 0.60 4.37 0.70 25.83c0.07 13.10 0.10 24.03 0.10 24.23c0.00 0.33 1.80 0.43 7.83 0.43l7.83 -0.00l0.03 -22.60c0.03 -12.40 0.10 -23.00 0.17 -23.50c1.47 -12.50 8.83 -18.83 21.13 -18.10c3.77 0.23 5.80 0.80 8.67 2.43c2.27 1.27 5.47 4.67 6.40 6.73c0.37 0.83 0.87 1.97 1.10 2.53c1.33 3.07 1.50 6.17 1.50 29.73l0.00 22.77l7.83 -0.00c6.03 -0.00 7.83 -0.10 7.83 -0.43c0.17 -17.70 -0.07 -49.60 -0.37 -51.57c-2.07 -13.50 -10.40 -22.60 -23.47 -25.53c-3.83 -0.87 -12.40 -0.80 -15.67 0.13c-8.10 2.30 -15.17 7.20 -18.00 12.50c-0.87 1.63 -1.17 1.57 -2.50 -0.53c-1.47 -2.30 -6.50 -7.20 -8.47 -8.23c-0.87 -0.47 -2.00 -1.03 -2.47 -1.30c-4.60 -2.47 -12.90 -3.73 -19.73 -3.03zM627.67 29.97c-17.50 1.47 -30.93 14.17 -33.83 32.03c-3.37 20.57 6.87 39.33 24.67 45.30c6.07 2.00 16.50 2.60 22.33 1.23c12.43 -2.90 21.73 -9.97 27.03 -20.60c0.63 -1.20 1.13 -2.37 1.13 -2.57c0.00 -0.20 0.20 -0.83 0.47 -1.43c3.80 -8.77 3.03 -24.03 -1.63 -33.30c-3.13 -6.17 -9.83 -13.47 -14.33 -15.53c-0.53 -0.23 -1.23 -0.60 -1.50 -0.77c-5.07 -3.27 -15.37 -5.13 -24.33 -4.37zM639.17 44.53c2.67 0.90 5.50 2.43 7.50 3.97c2.27 1.80 2.27 1.77 5.73 6.90c0.33 0.50 0.60 1.10 0.60 1.37c0.00 0.23 0.13 0.57 0.30 0.73c1.00 1.10 2.13 7.37 2.13 11.83c0.07 16.93 -10.97 27.57 -26.93 25.90c-9.80 -1.03 -17.50 -9.33 -18.70 -20.23c-0.70 -6.40 0.17 -15.17 1.77 -17.50c0.23 -0.37 0.43 -0.83 0.43 -1.10c0.00 -0.83 2.97 -4.90 5.07 -6.97c2.83 -2.77 6.53 -4.63 10.77 -5.47c2.27 -0.43 9.47 -0.10 11.33 0.57zM717.00 30.00c-4.37 0.37 -9.90 2.73 -13.40 5.67c-1.90 1.57 -4.33 4.40 -4.73 5.47c-0.53 1.47 -0.87 -0.27 -0.93 -4.97l-0.10 -5.00l-7.83 -0.00l-7.83 -0.00l0.00 38.33l0.00 38.33l7.93 0.10l7.90 0.07l0.03 -22.07c0.03 -23.13 0.03 -22.87 0.63 -25.87c1.97 -9.67 7.23 -13.53 18.83 -13.83l3.33 -0.07l0.00 -8.17c0.00 -9.37 0.47 -8.40 -3.83 -8.00zM757.00 29.97c-11.97 1.17 -23.97 10.03 -28.47 21.03c-0.33 0.83 -0.80 1.93 -1.03 2.50c-0.43 1.00 -1.10 3.43 -1.87 6.83c-0.77 3.50 -0.77 13.03 0.00 17.17c0.87 4.73 2.30 9.53 3.07 10.30c0.17 0.20 0.30 0.53 0.30 0.77c0.00 1.87 6.37 10.03 10.20 13.13c6.70 5.37 12.90 7.43 22.13 7.43c7.00 -0.00 9.47 -0.50 14.67 -2.90c3.73 -1.70 10.37 -6.80 10.83 -8.27c1.30 -4.10 1.80 13.17 0.53 18.27c-2.07 8.17 -5.97 12.50 -13.70 15.17c-4.10 1.40 -13.13 1.00 -17.17 -0.77c-0.37 -0.17 -1.07 -0.43 -1.53 -0.60c-3.83 -1.37 -9.30 -6.87 -10.10 -10.13c-0.20 -0.90 -0.20 -0.90 -8.03 -0.90c-7.83 -0.00 -7.83 -0.00 -7.83 1.50c0.00 0.83 0.23 2.07 0.50 2.73c0.27 0.63 0.50 1.40 0.50 1.70c0.00 0.90 2.60 5.90 4.03 7.77c4.03 5.17 10.70 9.57 17.47 11.50c8.60 2.50 22.47 2.47 29.27 -0.07c6.47 -2.40 12.37 -6.50 15.67 -10.87c3.40 -4.53 4.77 -7.37 6.93 -14.60c0.33 -1.20 0.47 -9.77 0.53 -44.60l0.13 -43.07l-7.93 0.07l-7.93 0.10l-0.10 5.07c-0.10 5.47 -0.30 6.03 -1.57 4.00c-0.63 -1.00 -4.97 -4.60 -6.33 -5.27c-0.37 -0.17 -1.27 -0.63 -2.00 -1.07c-5.87 -3.30 -13.27 -4.67 -21.17 -3.93zM771.50 44.60c2.93 1.10 3.63 1.43 5.33 2.47c3.90 2.43 7.73 7.20 9.33 11.63c1.33 3.63 1.57 4.97 1.73 9.80c0.17 5.27 -0.20 7.77 -1.83 12.03c-3.30 8.73 -11.67 14.73 -20.67 14.87c-5.07 0.07 -7.83 -0.67 -13.00 -3.37c-0.50 -0.27 -2.10 -1.70 -3.57 -3.17c-5.00 -5.03 -7.53 -11.73 -7.53 -19.70c0.03 -11.87 6.07 -20.90 16.37 -24.53c3.23 -1.10 10.83 -1.13 13.83 -0.03zM847.50 29.97c-2.93 0.23 -3.83 0.43 -8.10 1.73c-10.23 3.13 -19.10 11.73 -22.63 21.93c-3.73 10.90 -3.17 25.07 1.40 34.90c4.07 8.70 12.00 15.73 21.17 18.80c6.30 2.10 18.57 2.63 23.50 1.03c0.57 -0.20 2.00 -0.63 3.27 -1.00c1.23 -0.40 2.50 -0.83 2.83 -1.00c0.30 -0.17 0.93 -0.47 1.40 -0.67c4.10 -1.77 10.60 -7.33 13.30 -11.40c1.80 -2.67 4.47 -8.20 4.23 -8.80c-0.17 -0.43 -1.40 -0.50 -8.30 -0.50c-8.07 -0.00 -8.13 -0.00 -8.83 0.77c-0.40 0.43 -0.73 0.97 -0.73 1.17c0.00 0.60 -4.30 5.03 -5.83 6.03c-5.70 3.70 -14.83 4.00 -21.67 0.67c-3.03 -1.47 -7.90 -6.20 -9.27 -9.03c-1.73 -3.63 -2.93 -8.93 -1.97 -8.93c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.77 -0.03 29.00 -0.17 29.33 -0.50c0.67 -0.67 0.53 -13.63 -0.20 -16.40c-2.27 -8.60 -5.20 -13.97 -10.27 -18.87c-7.87 -7.63 -18.43 -10.90 -31.77 -9.83zM856.37 43.50c2.87 0.53 4.13 0.97 7.30 2.47c2.10 1.00 6.87 5.57 7.70 7.37c1.77 3.77 2.77 8.50 1.93 9.03c-0.27 0.17 -9.80 0.30 -21.23 0.30c-23.67 -0.00 -21.53 0.33 -20.57 -3.27c2.07 -7.83 8.40 -14.23 15.50 -15.70c1.00 -0.20 2.13 -0.43 2.50 -0.50c1.50 -0.30 4.27 -0.17 6.87 0.30zM921.83 30.00c-15.77 1.60 -25.83 12.13 -24.10 25.17c1.03 7.73 5.03 12.23 14.77 16.50c0.60 0.27 4.87 1.67 8.50 2.80c0.83 0.23 2.47 0.73 3.67 1.03c9.20 2.50 15.00 5.10 16.43 7.43c2.43 3.83 0.63 8.90 -4.00 11.30c-4.60 2.40 -13.07 2.23 -17.87 -0.33c-3.17 -1.67 -6.23 -5.67 -6.23 -8.10c0.00 -1.27 -1.03 -1.43 -8.40 -1.43c-7.77 -0.00 -8.27 0.07 -8.27 1.13c0.00 5.67 4.07 12.73 9.83 17.07c6.40 4.83 12.23 6.53 22.17 6.57c9.53 -0.00 14.80 -1.40 20.43 -5.40c4.20 -2.97 8.23 -8.47 8.23 -11.20c0.00 -0.40 0.23 -1.03 0.50 -1.40c0.67 -0.90 0.67 -7.93 0.00 -9.13c-0.27 -0.47 -0.50 -1.13 -0.50 -1.50c-0.10 -2.70 -4.80 -8.43 -8.83 -10.73c-1.50 -0.83 -4.93 -2.47 -6.27 -2.97c-3.00 -1.07 -7.50 -2.50 -9.90 -3.17c-1.37 -0.37 -3.10 -0.87 -3.83 -1.10c-0.73 -0.23 -2.90 -0.93 -4.83 -1.57c-1.93 -0.60 -3.73 -1.30 -4.03 -1.53c-0.27 -0.23 -0.70 -0.43 -0.90 -0.43c-0.23 -0.00 -1.30 -0.90 -2.37 -1.97c-1.67 -1.67 -2.03 -2.23 -2.23 -3.53c-0.93 -6.40 3.83 -10.33 12.53 -10.30c8.10 0.07 12.77 3.20 14.50 9.80c0.37 1.50 0.37 1.50 8.10 1.57c7.43 0.07 7.70 0.03 7.90 -0.60c0.30 -0.93 -0.70 -6.37 -1.50 -7.93c-0.13 -0.30 -0.50 -1.10 -0.80 -1.80c-1.40 -3.23 -5.80 -7.97 -9.57 -10.20c-5.67 -3.40 -14.47 -4.93 -23.13 -4.03z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.000 8.500 120.688 131.562" width="120.7" height="131.6" class="brand-mark" role="img" aria-label="EcomForges" focusable="false">
+                    <defs><linearGradient id="fs-mark-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#3B0764"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs>
+                    <path fill="url(#fs-mark-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                </svg>
+                <span class="brand-rule"></span>
+                <span class="brand-text">Forge<span>Sprint</span></span>
+                <span class="brand-badge">Delivery</span>
+            </div>
+            <div class="header-actions">
+                <span class="header-note" id="header-note">
+                    <span class="dot-status" id="status-dot"></span>
+                    <span id="status-label">Loading…</span>
+                    <span id="condition-badge" style="margin-left:8px;background:var(--red-dim);padding:2px 8px;border-radius:12px;font-size:10px;color:var(--red-bright);display:none;"></span>
+                </span>
+                <button class="btn-logout" id="logout-btn" title="Logout">🚪</button>
+            </div>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Sections">
+            <button class="tab" role="tab" aria-selected="true"  id="tab-cycles"  aria-controls="panel-cycles"  data-panel="cycles">Open cycles <span class="tab-count" id="cycles-count"></span></button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-new"     aria-controls="panel-new"     data-panel="new">Start a cycle</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-history" aria-controls="panel-history" data-panel="history">History</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-method"  aria-controls="panel-method"  data-panel="method">Method</button>
+        </nav>
+    </header>
+
+        <main>
+        <!-- OPEN CYCLES -->
+        <section class="panel-body active" id="panel-cycles" role="tabpanel" aria-labelledby="tab-cycles">
+            <div class="card">
+                <h2><span class="dot"></span>Open cycles</h2>
+                <p class="sub">One constraint, three moves, one number, thirty days. Everything running
+                    right now, and how far through it is. <span id="cycles-sync-hint"></span></p>
+                <div id="cycles-list"></div>
+            </div>
+        </section>
+
+        <!-- START A CYCLE -->
+        <section class="panel-body" id="panel-new" role="tabpanel" aria-labelledby="tab-new">
+            <div class="card">
+                <h2><span class="dot"></span>Start a cycle</h2>
+                <p class="sub">Pick the Forge Track and the constraint, metric and three moves come with
+                    it — the same ones the calculator and the analyst already hand the client. Edit them
+                    to match what was actually agreed in the session.</p>
+
+                <form id="cycle-form">
+                    <div class="controls">
+                        <div class="field">
+                            <label for="c-client">Client code *</label>
+                            <input type="text" id="c-client" placeholder="MY-BTY-09" required
+                                   autocomplete="off" spellcheck="false" />
+                            <div class="hint">A code, never a business name — same rule as the analyst.</div>
+                        </div>
+                        <div class="field">
+                            <label for="c-track">Forge Track *</label>
+                            <select id="c-track"></select>
+                            <div class="hint" id="c-track-hint"></div>
+                        </div>
+                        <div class="field">
+                            <label for="c-owner">Who owns execution *</label>
+                            <input type="text" id="c-owner" placeholder="One name" required autocomplete="off" />
+                            <div class="hint">One name. A sprint that belongs to everyone gets run by nobody.</div>
+                        </div>
+                        <div class="field">
+                            <label for="c-opened">Cycle starts</label>
+                            <input type="date" id="c-opened" />
+                            <div class="hint">Thirty days runs from here.</div>
+                        </div>
+                    </div>
+
+                    <div class="controls" style="margin-top:12px">
+                        <div class="field">
+                            <label for="c-constraint">The constraint</label>
+                            <input type="text" id="c-constraint" />
+                        </div>
+                        <div class="field">
+                            <label for="c-metric">The one number *</label>
+                            <input type="text" id="c-metric" required />
+                        </div>
+                        <div class="field">
+                            <label for="c-baseline">Reading now *</label>
+                            <input type="number" id="c-baseline" step="any" required placeholder="0" />
+                            <div class="hint">Where the number sits today. Without it there is nothing to compare.</div>
+                        </div>
+                        <div class="field">
+                            <label for="c-direction">A win means</label>
+                            <select id="c-direction">
+                                <option value="up">the number goes up</option>
+                                <option value="down">the number goes down</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size:13px;margin:18px 0 8px;color:var(--red-bright)">The three moves, in order</h3>
+                    <div class="field"><label for="c-move1">1</label><input type="text" id="c-move1" /></div>
+                    <div class="field" style="margin-top:8px"><label for="c-move2">2</label><input type="text" id="c-move2" /></div>
+                    <div class="field" style="margin-top:8px"><label for="c-move3">3</label><input type="text" id="c-move3" /></div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary" id="c-save">Open the cycle</button>
+                        <button type="button" class="btn btn-ghost" id="c-reset">Reset</button>
+                        <span class="variant-note" id="c-note"></span>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="panel-body" id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+            <div class="card">
+                <h2><span class="dot"></span>History</h2>
+                <p class="sub">Closed cycles, newest first. This is the record that makes Continue,
+                    Coach or Pause an argument rather than an opinion.</p>
+                <div class="actions" style="margin-top:0;margin-bottom:12px">
+                    <label for="h-client" class="sr-only">Filter by client code</label>
+                    <select id="h-client" aria-label="Filter by client code" style="max-width:220px"></select>
+                    <button type="button" class="btn btn-ghost btn-sm" id="h-export">Export CSV</button>
+                    <span class="variant-note" id="h-summary"></span>
+                </div>
+                <div id="history-list"></div>
+            </div>
+        </section>
+
+        <!-- METHOD -->
+        <section class="panel-body" id="panel-method" role="tabpanel" aria-labelledby="tab-method">
+            <div class="card ref" id="ref-method"></div>
+        </section>
+    </main>
+
+    <!-- CLOSE-CYCLE DIALOG -->
+    <div id="close-overlay" class="hidden">
+        <div class="close-box">
+            <h2 id="close-title">Close the cycle</h2>
+            <p class="sub" id="close-sub"></p>
+
+            <div class="field">
+                <label for="close-value">Reading now *</label>
+                <input type="number" id="close-value" step="any" placeholder="0" />
+            </div>
+
+            <div id="close-verdict"></div>
+
+            <div class="field" style="margin-top:12px">
+                <label for="close-note">Note (optional)</label>
+                <textarea id="close-note" rows="2" placeholder="What actually happened."></textarea>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-primary" id="close-confirm">Close cycle</button>
+                <button type="button" class="btn btn-ghost" id="close-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied</div>
+</div>
+
+<!-- ─── Firebase SDKs ─── -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   ForgeSprint — the thirty days between sessions.
+
+   The calculator picks the track. The analyst reads the numbers. Both close
+   their decks with the same promise:
+
+       "By the next session, [metric] should have moved. If it has not,
+        either the sprint was not executed or the reading was wrong —
+        and we will say which."
+
+   Answering *which* needs a record of whether the three moves were done.
+   That record is this tool. Everything else here exists to produce it.
+
+   Client codes only, never business names — the same rule the analyst keeps.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+// ─── Firebase (same project and gate as LeadForge and ForgeMarketing) ──
+const firebaseConfig = {
+    apiKey: "AIzaSyDAm72A60sM9ILdiEw3Z1HJJ7P_-viggJ8",
+    authDomain: "leadforge-ffeef.firebaseapp.com",
+    databaseURL: "https://leadforge-ffeef-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "leadforge-ffeef",
+    storageBucket: "leadforge-ffeef.firebasestorage.app",
+    messagingSenderId: "342516241320",
+    appId: "1:342516241320:web:1db878185ef8db706d039d"
+};
+const ALLOWED_DOMAIN = '@ecomforges.com';
+
+// ─── Forge Tracks ───────────────────────────────────────────────────────
+// Constraint, metric and the three moves are the calculator's, so a cycle
+// opened here is the same sprint the client was handed in the session. If
+// index.html changes these, change them here too.
+const TRACKS = {
+    conversion: {
+        name: 'Conversion Forge', constraint: 'Buying efficiency', metric: 'CVR', direction: 'up',
+        when: 'High traffic, CVR below category benchmark',
+        moves: [
+            'Fix — reorder listing images so the first image answers "what is this" in under two seconds',
+            'Run — 3-day flash voucher targeted only at product page visitors who did not convert',
+            'Optimise — rewrite the top listing description to lead with the most common buyer objection'
+        ]
+    },
+    sales: {
+        name: 'Sales Forge', constraint: 'GMV structure and mechanics', metric: 'GMV / repeat rate', direction: 'up',
+        when: 'Revenue promo-dependent, GMV structure weak or unscalable',
+        moves: [
+            'Fix — add manual bundle suggestions to the top SKUs before the next campaign date',
+            'Run — CRM broadcast to buyers who purchased 60–90 days ago and have not returned',
+            'Optimise — shift 30% of ad spend from broad keywords to the top 2 exact-match terms'
+        ]
+    },
+    traffic: {
+        name: 'Traffic Forge', constraint: 'Volume acquisition', metric: 'Sessions / organic share', direction: 'up',
+        when: 'Conversion healthy, not enough people arriving',
+        moves: [
+            'Fix — update listing titles on the top 5 listings to include the category\u2019s top 3 search keywords',
+            'Run — activate a Flash Deal slot for the hero SKU as an indexing event, not a sales event',
+            'Optimise — increase Search Ads budget 20% on the single best keyword, pause the two worst ad groups'
+        ]
+    },
+    basket: {
+        name: 'Basket Forge', constraint: 'Revenue per transaction', metric: 'AOV', direction: 'up',
+        when: 'Orders healthy, each one too small',
+        moves: [
+            'Fix — set the free shipping threshold 20–25% above current AOV',
+            'Run — create one bundle SKU from the top two products at a 10% saving',
+            'Optimise — add a Frequently Bought Together block inside the top 3 listing descriptions'
+        ]
+    }
+};
+
+const MOVE_STATES = [
+    { id: 'notstarted', label: 'Not started', score: 0 },
+    { id: 'part',       label: 'Part done',   score: 0.5 },
+    { id: 'done',       label: 'Done',        score: 1 }
+];
+const CYCLE_DAYS = 30;
+
+// ─── State ──────────────────────────────────────────────────────────────
+let fsDB = null, fsUser = null, fsReady = false;
+let cycles = [];
+let closingId = null;
+
+// ─── DOM ────────────────────────────────────────────────────────────────
+const loginOverlay = document.getElementById('login-overlay');
+const loginForm = document.getElementById('login-form');
+const loginEmail = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
+const loginError = document.getElementById('login-error');
+const logoutBtn = document.getElementById('logout-btn');
+const appRoot = document.getElementById('app-root');
+const statusDot = document.getElementById('status-dot');
+const statusLabel = document.getElementById('status-label');
+
+function showLoginError(msg) { loginError.textContent = msg; loginError.classList.toggle('show', !!msg); }
+function showApp()   { loginOverlay.classList.add('hidden');    appRoot.style.display = 'block'; }
+function showLogin() { loginOverlay.classList.remove('hidden'); appRoot.style.display = 'none'; }
+function isAllowedEmail(e) { return typeof e === 'string' && e.toLowerCase().endsWith(ALLOWED_DOMAIN); }
+function fsStatus(state, msg) { statusDot.className = 'dot-status ' + state; statusLabel.textContent = msg; }
+
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ─── Local fallback ─────────────────────────────────────────────────────
+// Same posture as the other tools: without Firebase the tool still works, on
+// this device only, and says so rather than looking empty.
+const LS_KEY = 'forgesprint.cycles.v1';
+function localRead()  { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch (e) { return []; } }
+function localWrite(l){ try { localStorage.setItem(LS_KEY, JSON.stringify(l)); return true; } catch (e) { return false; } }
+
+// ─── Dates ──────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(ms) {
+    if (!ms) return '—';
+    const d = new Date(ms);
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+// ─── The verdict ────────────────────────────────────────────────────────
+// The whole point of the tool. Execution is measured, not remembered, and the
+// reason a flat number is blamed on has to agree with it.
+
+function executionScore(cycle) {
+    const moves = cycle.moves || [];
+    if (!moves.length) return 0;
+    const total = moves.reduce((n, m) => {
+        const st = MOVE_STATES.find(s => s.id === (m.state || 'notstarted'));
+        return n + (st ? st.score : 0);
+    }, 0);
+    return total / moves.length;
+}
+
+function didMove(cycle, closingValue) {
+    const base = Number(cycle.baseline);
+    const now = Number(closingValue);
+    if (!isFinite(base) || !isFinite(now)) return null;
+    if (now === base) return false;
+    return (cycle.direction === 'down') ? now < base : now > base;
+}
+
+/* Which of the two reasons is honest, given what was actually done.
+
+   The promise offers exactly two explanations for a number that did not move,
+   and they are not interchangeable. "Our reading was wrong" is only available
+   when the sprint was actually run — otherwise the sprint was not tested, and
+   claiming the diagnosis failed is a claim the evidence does not support.
+
+   A sprint under two-thirds executed cannot clear the diagnosis. The tool
+   decides that from the move states rather than leaving it to whoever is
+   filling the form at the end of a long day. */
+const EXECUTION_FLOOR = 2 / 3;
+
+function honestReason(cycle) {
+    return executionScore(cycle) >= EXECUTION_FLOOR ? 'reading' : 'notexecuted';
+}
+
+function reasonLabel(r) {
+    return r === 'reading' ? 'Our reading was wrong' : 'The sprint was not executed';
+}
+
+// ─── Persist ────────────────────────────────────────────────────────────
+async function saveCycle(cycle, id) {
+    if (fsReady && fsDB) {
+        const payload = Object.assign({}, cycle, {
+            updatedAt: firebase.database.ServerValue.TIMESTAMP,
+            updatedBy: fsUser ? fsUser.email : null
+        });
+        if (id) { await fsDB.ref('forgesprint/cycles/' + id).update(payload); return id; }
+        payload.openedAt = payload.openedAt || Date.now();
+        const ref = fsDB.ref('forgesprint/cycles').push();
+        await ref.set(payload);
+        return ref.key;
+    }
+    const list = localRead();
+    if (id) {
+        const i = list.findIndex(c => c.id === id);
+        if (i >= 0) list[i] = Object.assign({}, list[i], cycle);
+    } else {
+        id = 'c' + Date.now();
+        list.unshift(Object.assign({ id: id }, cycle));
+    }
+    if (!localWrite(list)) { toast('Could not save — storage unavailable'); return null; }
+    cycles = list;
+    renderAll();
+    return id;
+}
+
+async function deleteCycle(id) {
+    const c = cycles.find(x => x.id === id);
+    if (!c) return;
+    if (!window.confirm(`Delete the ${c.clientCode} cycle? The execution record goes with it.`)) return;
+    if (fsReady && fsDB) {
+        try { await fsDB.ref('forgesprint/cycles/' + id).remove(); toast('Deleted'); }
+        catch (e) { toast('Could not delete: ' + e.message); }
+    } else {
+        cycles = localRead().filter(x => x.id !== id);
+        localWrite(cycles); toast('Deleted'); renderAll();
+    }
+}
+
+async function setMoveState(id, index, state) {
+    const c = cycles.find(x => x.id === id);
+    if (!c) return;
+    const moves = (c.moves || []).map((m, i) => i === index ? Object.assign({}, m, { state: state }) : m);
+    await saveCycle({ moves: moves }, id);
+    if (fsReady && fsDB) toast('Saved');
+}
+
+// ─── Open cycles ────────────────────────────────────────────────────────
+function renderCycles() {
+    const wrap = document.getElementById('cycles-list');
+    const count = document.getElementById('cycles-count');
+    const open = cycles.filter(c => c.status !== 'closed');
+    count.textContent = open.length ? String(open.length) : '';
+    wrap.innerHTML = '';
+
+    if (!open.length) {
+        const p = document.createElement('p');
+        p.className = 'hint';
+        p.textContent = 'Nothing running. Start a cycle when a session sets one.';
+        wrap.appendChild(p);
+        return;
+    }
+
+    open.sort((a, b) => (a.openedAt || 0) - (b.openedAt || 0));
+
+    open.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'cycle-item';
+
+        const elapsed = daysBetween(c.openedAt || Date.now(), Date.now());
+        const left = CYCLE_DAYS - elapsed;
+        const score = executionScore(c);
+
+        const head = document.createElement('div');
+        head.className = 'cycle-head';
+        const code = document.createElement('span');
+        code.className = 'cycle-code';
+        code.textContent = c.clientCode;
+        head.appendChild(code);
+
+        const tr = document.createElement('span');
+        tr.className = 'pill';
+        tr.textContent = (TRACKS[c.track] || {}).name || c.track;
+        head.appendChild(tr);
+
+        const due = document.createElement('span');
+        due.className = 'pill ' + (left < 0 ? 'over' : left <= 7 ? 'soon' : 'ok');
+        due.textContent = left < 0 ? `${-left} days over` : left === 0 ? 'due today' : `${left} days left`;
+        head.appendChild(due);
+
+        // The number that says whether the sprint is actually being run.
+        const ex = document.createElement('span');
+        ex.className = 'cycle-exec ' + (score >= EXECUTION_FLOOR ? 'good' : score > 0 ? 'part' : 'none');
+        ex.textContent = Math.round(score * 100) + '% executed';
+        head.appendChild(ex);
+        item.appendChild(head);
+
+        const meta = document.createElement('div');
+        meta.className = 'cycle-meta';
+        meta.textContent = `${c.constraint} · ${c.metric} at ${c.baseline} on ${fmtDate(c.openedAt)} · owner ${c.owner}`;
+        item.appendChild(meta);
+
+        (c.moves || []).forEach((m, i) => {
+            const row = document.createElement('div');
+            row.className = 'move-row';
+            const n = document.createElement('span');
+            n.className = 'move-n';
+            n.textContent = String(i + 1);
+            row.appendChild(n);
+
+            const txt = document.createElement('span');
+            txt.className = 'move-text ' + (m.state === 'done' ? 'is-done' : '');
+            txt.textContent = m.text;
+            row.appendChild(txt);
+
+            const seg = document.createElement('div');
+            seg.className = 'seg';
+            MOVE_STATES.forEach(st => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'seg-btn' + ((m.state || 'notstarted') === st.id ? ' on' : '');
+                b.textContent = st.label;
+                b.setAttribute('aria-pressed', String((m.state || 'notstarted') === st.id));
+                b.addEventListener('click', () => setMoveState(c.id, i, st.id));
+                seg.appendChild(b);
+            });
+            row.appendChild(seg);
+            item.appendChild(row);
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn btn-primary btn-sm';
+        closeBtn.textContent = 'Close cycle';
+        closeBtn.addEventListener('click', () => openCloseDialog(c.id));
+        const del = document.createElement('button');
+        del.className = 'btn btn-ghost btn-sm';
+        del.textContent = 'Delete';
+        del.addEventListener('click', () => deleteCycle(c.id));
+        actions.appendChild(closeBtn);
+        actions.appendChild(del);
+        item.appendChild(actions);
+
+        wrap.appendChild(item);
+    });
+}
+
+// ─── Closing a cycle ────────────────────────────────────────────────────
+function openCloseDialog(id) {
+    const c = cycles.find(x => x.id === id);
+    if (!c) return;
+    closingId = id;
+    document.getElementById('close-title').textContent = `Close ${c.clientCode}`;
+    document.getElementById('close-sub').textContent =
+        `${c.metric} was ${c.baseline} on ${fmtDate(c.openedAt)}. ` +
+        `${Math.round(executionScore(c) * 100)}% of the sprint was executed.`;
+    document.getElementById('close-value').value = '';
+    document.getElementById('close-note').value = '';
+    document.getElementById('close-verdict').innerHTML = '';
+    document.getElementById('close-overlay').classList.remove('hidden');
+    document.getElementById('close-value').focus();
+}
+
+function renderCloseVerdict() {
+    const c = cycles.find(x => x.id === closingId);
+    const box = document.getElementById('close-verdict');
+    box.innerHTML = '';
+    if (!c) return;
+    const raw = document.getElementById('close-value').value;
+    if (raw === '') return;
+
+    const moved = didMove(c, raw);
+    const score = executionScore(c);
+    const honest = honestReason(c);
+
+    const v = document.createElement('div');
+    v.className = 'callout ' + (moved ? 'good' : 'warn');
+    v.innerHTML = '';
+    const strong = document.createElement('strong');
+    strong.textContent = moved
+        ? `${c.metric} moved: ${c.baseline} → ${raw}.`
+        : `${c.metric} did not move: ${c.baseline} → ${raw}.`;
+    v.appendChild(strong);
+    box.appendChild(v);
+
+    if (moved) return;
+
+    // The promise offers two reasons. Which one is available is decided by the
+    // execution record, not by whoever is filling this in.
+    const q = document.createElement('div');
+    q.style.marginTop = '12px';
+    const lab = document.createElement('label');
+    lab.className = 'field-label';
+    lab.textContent = 'Which was it?';
+    q.appendChild(lab);
+
+    [['notexecuted', 'The sprint was not executed'], ['reading', 'Our reading was wrong']].forEach(([id, label]) => {
+        const allowed = (id === 'reading') ? score >= EXECUTION_FLOOR : true;
+        const row = document.createElement('label');
+        row.className = 'radio-row' + (allowed ? '' : ' disabled');
+        const r = document.createElement('input');
+        r.type = 'radio'; r.name = 'close-reason'; r.value = id;
+        r.disabled = !allowed;
+        if (id === honest) r.checked = true;
+        row.appendChild(r);
+        const t = document.createElement('span');
+        t.textContent = label;
+        row.appendChild(t);
+        if (!allowed) {
+            const why = document.createElement('span');
+            why.className = 'radio-why';
+            why.textContent = `— only at ${Math.round(EXECUTION_FLOOR * 100)}% executed or more. ` +
+                              `This sprint ran at ${Math.round(score * 100)}%, so the diagnosis was never tested.`;
+            row.appendChild(why);
+        }
+        q.appendChild(row);
+    });
+    box.appendChild(q);
+}
+
+async function confirmClose() {
+    const c = cycles.find(x => x.id === closingId);
+    if (!c) return;
+    const raw = document.getElementById('close-value').value;
+    if (raw === '') { toast('Enter the reading first'); return; }
+
+    const moved = didMove(c, raw);
+    let reason = null;
+    if (!moved) {
+        const picked = document.querySelector('input[name="close-reason"]:checked');
+        reason = picked ? picked.value : honestReason(c);
+    }
+
+    await saveCycle({
+        status: 'closed',
+        closingValue: Number(raw),
+        closedAt: Date.now(),
+        closedBy: fsUser ? fsUser.email : null,
+        verdict: moved ? 'moved' : 'notmoved',
+        reason: reason,
+        executionAtClose: executionScore(c),
+        closeNote: document.getElementById('close-note').value.trim()
+    }, closingId);
+
+    document.getElementById('close-overlay').classList.add('hidden');
+    closingId = null;
+    toast(moved ? 'Closed — the number moved' : 'Closed — ' + reasonLabel(reason).toLowerCase());
+}
+
+// ─── History ────────────────────────────────────────────────────────────
+function clientCodes() {
+    return [...new Set(cycles.map(c => c.clientCode).filter(Boolean))].sort();
+}
+
+function renderHistory() {
+    const wrap = document.getElementById('history-list');
+    const sel = document.getElementById('h-client');
+    const closed = cycles.filter(c => c.status === 'closed');
+
+    const chosen = sel.value || 'all';
+    sel.innerHTML = '';
+    [['all', 'All clients']].concat(clientCodes().map(c => [c, c])).forEach(([v, l]) => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = l;
+        sel.appendChild(o);
+    });
+    sel.value = [...sel.options].some(o => o.value === chosen) ? chosen : 'all';
+
+    let list = closed.slice();
+    if (sel.value !== 'all') list = list.filter(c => c.clientCode === sel.value);
+    list.sort((a, b) => (b.closedAt || 0) - (a.closedAt || 0));
+
+    // What the record says, in the terms the status review already uses.
+    const moved = list.filter(c => c.verdict === 'moved').length;
+    const notrun = list.filter(c => c.reason === 'notexecuted').length;
+    const bits = [`${list.length} closed`];
+    if (list.length) {
+        bits.push(`${moved} moved`);
+        if (notrun) bits.push(`${notrun} not executed`);
+    }
+    document.getElementById('h-summary').textContent = bits.join(' · ');
+
+    wrap.innerHTML = '';
+    if (sel.value !== 'all' && list.length >= 2) {
+        const rate = notrun / list.length;
+        const note = document.createElement('div');
+        note.className = 'callout ' + (rate >= 0.5 ? 'bad' : moved / list.length >= 0.5 ? 'good' : 'warn');
+        note.textContent = rate >= 0.5
+            ? `${sel.value} has not executed ${notrun} of ${list.length} sprints. Continuing to issue `
+              + 'directives that are not executed produces no output for the client and no data for us — '
+              + 'this is what Pause is for.'
+            : moved / list.length >= 0.5
+              ? `${sel.value} moved the number in ${moved} of ${list.length} cycles.`
+              : `${sel.value} executed the sprints but the number moved in only ${moved} of ${list.length}. `
+                + 'The reading is the thing to revisit, not the client.';
+        wrap.appendChild(note);
+    }
+
+    if (!list.length) {
+        const p = document.createElement('p');
+        p.className = 'hint';
+        p.textContent = 'No closed cycles yet.';
+        wrap.appendChild(p);
+        return;
+    }
+
+    list.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'cycle-item';
+
+        const head = document.createElement('div');
+        head.className = 'cycle-head';
+        const code = document.createElement('span');
+        code.className = 'cycle-code'; code.textContent = c.clientCode;
+        head.appendChild(code);
+
+        const tr = document.createElement('span');
+        tr.className = 'pill'; tr.textContent = (TRACKS[c.track] || {}).name || c.track;
+        head.appendChild(tr);
+
+        const v = document.createElement('span');
+        v.className = 'pill ' + (c.verdict === 'moved' ? 'ok' : 'over');
+        v.textContent = c.verdict === 'moved' ? 'Moved' : reasonLabel(c.reason);
+        head.appendChild(v);
+
+        const ex = document.createElement('span');
+        ex.className = 'cycle-exec ' + ((c.executionAtClose || 0) >= EXECUTION_FLOOR ? 'good' : 'part');
+        ex.textContent = Math.round((c.executionAtClose || 0) * 100) + '% executed';
+        head.appendChild(ex);
+        item.appendChild(head);
+
+        const meta = document.createElement('div');
+        meta.className = 'cycle-meta';
+        meta.textContent = `${c.metric}: ${c.baseline} → ${c.closingValue} · `
+            + `${fmtDate(c.openedAt)} to ${fmtDate(c.closedAt)} · owner ${c.owner}`;
+        item.appendChild(meta);
+
+        if (c.closeNote) {
+            const n = document.createElement('div');
+            n.className = 'cycle-note'; n.textContent = c.closeNote;
+            item.appendChild(n);
+        }
+        wrap.appendChild(item);
+    });
+}
+
+function exportHistoryCSV() {
+    const closed = cycles.filter(c => c.status === 'closed');
+    if (!closed.length) { toast('Nothing to export'); return; }
+    const cols = ['clientCode','track','constraint','metric','baseline','closingValue','verdict',
+                  'reason','executionAtClose','owner','openedAt','closedAt','closeNote'];
+    // A leading =, + or - makes a spreadsheet read a cell as a formula.
+    const cell = v => {
+        let t = v == null ? '' : String(v);
+        if (/^[=+\-@]/.test(t)) t = "'" + t;
+        return '"' + t.replace(/"/g, '""') + '"';
+    };
+    const rows = [cols.join(',')].concat(closed
+        .sort((a, b) => (b.closedAt || 0) - (a.closedAt || 0))
+        .map(c => cols.map(k => {
+            if (k === 'openedAt' || k === 'closedAt') return cell(c[k] ? new Date(c[k]).toISOString().slice(0,10) : '');
+            if (k === 'executionAtClose') return cell(Math.round((c[k] || 0) * 100) + '%');
+            return cell(c[k]);
+        }).join(',')));
+    const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ecomforges-sprints-${todayISO()}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast(`Exported ${closed.length} cycles`);
+}
+
+// ─── Method reference ───────────────────────────────────────────────────
+function renderMethod() {
+    document.getElementById('ref-method').innerHTML = `
+        <h3>What a cycle is</h3>
+        <p class="lead">One constraint. Three moves, in order. One number. Thirty days.</p>
+        <p>The calculator picks the Forge Track. The analyst reads the numbers and writes the brief.
+           This tool holds the thirty days in between — the part the client is paying for, and the
+           only part nothing else recorded.</p>
+
+        <h3>The promise this exists to keep</h3>
+        <div class="callout">By the next session, the number should have moved. If it has not, either
+           the sprint was not executed or the reading was wrong — and we will say which.</div>
+        <p>Both the calculator and the analyst close their decks with that sentence. Answering
+           <em>which</em> needs a record of whether the three moves were done. Before this tool that was
+           reconstructed from memory at the next session, which is exactly when a client will remember
+           it differently.</p>
+
+        <h3>Why you cannot always pick "our reading was wrong"</h3>
+        <p>The two reasons are not interchangeable. A diagnosis is only wrong if it was tested, and it
+           is only tested if the sprint was run. Below <strong>${Math.round(EXECUTION_FLOOR * 100)}%
+           executed</strong> the tool will not let the reading take the blame, because the evidence does
+           not support it.</p>
+        <div class="callout warn">This is the uncomfortable one. It is easier to say the plan was wrong
+           than to tell a client they did not run it, and that is precisely why the tool decides it from
+           the move states rather than leaving it to the end of a long day.</div>
+
+        <h3>What the record is for</h3>
+        <ul>
+            <li><strong>Continue</strong> — the sprints run and the number moves.</li>
+            <li><strong>Coach</strong> — the sprints run and the number does not. The reading is the
+                thing to revisit, not the client.</li>
+            <li><strong>Pause</strong> — the sprints do not run. The calculator already says why:
+                continuing to issue directives that are not executed produces no output for the client
+                and no data for EcomForges.</li>
+        </ul>
+        <p>Those are the calculator's own status-review outcomes. This tool exists so that choosing
+           between them is an argument from a record rather than an impression.</p>
+
+        <h3>House rules</h3>
+        <ul>
+            <li><strong>Client codes, never business names</strong> — the same rule the analyst keeps.</li>
+            <li><strong>One owner per cycle.</strong> A sprint that belongs to everyone gets run by nobody.</li>
+            <li><strong>A baseline is required.</strong> Without the reading at the start there is
+                nothing to compare, and the promise cannot be answered either way.</li>
+            <li><strong>Nothing here is a guarantee.</strong> A cycle records what happened; it never
+                promises what will.</li>
+        </ul>`;
+}
+
+// ─── Firebase init ──────────────────────────────────────────────────────
+function fsInit() {
+    if (typeof firebase === 'undefined') {
+        fsStatus('local', 'Offline');
+        showLoginError('Cannot reach the sign-in service. Check your connection, ' +
+                       'or an ad blocker may be blocking Google services.');
+        const btn = document.querySelector('.btn-login');
+        if (btn) { btn.disabled = true; btn.textContent = 'Unavailable offline'; }
+        return;
+    }
+    try { firebase.initializeApp(firebaseConfig); } catch (e) { /* already initialised */ }
+
+    firebase.auth().onAuthStateChanged(user => {
+        fsUser = user;
+        if (!user) {
+            fsReady = false;
+            fsStatus('local', 'Local');
+            cycles = localRead();
+            const h = document.getElementById('cycles-sync-hint');
+            if (h) h.textContent = 'This device only — sign in to share cycles.';
+            renderAll();
+            showLogin();
+            return;
+        }
+        fsDB = firebase.database();
+        fsDB.ref('forgesprint/cycles').on('value', snap => {
+            const data = snap.val() || {};
+            cycles = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
+            const h = document.getElementById('cycles-sync-hint');
+            if (h) h.textContent = 'Shared with everyone signed in.';
+            renderAll();
+        }, err => {
+            fsStatus('local', 'Read failed');
+            toast('Could not read cycles: ' + err.message);
+        });
+        fsReady = true;
+        fsStatus('live', 'Live');
+        showApp();
+    });
+}
+
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = loginEmail.value.trim();
+    showLoginError('');
+    if (!isAllowedEmail(email)) { showLoginError('Only @ecomforges.com accounts are allowed.'); return; }
+    try { await firebase.auth().signInWithEmailAndPassword(email, loginPassword.value); }
+    catch (err) { showLoginError('Sign-in failed: ' + err.message); }
+});
+logoutBtn.addEventListener('click', () => firebase.auth().signOut());
+
+// ─── Tabs ───────────────────────────────────────────────────────────────
+function showTab(name, focusTab) {
+    const tab = document.querySelector(`.tab[data-panel="${name}"]`);
+    const panel = document.getElementById('panel-' + name);
+    if (!tab || !panel) return false;
+    document.querySelectorAll('.tab').forEach(t => { t.setAttribute('aria-selected', 'false'); t.tabIndex = -1; });
+    tab.setAttribute('aria-selected', 'true');
+    tab.tabIndex = 0;
+    if (focusTab) { tab.focus(); tab.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    document.querySelectorAll('.panel-body').forEach(p => p.classList.remove('active'));
+    panel.classList.add('active');
+    if (name === 'history') renderHistory();
+    return true;
+}
+
+function renderAll() { renderCycles(); renderHistory(); }
+
+// ─── The new-cycle form ─────────────────────────────────────────────────
+function applyTrack() {
+    const t = TRACKS[document.getElementById('c-track').value];
+    if (!t) return;
+    document.getElementById('c-track-hint').textContent = t.when;
+    document.getElementById('c-constraint').value = t.constraint;
+    document.getElementById('c-metric').value = t.metric;
+    document.getElementById('c-direction').value = t.direction || 'up';
+    t.moves.forEach((m, i) => { document.getElementById('c-move' + (i + 1)).value = m; });
+}
+
+function resetForm() {
+    document.getElementById('cycle-form').reset();
+    document.getElementById('c-opened').value = todayISO();
+    applyTrack();
+    document.getElementById('c-note').textContent = '';
+}
+
+async function submitCycle(e) {
+    e.preventDefault();
+    const val = id => (document.getElementById(id).value || '').trim();
+    const code = val('c-client').toUpperCase();
+    if (!code) { toast('A client code is required'); return; }
+    if (!val('c-owner')) { toast('One name has to own execution'); return; }
+    if (val('c-baseline') === '') { toast('The baseline reading is required'); return; }
+
+    // One open cycle per client at a time: the method is one constraint, and two
+    // open cycles means neither number is attributable to either sprint.
+    const clash = cycles.find(c => c.status !== 'closed' && c.clientCode === code);
+    if (clash) {
+        toast(`${code} already has an open cycle. Close it first.`);
+        showTab('cycles');
+        return;
+    }
+
+    const opened = val('c-opened') ? new Date(val('c-opened') + 'T00:00:00').getTime() : Date.now();
+    const moves = [1, 2, 3].map(i => ({ text: val('c-move' + i), state: 'notstarted' }))
+                           .filter(m => m.text);
+    if (!moves.length) { toast('A cycle needs at least one move'); return; }
+
+    const id = await saveCycle({
+        clientCode: code,
+        track: document.getElementById('c-track').value,
+        constraint: val('c-constraint'),
+        metric: val('c-metric'),
+        baseline: Number(val('c-baseline')),
+        direction: document.getElementById('c-direction').value,
+        owner: val('c-owner'),
+        moves: moves,
+        status: 'open',
+        openedAt: opened,
+        openedBy: fsUser ? fsUser.email : null
+    });
+    if (id) { toast(`Cycle open for ${code}`); resetForm(); showTab('cycles'); }
+}
+
+// ─── Wiring ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    try { fsInit(); } catch (e) {
+        console.error('ForgeSprint: sign-in init failed', e);
+        showLoginError('Sign-in could not start: ' + e.message);
+    }
+
+    const sel = document.getElementById('c-track');
+    Object.keys(TRACKS).forEach(k => {
+        const o = document.createElement('option');
+        o.value = k; o.textContent = TRACKS[k].name;
+        sel.appendChild(o);
+    });
+    sel.addEventListener('change', applyTrack);
+    resetForm();
+
+    document.getElementById('cycle-form').addEventListener('submit', submitCycle);
+    document.getElementById('c-reset').addEventListener('click', resetForm);
+    document.getElementById('h-client').addEventListener('change', renderHistory);
+    document.getElementById('h-export').addEventListener('click', exportHistoryCSV);
+
+    document.getElementById('close-value').addEventListener('input', renderCloseVerdict);
+    document.getElementById('close-confirm').addEventListener('click', confirmClose);
+    document.getElementById('close-cancel').addEventListener('click', () => {
+        document.getElementById('close-overlay').classList.add('hidden');
+        closingId = null;
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !document.getElementById('close-overlay').classList.contains('hidden')) {
+            document.getElementById('close-overlay').classList.add('hidden');
+            closingId = null;
+        }
+    });
+
+    const tabEls = [...document.querySelectorAll('.tab')];
+    const goTab = (name, focusTab) => {
+        showTab(name, focusTab);
+        history.replaceState(null, '', '#' + name);
+    };
+    tabEls.forEach(tab => {
+        tab.addEventListener('click', () => { goTab(tab.dataset.panel, false); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        tab.addEventListener('keydown', e => {
+            const i = tabEls.indexOf(tab);
+            let j = null;
+            if (e.key === 'ArrowRight') j = (i + 1) % tabEls.length;
+            else if (e.key === 'ArrowLeft') j = (i - 1 + tabEls.length) % tabEls.length;
+            else if (e.key === 'Home') j = 0;
+            else if (e.key === 'End') j = tabEls.length - 1;
+            if (j === null) return;
+            e.preventDefault();
+            goTab(tabEls[j].dataset.panel, true);
+        });
+    });
+
+    cycles = localRead();
+    renderMethod();
+    renderAll();
+
+    const fromHash = (location.hash || '').replace('#', '');
+    if (!showTab(fromHash)) showTab('cycles');
+    window.addEventListener('hashchange', () => {
+        const n = (location.hash || '').replace('#', '');
+        if (n) showTab(n);
+    });
+});
+</script>
+</body>
+</html>
