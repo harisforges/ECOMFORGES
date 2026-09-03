@@ -119,12 +119,20 @@ the label 13% down the artwork. By 360px the artwork had shrunk to 209px tall
 while the label stayed at 50px, so it sat **24% down — on top of the animated
 paths** — and wrapped onto two lines.
 
-Fixed by making the label proportional instead of fixed: `top: 13.09%` is the
-desktop ratio (50/382), the font clamps between 15px and 30.738px, and
-`white-space: nowrap` stops the two-word label ever splitting.
+Fixed by making the **offset** proportional: `top: 13.09%` is the desktop ratio
+(50/382), and `white-space: nowrap` stops the two-word label ever splitting.
 
-Measured across widths, the heading now sits at a constant 13.2–13.4% down on
-one line, from 1200px to 320px. Desktop is unchanged.
+**The font size is deliberately left at 30.738px.** An earlier attempt also
+scaled the font down with the artwork, which fixed the collision but made the
+label visibly smaller than the "We Diagnose" and "We Monitor" headings beside
+it — the three stopped reading as one set. Those two sit in normal flow above
+their artwork and so never collide; only this one is absolutely positioned over
+its SVG, which is why it alone needed the offset fixed. Matching their size and
+moving only the offset gets both.
+
+Measured 1200px down to 320px: the label stays on one line at full size, and the
+gap between it and the Deploy button stays between 94px and 26px. Desktop is
+unchanged.
 
 ### Two things worth knowing before editing this
 
@@ -136,12 +144,13 @@ despite the block's `<style>` loading later. It was done this way deliberately:
 editing the block means re-sending 14KB of SVG path data to a live page, and a
 single wrong digit there breaks the artwork. Overriding never touches the SVG.
 
-**Breakdance's CSS importer does not understand container-query units.** The
-first attempt used `font-size: 5.123cqw`, which the importer stored as the
-number `"5.123 cqw"` and emitted as `font-size:5.123 cqw` — a space inside the
-value, so invalid, so silently ignored. `clamp()` with `vw` survives intact.
-Check the emitted `selectors.css` after importing anything with an unusual unit;
-the import reports success either way.
+**Breakdance's CSS importer does not understand container-query units.** An
+attempt at `font-size: 5.123cqw` was stored as the number `"5.123 cqw"` and
+emitted as `font-size:5.123 cqw` — a space inside the value, so invalid, so
+silently ignored. The import reported success, and only reading the emitted
+`selectors.css` back showed the declaration had not landed. Check the emitted
+CSS after importing anything with an unusual unit. Plain px, `%` and `clamp()`
+with `vw` all survive intact.
 
 ## Still open on the homepage
 
