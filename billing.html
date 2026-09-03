@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>EcomForges ForgeBilling — Invoices</title>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <link rel="icon" type="image/png" href="billing-favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="billing-apple-touch-icon.png" />
+    <link rel="manifest" href="billing.webmanifest" />
+    <meta name="theme-color" content="#162840" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ForgeBilling" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <style>
+        /* same as before — exactly as you had */
+        :root {
+            --navy: #162840;
+            --main-blue: #1C3350;
+            --panel: #1A2E46;
+            --row-alt: #132238;
+            --border: #1E4060;
+            --border-light: #2A5A7A;
+            --text: #FFFFFF;
+            --text-soft: #708CA8;
+            --text-muted: #4A6A8A;
+            --red: #3B82F6;
+            --red-bright: #7DABFF;
+            --dark-red: #0A2463;
+            --red-dim: rgba(59, 130, 246, 0.12);
+            --red-glow: rgba(59, 130, 246, 0.25);
+            --green: #2DD4A0;
+            --green-dim: rgba(45, 212, 160, 0.12);
+            --amber: #F6B83D;
+            --amber-dim: rgba(246, 184, 61, 0.12);
+            --cyan: #20F6F8;
+            --cyan-dim: rgba(32, 246, 248, 0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --transition: 0.2s ease;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--navy);
+            color: var(--text);
+            line-height: 1.55;
+            font-size: 15px;
+            min-height: 100vh;
+            padding-bottom: calc(24px + var(--safe-bottom));
+        }
+
+        /* ── Login overlay ── */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 600; padding: 20px; backdrop-filter: blur(4px);
+        }
+        #login-overlay.hidden { display: none; }
+        .login-box {
+            background: var(--main-blue); padding: 32px 28px;
+            border-radius: var(--radius); border: 1px solid var(--border-light);
+            width: 100%; max-width: 380px; text-align: center;
+            box-shadow: var(--shadow);
+        }
+        /* Login brand — same treatment as LeadForge's login screen: the real
+           EcomForges lockup at 180px, centred, with the tool name beneath it.
+           The mark keeps ForgeMarketing's red so the box matches its own header
+           and its red controls, rather than borrowing LeadForge's green. */
+        .login-box .login-brand { margin-bottom: 16px; }
+        .login-box .login-lockup {
+            max-width: 180px; width: 100%; height: auto;
+            display: block; margin: 0 auto 6px;
+        }
+        .login-box .login-brand-row {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 2px; flex-wrap: wrap;
+        }
+        .login-box .brand-text { font-size: 20px; font-weight: 700; color: var(--text); }
+        .login-box .brand-text span { color: var(--red); }
+        .login-box .brand-badge {
+            /* display is restated because the header's mobile rule hides
+               .brand-badge, and the login screen has room for it at any width. */
+            display: inline-block;
+            font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-soft); background: var(--navy);
+            padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border);
+        }
+        .login-box .sub { font-size: 13px; color: var(--text-soft); margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 12px 14px; margin-bottom: 12px;
+            border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+            background: var(--panel); color: var(--text); font-size: 14px;
+            outline: none; transition: var(--transition); min-height: 44px;
+        }
+        .login-box input:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+        .login-box .login-error { display: none; color: var(--red); font-size: 13px; margin-bottom: 12px; }
+        .login-box .login-error.show { display: block; }
+        .login-box .btn-login {
+            width: 100%; padding: 12px; background: var(--red); color: #02132E;
+            border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: var(--transition); min-height: 48px;
+        }
+        .login-box .btn-login:hover { background: var(--red-bright); }
+        .login-box .login-footer { margin-top: 16px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 14px; }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(180deg, var(--main-blue) 0%, var(--navy) 100%);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 50;
+        }
+        .top {
+            max-width: 1080px; margin: 0 auto;
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-lockup { height: 26px; width: auto; display: block; }
+        .brand-mark { display: none; height: 26px; width: auto; }
+        .brand-rule { width: 1px; height: 22px; background: var(--border-light); flex: none; }
+        .brand-text { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; white-space: nowrap; }
+        .brand-text span { color: var(--red); }
+        .brand-badge {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+            padding: 3px 8px; border-radius: 999px;
+            background: var(--red-dim); color: var(--red-bright);
+            border: 1px solid rgba(255, 61, 87, 0.3); white-space: nowrap;
+        }
+        .header-actions {
+            display: flex; align-items: center; gap: 8px; margin-left: auto;
+        }
+        .header-note {
+            font-size: 11px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .header-note .dot-status {
+            display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+            background: var(--text-muted); flex: none;
+        }
+        .header-note .dot-status.live { background: var(--green); }
+        .header-note .dot-status.local { background: var(--amber); }
+        .btn-logout {
+            background: var(--red-dim); color: var(--red); border: 1px solid transparent;
+            padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm);
+            cursor: pointer; font-family: inherit; transition: var(--transition); min-height: 34px;
+        }
+        .btn-logout:hover { background: var(--red); color: var(--navy); }
+
+        /* ── Tabs ── */
+        .tabs {
+            max-width: 1080px; margin: 0 auto; padding: 0 16px;
+            display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            appearance: none; border: none; background: none;
+            color: var(--text-soft); font: inherit; font-size: 13px; font-weight: 600;
+            /* 11 tabs at 14px of side padding overflowed 1080px and clipped the
+               last one on a full-width desktop window. */
+            padding: 10px 10px; cursor: pointer; white-space: nowrap;
+            border-bottom: 2px solid transparent; transition: var(--transition);
+        }
+        .tab:hover { color: var(--text); }
+        .tab:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; border-radius: 4px; }
+
+        /* Visible to screen readers only. */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+        }
+        .tab[aria-selected="true"] { color: var(--red-bright); border-bottom-color: var(--red); }
+
+        main { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
+        .panel-body { display: none; }
+        .panel-body.active { display: block; animation: fade 0.18s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+        .card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px; margin-bottom: 16px;
+        }
+        .card h2 {
+            font-size: 15px; font-weight: 700; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card h2 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex: none; }
+        .card .sub { font-size: 12.5px; color: var(--text-soft); margin-bottom: 14px; }
+
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+        .field label {
+            display: block; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700;
+        }
+        /* Every input type the app actually uses. Listing only text and date left
+           the email and number fields with the browser's white default, which
+           looked broken against the dark form around them. */
+        select,
+        input[type="text"], input[type="email"], input[type="number"],
+        input[type="date"], input[type="tel"], input[type="search"] {
+            width: 100%; font: inherit; font-size: 14px;
+            background: var(--row-alt); color: var(--text);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 9px 11px; transition: var(--transition);
+        }
+        select:focus, input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+        /* Dark form controls: makes the native date picker and number spinners legible. */
+        .collab-form input, .collab-form select, .collab-form textarea { color-scheme: dark; }
+        .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+        .btn {
+            appearance: none; font: inherit; font-size: 14px; font-weight: 600;
+            border-radius: var(--radius-sm); padding: 10px 18px; cursor: pointer;
+            border: 1px solid transparent; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-primary { background: var(--red); color: #02132E; border-color: var(--red); }
+        .btn-primary:hover { background: var(--red-bright); }
+        .btn-ghost { background: transparent; color: var(--text-soft); border-color: var(--border-light); }
+        .btn-ghost:hover { color: var(--text); border-color: var(--red); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-sm { padding: 6px 13px; font-size: 12.5px; }
+        .btn-success { background: var(--green); color: #062B20; border-color: var(--green); }
+        .btn-success:hover { background: #4AE0B0; }
+        .variant-note { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+        .out-wrap { margin-top: 18px; display: none; }
+        .out-wrap.show { display: block; }
+        .out-head {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+        }
+        .chip {
+            font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: var(--row-alt); color: var(--text-soft); border: 1px solid var(--border);
+        }
+        .chip.accent { background: var(--red-dim); color: var(--red-bright); border-color: rgba(59,130,246,0.3); }
+        .out {
+            background: var(--row-alt); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 16px;
+            font-size: 14.5px; line-height: 1.65; white-space: pre-wrap;
+            word-wrap: break-word; font-family: inherit;
+        }
+        .out .beat { color: var(--red-bright); font-weight: 700; }
+        .meta-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--text-muted); }
+
+        .guard {
+            margin-top: 14px; padding: 12px 14px;
+            background: var(--amber-dim); border: 1px solid rgba(246,184,61,0.3);
+            border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.5;
+        }
+        .guard strong { color: var(--amber); }
+        .guard ul { margin: 6px 0 0 18px; }
+        .guard li { margin-bottom: 3px; }
+
+        .ref h3 { font-size: 14px; font-weight: 700; margin: 18px 0 7px; color: var(--red-bright); }
+        .ref h3:first-child { margin-top: 0; }
+        .ref h4 { font-size: 12.5px; font-weight: 700; margin: 14px 0 5px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.6px; }
+        .ref p { margin-bottom: 10px; font-size: 14px; }
+        .ref ul, .ref ol { margin: 0 0 12px 20px; }
+        .ref li { margin-bottom: 4px; font-size: 14px; }
+        .ref .lead { font-size: 15px; font-weight: 600; }
+        .ref code {
+            background: var(--row-alt); padding: 1px 5px; border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--cyan);
+        }
+        .ref table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 13px; }
+        .ref th, .ref td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .ref th { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; }
+        .callout {
+            padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 14px;
+            border: 1px solid var(--border); background: var(--row-alt); font-size: 13.5px;
+        }
+        .callout.warn { background: var(--amber-dim); border-color: rgba(246,184,61,0.3); }
+        .callout.good { background: var(--green-dim); border-color: rgba(45,212,160,0.3); }
+        .callout.bad  { background: var(--red-dim); border-color: rgba(59,130,246,0.3); }
+        .bank-list { columns: 2; column-gap: 22px; }
+        .bank-list li { break-inside: avoid; margin-bottom: 7px; font-size: 13.5px; }
+
+        .tab-count {
+            display: inline-block; min-width: 17px; padding: 0 5px;
+            margin-left: 3px; border-radius: 999px;
+            background: var(--red-dim); color: var(--red-bright);
+            font-size: 10.5px; font-weight: 700; line-height: 16px; text-align: center;
+        }
+        .tab-count:empty { display: none; }
+        .saved-item {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 13px; margin-bottom: 12px; background: var(--panel);
+        }
+        .saved-item .out-head { margin-bottom: 9px; padding-bottom: 8px; }
+        .saved-text { font-size: 13.5px; max-height: 220px; overflow-y: auto; }
+        .saved-item .actions { margin-top: 10px; }
+        .badge-used { color: var(--green); }
+        .badge-discarded { color: var(--text-muted); }
+
+        .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .cond-grid .field { margin-bottom: 0; }
+        .cond-actions { margin-top: 14px; }
+        .cond-status {
+            font-size: 12px; color: var(--text-soft);
+            padding: 8px 12px; background: var(--row-alt);
+            border-radius: var(--radius-sm); margin-bottom: 12px;
+            border-left: 2px solid var(--red);
+        }
+        .cond-status .label { color: var(--text-muted); font-weight: 600; }
+
+        /* ── Overlay panel (invoice view) ───────────────────────────────────────────── */
+        #doc-overlay { position: fixed; inset: 0; z-index: 500;
+            background: rgba(10, 18, 32, 0.82); backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #doc-overlay.hidden { display: none; }
+        .doc-box { background: var(--main-blue); border: 1px solid var(--border-light);
+            border-radius: var(--radius); padding: 24px; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
+        .doc-box h2 { font-size: 17px; margin-bottom: 4px; }
+        .doc-box .sub { font-size: 13px; color: var(--text-soft); margin-bottom: 16px; }
+        .doc-box textarea { width: 100%; font: inherit; font-size: 14px; background: var(--row-alt);
+            color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 9px 11px; resize: vertical; color-scheme: dark; }
+        .field-label { display: block; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 7px; font-weight: 700; }
+        .radio-row { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0;
+            font-size: 13.5px; cursor: pointer; flex-wrap: wrap; }
+        .radio-row.disabled { color: var(--text-muted); cursor: not-allowed; }
+        .radio-row input { margin-top: 3px; accent-color: var(--red); flex: none; }
+        .radio-why { flex: 1 1 100%; font-size: 12px; color: var(--amber); padding-left: 24px; }
+
+        /* ── Stats ──────────────────────────────────────────────────── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+        .stat { border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 14px; background: var(--row-alt); }
+        .stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .7px;
+            color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+        .stat-value { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .stat-sub { font-size: 11.5px; color: var(--text-soft); margin-top: 3px; }
+        .stat.ok    .stat-value { color: var(--green); }
+        .stat.warn  .stat-value { color: var(--amber); }
+        .stat.bad   .stat-value { color: #FF8A8A; }
+        .stat.muted .stat-value { color: var(--text-soft); }
+
+        /* ── Rows ───────────────────────────────────────────────────── */
+        .row-item { border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 13px; margin-bottom: 10px; background: var(--panel); }
+        .row-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+        .row-title { font-weight: 700; font-size: 14.5px; }
+        .row-amount { margin-left: auto; font-weight: 700; color: var(--red-bright); white-space: nowrap; }
+        .row-meta { font-size: 12.5px; color: var(--text-soft); }
+        .pill { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700;
+            padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+            background: var(--row-alt); color: var(--text-soft); }
+        .pill.paid, .pill.active { background: var(--green-dim); color: var(--green); border-color: rgba(45,212,160,.3); }
+        .pill.sent   { background: var(--cyan-dim);  color: var(--cyan);  border-color: rgba(32,246,248,.3); }
+        .pill.draft, .pill.paused { background: var(--amber-dim); color: var(--amber); border-color: rgba(246,184,61,.3); }
+        .pill.overdue, .pill.ended { background: rgba(255,107,107,.12); color: #FF8A8A; border-color: rgba(255,107,107,.3); }
+
+        .tier-row { display: flex; align-items: center; gap: 12px; padding: 7px 0;
+            border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .tier-label { flex: 1 1 220px; font-size: 13.5px; }
+        .tier-row input { max-width: 160px; }
+
+        /* ── The invoice ────────────────────────────────────────────── */
+        .doc-box { background: var(--main-blue); }
+        #invoice-paper { background: #FFFFFF; color: #14243A; border-radius: 8px;
+            padding: 30px; font-size: 13px; line-height: 1.55; }
+        .inv-head { display: flex; justify-content: space-between; gap: 20px;
+            flex-wrap: wrap; padding-bottom: 16px; border-bottom: 2px solid #14243A; }
+        .inv-biz { font-size: 19px; font-weight: 800; letter-spacing: -.3px; }
+        .inv-small { font-size: 11.5px; color: #4A5A70; white-space: pre-wrap; }
+        .inv-right { text-align: right; }
+        .inv-word { font-size: 13px; font-weight: 800; letter-spacing: 2.5px; color: #4A5A70; }
+        .inv-no { font-size: 17px; font-weight: 800; }
+        .inv-parties { display: flex; justify-content: space-between; gap: 20px;
+            flex-wrap: wrap; margin: 18px 0; }
+        .inv-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px;
+            color: #6B7A90; font-weight: 700; }
+        .inv-strong { font-weight: 700; font-size: 14px; }
+        .inv-daterow { display: flex; gap: 14px; justify-content: space-between; min-width: 190px; }
+        .inv-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .inv-table th { text-align: left; font-size: 10px; text-transform: uppercase;
+            letter-spacing: .8px; color: #6B7A90; border-bottom: 1px solid #D6DEE8; padding: 7px 0; }
+        .inv-table td { padding: 9px 0; border-bottom: 1px solid #EDF1F6; vertical-align: top; }
+        .inv-table .right { text-align: right; white-space: nowrap; }
+        .inv-table .inv-total td { font-weight: 800; font-size: 15px; border-bottom: none;
+            border-top: 2px solid #14243A; padding-top: 11px; }
+        .inv-pay { margin-top: 18px; padding-top: 12px; border-top: 1px solid #D6DEE8; }
+        .inv-missing { margin-top: 18px; padding: 10px 12px; border-radius: 6px;
+            background: #FFF4E5; color: #8A5A00; font-size: 12px; border: 1px solid #F2D9A8; }
+
+        @media print {
+            body { background: #FFFFFF; }
+            header, .no-print, #app-root > main, #login-overlay { display: none !important; }
+            #doc-overlay { position: static; background: none; padding: 0; display: block; }
+            #doc-overlay.hidden { display: none; }
+            .doc-box { max-width: none; max-height: none; border: none; box-shadow: none;
+                padding: 0; background: #FFFFFF; overflow: visible; }
+            #invoice-paper { padding: 0; border-radius: 0; }
+        }
+
+        .toast {
+            position: fixed; left: 50%; bottom: calc(22px + var(--safe-bottom));
+            transform: translateX(-50%) translateY(12px);
+            background: var(--green); color: #062B20; font-weight: 700; font-size: 13.5px;
+            padding: 10px 20px; border-radius: 999px; box-shadow: var(--shadow);
+            opacity: 0; pointer-events: none; transition: var(--transition); z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%); }
+
+        @media (max-width: 720px) {
+            .brand-lockup { display: none; }
+            .brand-mark { display: block; }
+            .bank-list { columns: 1; }
+            .header-note {
+                font-size: 10px;
+                gap: 4px;
+            }
+            .header-note #status-label {
+                display: none;
+            }
+            .header-note .dot-status {
+                width: 8px;
+                height: 8px;
+            }
+            .header-note #condition-badge {
+                font-size: 8px;
+                padding: 1px 5px;
+                margin-left: 4px !important;
+            }
+            main { padding: 16px 12px; }
+            .card { padding: 15px; }
+            .cond-grid { grid-template-columns: 1fr; }
+            .brand-badge { display: none; }
+        }
+
+        @media (max-width: 420px) {
+            .header-actions {
+                gap: 4px;
+            }
+            .btn-logout {
+                font-size: 10px;
+                padding: 2px 6px;
+                min-height: 28px;
+            }
+            .header-note .dot-status {
+                width: 6px;
+                height: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── LOGIN OVERLAY ─── -->
+<div id="login-overlay">
+    <div class="login-box">
+        <div class="login-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" class="login-lockup" role="img" aria-label="EcomForges" focusable="false">
+                                <defs><linearGradient id="fb-login-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#0A2463"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs>
+                                <path fill="url(#fb-login-lockup-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                                <path fill="#FFFFFF" d="M580.93 0.33c-0.03 0.17 -1.20 0.47 -2.53 0.67c-1.37 0.17 -2.73 0.50 -3.07 0.67c-0.33 0.20 -0.87 0.33 -1.13 0.33c-1.00 -0.00 -5.40 2.33 -7.37 3.90c-5.03 4.07 -7.37 10.70 -7.60 21.77l-0.07 3.17l-4.33 0.17l-4.33 0.17l0.00 6.33l0.00 6.33l4.33 0.17l4.33 0.17l0.17 31.83l0.17 31.83l8.00 -0.00l8.00 -0.00l0.07 -31.63c0.07 -17.43 0.20 -31.77 0.37 -31.93c0.13 -0.13 3.33 -0.30 7.07 -0.33l6.83 -0.10l0.00 -6.33l0.00 -6.33l-6.83 -0.10c-3.73 -0.03 -6.97 -0.23 -7.13 -0.40c-0.37 -0.37 -0.37 -5.33 -0.03 -8.37c0.60 -5.33 3.07 -7.80 8.67 -8.63c3.97 -0.60 4.07 -0.63 4.20 -1.07c0.07 -0.23 0.10 -3.17 0.03 -6.53l-0.10 -6.07l-3.80 -0.00c-2.13 -0.00 -3.83 0.13 -3.90 0.33zM202.67 29.97c-19.93 1.80 -33.27 17.53 -33.37 39.40c-0.07 14.27 5.63 26.27 15.87 33.33c7.13 4.90 12.73 6.47 22.83 6.43c5.40 -0.00 7.33 -0.13 9.17 -0.60c8.27 -2.13 12.37 -4.43 18.07 -10.27c3.27 -3.33 5.20 -6.30 7.27 -11.03c1.00 -2.27 1.13 -2.23 -7.97 -2.23c-8.17 -0.00 -8.17 -0.00 -9.57 2.07c-3.90 5.70 -8.73 8.43 -15.70 8.83c-10.67 0.63 -19.80 -5.67 -22.63 -15.57c-0.63 -2.20 -0.83 -4.67 -0.37 -4.67c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.90 -0.03 29.00 -0.17 29.33 -0.50c0.30 -0.30 0.40 -2.10 0.40 -7.00c0.00 -6.97 -0.53 -10.47 -2.13 -14.73c-0.40 -1.00 -0.83 -2.20 -0.97 -2.67c-0.27 -0.80 -2.33 -4.33 -3.80 -6.47c-0.40 -0.57 -1.93 -2.30 -3.40 -3.80c-7.67 -8.00 -18.87 -11.60 -32.17 -10.43zM211.97 43.63c8.73 1.70 14.77 7.33 16.27 15.17c0.47 2.33 0.47 2.90 0.13 3.33c-0.67 0.80 -41.93 0.80 -42.23 0.03c-0.47 -1.20 1.57 -6.80 3.60 -10.00c1.53 -2.37 7.17 -7.17 8.40 -7.17c0.17 -0.00 0.73 -0.23 1.30 -0.50c3.20 -1.47 7.77 -1.77 12.53 -0.87zM282.83 29.97c-4.13 0.43 -8.37 1.63 -12.23 3.53c-15.07 7.40 -22.87 24.27 -19.97 43.17c0.60 4.00 2.03 9.40 2.97 11.20c0.17 0.33 0.67 1.30 1.07 2.13c4.10 8.00 11.63 14.53 19.93 17.30c5.93 2.00 17.03 2.60 22.73 1.20c11.07 -2.67 18.63 -8.43 23.43 -17.83c1.67 -3.23 2.60 -6.03 2.20 -6.53c-0.37 -0.47 -14.67 -0.67 -16.17 -0.27c-0.37 0.13 -1.10 1.13 -1.77 2.57c-5.27 11.00 -22.20 12.97 -31.50 3.70c-5.40 -5.37 -7.73 -14.00 -6.77 -25.13c1.03 -11.70 7.17 -19.43 17.03 -21.47c9.30 -1.90 17.70 1.97 21.67 9.97c0.37 0.73 0.83 1.43 1.00 1.57c0.67 0.47 16.53 0.30 16.57 -0.17c0.20 -2.03 -2.37 -7.90 -5.07 -11.57c-7.30 -9.97 -20.10 -14.83 -35.13 -13.37zM363.00 29.97c-3.27 0.33 -9.20 1.73 -10.17 2.40c-0.20 0.13 -1.00 0.47 -1.77 0.73c-3.03 1.03 -7.80 4.30 -10.90 7.40c-8.77 8.77 -12.47 19.97 -11.23 33.83c1.43 15.70 10.93 28.27 24.87 32.87c5.37 1.77 6.47 1.90 13.37 1.93c12.40 -0.00 20.97 -3.30 28.83 -11.13c5.53 -5.53 8.30 -10.60 10.53 -19.50c0.87 -3.33 0.87 -14.20 0.00 -18.00c-0.63 -2.87 -1.67 -6.47 -2.17 -7.43c-0.13 -0.30 -0.60 -1.33 -1.03 -2.23c-3.07 -6.93 -9.47 -13.30 -17.20 -17.10c-3.10 -1.53 -4.30 -1.93 -9.30 -3.20c-2.33 -0.60 -10.27 -0.90 -13.83 -0.57zM374.83 44.67c10.37 3.60 16.17 12.47 16.17 24.67c-0.03 17.10 -11.97 28.13 -27.90 25.80c-7.47 -1.10 -14.47 -7.30 -16.70 -14.80c-0.20 -0.63 -0.53 -1.77 -0.73 -2.50c-0.70 -2.30 -0.83 -12.63 -0.20 -15.17c2.00 -8.10 5.60 -13.43 10.87 -16.17c2.13 -1.10 2.40 -1.23 3.80 -1.73c3.53 -1.30 11.13 -1.33 14.70 -0.10zM452.00 30.00c-5.23 0.53 -11.97 3.53 -15.87 7.10c-2.43 2.20 -2.57 2.07 -2.53 -2.10c0.00 -2.33 -0.10 -3.57 -0.37 -3.73c-0.53 -0.33 -14.97 -0.33 -15.47 -0.00c-0.33 0.20 -0.40 8.33 -0.33 38.43l0.07 38.13l8.00 -0.00l8.00 -0.00l0.07 -22.17c0.03 -12.20 0.13 -23.37 0.27 -24.83c0.57 -7.73 5.37 -14.07 12.33 -16.33c2.87 -0.93 10.83 -0.97 13.50 -0.03c5.80 2.03 10.03 6.63 11.87 13.03c0.53 1.80 0.60 4.37 0.70 25.83c0.07 13.10 0.10 24.03 0.10 24.23c0.00 0.33 1.80 0.43 7.83 0.43l7.83 -0.00l0.03 -22.60c0.03 -12.40 0.10 -23.00 0.17 -23.50c1.47 -12.50 8.83 -18.83 21.13 -18.10c3.77 0.23 5.80 0.80 8.67 2.43c2.27 1.27 5.47 4.67 6.40 6.73c0.37 0.83 0.87 1.97 1.10 2.53c1.33 3.07 1.50 6.17 1.50 29.73l0.00 22.77l7.83 -0.00c6.03 -0.00 7.83 -0.10 7.83 -0.43c0.17 -17.70 -0.07 -49.60 -0.37 -51.57c-2.07 -13.50 -10.40 -22.60 -23.47 -25.53c-3.83 -0.87 -12.40 -0.80 -15.67 0.13c-8.10 2.30 -15.17 7.20 -18.00 12.50c-0.87 1.63 -1.17 1.57 -2.50 -0.53c-1.47 -2.30 -6.50 -7.20 -8.47 -8.23c-0.87 -0.47 -2.00 -1.03 -2.47 -1.30c-4.60 -2.47 -12.90 -3.73 -19.73 -3.03zM627.67 29.97c-17.50 1.47 -30.93 14.17 -33.83 32.03c-3.37 20.57 6.87 39.33 24.67 45.30c6.07 2.00 16.50 2.60 22.33 1.23c12.43 -2.90 21.73 -9.97 27.03 -20.60c0.63 -1.20 1.13 -2.37 1.13 -2.57c0.00 -0.20 0.20 -0.83 0.47 -1.43c3.80 -8.77 3.03 -24.03 -1.63 -33.30c-3.13 -6.17 -9.83 -13.47 -14.33 -15.53c-0.53 -0.23 -1.23 -0.60 -1.50 -0.77c-5.07 -3.27 -15.37 -5.13 -24.33 -4.37zM639.17 44.53c2.67 0.90 5.50 2.43 7.50 3.97c2.27 1.80 2.27 1.77 5.73 6.90c0.33 0.50 0.60 1.10 0.60 1.37c0.00 0.23 0.13 0.57 0.30 0.73c1.00 1.10 2.13 7.37 2.13 11.83c0.07 16.93 -10.97 27.57 -26.93 25.90c-9.80 -1.03 -17.50 -9.33 -18.70 -20.23c-0.70 -6.40 0.17 -15.17 1.77 -17.50c0.23 -0.37 0.43 -0.83 0.43 -1.10c0.00 -0.83 2.97 -4.90 5.07 -6.97c2.83 -2.77 6.53 -4.63 10.77 -5.47c2.27 -0.43 9.47 -0.10 11.33 0.57zM717.00 30.00c-4.37 0.37 -9.90 2.73 -13.40 5.67c-1.90 1.57 -4.33 4.40 -4.73 5.47c-0.53 1.47 -0.87 -0.27 -0.93 -4.97l-0.10 -5.00l-7.83 -0.00l-7.83 -0.00l0.00 38.33l0.00 38.33l7.93 0.10l7.90 0.07l0.03 -22.07c0.03 -23.13 0.03 -22.87 0.63 -25.87c1.97 -9.67 7.23 -13.53 18.83 -13.83l3.33 -0.07l0.00 -8.17c0.00 -9.37 0.47 -8.40 -3.83 -8.00zM757.00 29.97c-11.97 1.17 -23.97 10.03 -28.47 21.03c-0.33 0.83 -0.80 1.93 -1.03 2.50c-0.43 1.00 -1.10 3.43 -1.87 6.83c-0.77 3.50 -0.77 13.03 0.00 17.17c0.87 4.73 2.30 9.53 3.07 10.30c0.17 0.20 0.30 0.53 0.30 0.77c0.00 1.87 6.37 10.03 10.20 13.13c6.70 5.37 12.90 7.43 22.13 7.43c7.00 -0.00 9.47 -0.50 14.67 -2.90c3.73 -1.70 10.37 -6.80 10.83 -8.27c1.30 -4.10 1.80 13.17 0.53 18.27c-2.07 8.17 -5.97 12.50 -13.70 15.17c-4.10 1.40 -13.13 1.00 -17.17 -0.77c-0.37 -0.17 -1.07 -0.43 -1.53 -0.60c-3.83 -1.37 -9.30 -6.87 -10.10 -10.13c-0.20 -0.90 -0.20 -0.90 -8.03 -0.90c-7.83 -0.00 -7.83 -0.00 -7.83 1.50c0.00 0.83 0.23 2.07 0.50 2.73c0.27 0.63 0.50 1.40 0.50 1.70c0.00 0.90 2.60 5.90 4.03 7.77c4.03 5.17 10.70 9.57 17.47 11.50c8.60 2.50 22.47 2.47 29.27 -0.07c6.47 -2.40 12.37 -6.50 15.67 -10.87c3.40 -4.53 4.77 -7.37 6.93 -14.60c0.33 -1.20 0.47 -9.77 0.53 -44.60l0.13 -43.07l-7.93 0.07l-7.93 0.10l-0.10 5.07c-0.10 5.47 -0.30 6.03 -1.57 4.00c-0.63 -1.00 -4.97 -4.60 -6.33 -5.27c-0.37 -0.17 -1.27 -0.63 -2.00 -1.07c-5.87 -3.30 -13.27 -4.67 -21.17 -3.93zM771.50 44.60c2.93 1.10 3.63 1.43 5.33 2.47c3.90 2.43 7.73 7.20 9.33 11.63c1.33 3.63 1.57 4.97 1.73 9.80c0.17 5.27 -0.20 7.77 -1.83 12.03c-3.30 8.73 -11.67 14.73 -20.67 14.87c-5.07 0.07 -7.83 -0.67 -13.00 -3.37c-0.50 -0.27 -2.10 -1.70 -3.57 -3.17c-5.00 -5.03 -7.53 -11.73 -7.53 -19.70c0.03 -11.87 6.07 -20.90 16.37 -24.53c3.23 -1.10 10.83 -1.13 13.83 -0.03zM847.50 29.97c-2.93 0.23 -3.83 0.43 -8.10 1.73c-10.23 3.13 -19.10 11.73 -22.63 21.93c-3.73 10.90 -3.17 25.07 1.40 34.90c4.07 8.70 12.00 15.73 21.17 18.80c6.30 2.10 18.57 2.63 23.50 1.03c0.57 -0.20 2.00 -0.63 3.27 -1.00c1.23 -0.40 2.50 -0.83 2.83 -1.00c0.30 -0.17 0.93 -0.47 1.40 -0.67c4.10 -1.77 10.60 -7.33 13.30 -11.40c1.80 -2.67 4.47 -8.20 4.23 -8.80c-0.17 -0.43 -1.40 -0.50 -8.30 -0.50c-8.07 -0.00 -8.13 -0.00 -8.83 0.77c-0.40 0.43 -0.73 0.97 -0.73 1.17c0.00 0.60 -4.30 5.03 -5.83 6.03c-5.70 3.70 -14.83 4.00 -21.67 0.67c-3.03 -1.47 -7.90 -6.20 -9.27 -9.03c-1.73 -3.63 -2.93 -8.93 -1.97 -8.93c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.77 -0.03 29.00 -0.17 29.33 -0.50c0.67 -0.67 0.53 -13.63 -0.20 -16.40c-2.27 -8.60 -5.20 -13.97 -10.27 -18.87c-7.87 -7.63 -18.43 -10.90 -31.77 -9.83zM856.37 43.50c2.87 0.53 4.13 0.97 7.30 2.47c2.10 1.00 6.87 5.57 7.70 7.37c1.77 3.77 2.77 8.50 1.93 9.03c-0.27 0.17 -9.80 0.30 -21.23 0.30c-23.67 -0.00 -21.53 0.33 -20.57 -3.27c2.07 -7.83 8.40 -14.23 15.50 -15.70c1.00 -0.20 2.13 -0.43 2.50 -0.50c1.50 -0.30 4.27 -0.17 6.87 0.30zM921.83 30.00c-15.77 1.60 -25.83 12.13 -24.10 25.17c1.03 7.73 5.03 12.23 14.77 16.50c0.60 0.27 4.87 1.67 8.50 2.80c0.83 0.23 2.47 0.73 3.67 1.03c9.20 2.50 15.00 5.10 16.43 7.43c2.43 3.83 0.63 8.90 -4.00 11.30c-4.60 2.40 -13.07 2.23 -17.87 -0.33c-3.17 -1.67 -6.23 -5.67 -6.23 -8.10c0.00 -1.27 -1.03 -1.43 -8.40 -1.43c-7.77 -0.00 -8.27 0.07 -8.27 1.13c0.00 5.67 4.07 12.73 9.83 17.07c6.40 4.83 12.23 6.53 22.17 6.57c9.53 -0.00 14.80 -1.40 20.43 -5.40c4.20 -2.97 8.23 -8.47 8.23 -11.20c0.00 -0.40 0.23 -1.03 0.50 -1.40c0.67 -0.90 0.67 -7.93 0.00 -9.13c-0.27 -0.47 -0.50 -1.13 -0.50 -1.50c-0.10 -2.70 -4.80 -8.43 -8.83 -10.73c-1.50 -0.83 -4.93 -2.47 -6.27 -2.97c-3.00 -1.07 -7.50 -2.50 -9.90 -3.17c-1.37 -0.37 -3.10 -0.87 -3.83 -1.10c-0.73 -0.23 -2.90 -0.93 -4.83 -1.57c-1.93 -0.60 -3.73 -1.30 -4.03 -1.53c-0.27 -0.23 -0.70 -0.43 -0.90 -0.43c-0.23 -0.00 -1.30 -0.90 -2.37 -1.97c-1.67 -1.67 -2.03 -2.23 -2.23 -3.53c-0.93 -6.40 3.83 -10.33 12.53 -10.30c8.10 0.07 12.77 3.20 14.50 9.80c0.37 1.50 0.37 1.50 8.10 1.57c7.43 0.07 7.70 0.03 7.90 -0.60c0.30 -0.93 -0.70 -6.37 -1.50 -7.93c-0.13 -0.30 -0.50 -1.10 -0.80 -1.80c-1.40 -3.23 -5.80 -7.97 -9.57 -10.20c-5.67 -3.40 -14.47 -4.93 -23.13 -4.03z"/>
+                            </svg>
+            <div class="login-brand-row">
+                <span class="brand-text">Forge<span>Billing</span></span>
+                <span class="brand-badge">Money</span>
+            </div>
+        </div>
+        <p class="sub">Sign in with your EcomForges account</p>
+        <form id="login-form">
+            <input type="email" id="login-email" placeholder="you@ecomforges.com" required autocomplete="username" />
+            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
+            <div class="login-error" id="login-error"></div>
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+        <div class="login-footer">Only @ecomforges.com accounts are allowed</div>
+    </div>
+</div>
+
+<!-- ─── APP ROOT ─── -->
+<div id="app-root" style="display:none;">
+
+    <header>
+        <div class="top">
+            <div class="brand">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" width="958" height="147" class="brand-lockup" role="img" aria-label="EcomForges" focusable="false">
+                    <defs><linearGradient id="fb-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#0A2463"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs>
+                    <path fill="url(#fb-lockup-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                    <path fill="#FFFFFF" d="M580.93 0.33c-0.03 0.17 -1.20 0.47 -2.53 0.67c-1.37 0.17 -2.73 0.50 -3.07 0.67c-0.33 0.20 -0.87 0.33 -1.13 0.33c-1.00 -0.00 -5.40 2.33 -7.37 3.90c-5.03 4.07 -7.37 10.70 -7.60 21.77l-0.07 3.17l-4.33 0.17l-4.33 0.17l0.00 6.33l0.00 6.33l4.33 0.17l4.33 0.17l0.17 31.83l0.17 31.83l8.00 -0.00l8.00 -0.00l0.07 -31.63c0.07 -17.43 0.20 -31.77 0.37 -31.93c0.13 -0.13 3.33 -0.30 7.07 -0.33l6.83 -0.10l0.00 -6.33l0.00 -6.33l-6.83 -0.10c-3.73 -0.03 -6.97 -0.23 -7.13 -0.40c-0.37 -0.37 -0.37 -5.33 -0.03 -8.37c0.60 -5.33 3.07 -7.80 8.67 -8.63c3.97 -0.60 4.07 -0.63 4.20 -1.07c0.07 -0.23 0.10 -3.17 0.03 -6.53l-0.10 -6.07l-3.80 -0.00c-2.13 -0.00 -3.83 0.13 -3.90 0.33zM202.67 29.97c-19.93 1.80 -33.27 17.53 -33.37 39.40c-0.07 14.27 5.63 26.27 15.87 33.33c7.13 4.90 12.73 6.47 22.83 6.43c5.40 -0.00 7.33 -0.13 9.17 -0.60c8.27 -2.13 12.37 -4.43 18.07 -10.27c3.27 -3.33 5.20 -6.30 7.27 -11.03c1.00 -2.27 1.13 -2.23 -7.97 -2.23c-8.17 -0.00 -8.17 -0.00 -9.57 2.07c-3.90 5.70 -8.73 8.43 -15.70 8.83c-10.67 0.63 -19.80 -5.67 -22.63 -15.57c-0.63 -2.20 -0.83 -4.67 -0.37 -4.67c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.90 -0.03 29.00 -0.17 29.33 -0.50c0.30 -0.30 0.40 -2.10 0.40 -7.00c0.00 -6.97 -0.53 -10.47 -2.13 -14.73c-0.40 -1.00 -0.83 -2.20 -0.97 -2.67c-0.27 -0.80 -2.33 -4.33 -3.80 -6.47c-0.40 -0.57 -1.93 -2.30 -3.40 -3.80c-7.67 -8.00 -18.87 -11.60 -32.17 -10.43zM211.97 43.63c8.73 1.70 14.77 7.33 16.27 15.17c0.47 2.33 0.47 2.90 0.13 3.33c-0.67 0.80 -41.93 0.80 -42.23 0.03c-0.47 -1.20 1.57 -6.80 3.60 -10.00c1.53 -2.37 7.17 -7.17 8.40 -7.17c0.17 -0.00 0.73 -0.23 1.30 -0.50c3.20 -1.47 7.77 -1.77 12.53 -0.87zM282.83 29.97c-4.13 0.43 -8.37 1.63 -12.23 3.53c-15.07 7.40 -22.87 24.27 -19.97 43.17c0.60 4.00 2.03 9.40 2.97 11.20c0.17 0.33 0.67 1.30 1.07 2.13c4.10 8.00 11.63 14.53 19.93 17.30c5.93 2.00 17.03 2.60 22.73 1.20c11.07 -2.67 18.63 -8.43 23.43 -17.83c1.67 -3.23 2.60 -6.03 2.20 -6.53c-0.37 -0.47 -14.67 -0.67 -16.17 -0.27c-0.37 0.13 -1.10 1.13 -1.77 2.57c-5.27 11.00 -22.20 12.97 -31.50 3.70c-5.40 -5.37 -7.73 -14.00 -6.77 -25.13c1.03 -11.70 7.17 -19.43 17.03 -21.47c9.30 -1.90 17.70 1.97 21.67 9.97c0.37 0.73 0.83 1.43 1.00 1.57c0.67 0.47 16.53 0.30 16.57 -0.17c0.20 -2.03 -2.37 -7.90 -5.07 -11.57c-7.30 -9.97 -20.10 -14.83 -35.13 -13.37zM363.00 29.97c-3.27 0.33 -9.20 1.73 -10.17 2.40c-0.20 0.13 -1.00 0.47 -1.77 0.73c-3.03 1.03 -7.80 4.30 -10.90 7.40c-8.77 8.77 -12.47 19.97 -11.23 33.83c1.43 15.70 10.93 28.27 24.87 32.87c5.37 1.77 6.47 1.90 13.37 1.93c12.40 -0.00 20.97 -3.30 28.83 -11.13c5.53 -5.53 8.30 -10.60 10.53 -19.50c0.87 -3.33 0.87 -14.20 0.00 -18.00c-0.63 -2.87 -1.67 -6.47 -2.17 -7.43c-0.13 -0.30 -0.60 -1.33 -1.03 -2.23c-3.07 -6.93 -9.47 -13.30 -17.20 -17.10c-3.10 -1.53 -4.30 -1.93 -9.30 -3.20c-2.33 -0.60 -10.27 -0.90 -13.83 -0.57zM374.83 44.67c10.37 3.60 16.17 12.47 16.17 24.67c-0.03 17.10 -11.97 28.13 -27.90 25.80c-7.47 -1.10 -14.47 -7.30 -16.70 -14.80c-0.20 -0.63 -0.53 -1.77 -0.73 -2.50c-0.70 -2.30 -0.83 -12.63 -0.20 -15.17c2.00 -8.10 5.60 -13.43 10.87 -16.17c2.13 -1.10 2.40 -1.23 3.80 -1.73c3.53 -1.30 11.13 -1.33 14.70 -0.10zM452.00 30.00c-5.23 0.53 -11.97 3.53 -15.87 7.10c-2.43 2.20 -2.57 2.07 -2.53 -2.10c0.00 -2.33 -0.10 -3.57 -0.37 -3.73c-0.53 -0.33 -14.97 -0.33 -15.47 -0.00c-0.33 0.20 -0.40 8.33 -0.33 38.43l0.07 38.13l8.00 -0.00l8.00 -0.00l0.07 -22.17c0.03 -12.20 0.13 -23.37 0.27 -24.83c0.57 -7.73 5.37 -14.07 12.33 -16.33c2.87 -0.93 10.83 -0.97 13.50 -0.03c5.80 2.03 10.03 6.63 11.87 13.03c0.53 1.80 0.60 4.37 0.70 25.83c0.07 13.10 0.10 24.03 0.10 24.23c0.00 0.33 1.80 0.43 7.83 0.43l7.83 -0.00l0.03 -22.60c0.03 -12.40 0.10 -23.00 0.17 -23.50c1.47 -12.50 8.83 -18.83 21.13 -18.10c3.77 0.23 5.80 0.80 8.67 2.43c2.27 1.27 5.47 4.67 6.40 6.73c0.37 0.83 0.87 1.97 1.10 2.53c1.33 3.07 1.50 6.17 1.50 29.73l0.00 22.77l7.83 -0.00c6.03 -0.00 7.83 -0.10 7.83 -0.43c0.17 -17.70 -0.07 -49.60 -0.37 -51.57c-2.07 -13.50 -10.40 -22.60 -23.47 -25.53c-3.83 -0.87 -12.40 -0.80 -15.67 0.13c-8.10 2.30 -15.17 7.20 -18.00 12.50c-0.87 1.63 -1.17 1.57 -2.50 -0.53c-1.47 -2.30 -6.50 -7.20 -8.47 -8.23c-0.87 -0.47 -2.00 -1.03 -2.47 -1.30c-4.60 -2.47 -12.90 -3.73 -19.73 -3.03zM627.67 29.97c-17.50 1.47 -30.93 14.17 -33.83 32.03c-3.37 20.57 6.87 39.33 24.67 45.30c6.07 2.00 16.50 2.60 22.33 1.23c12.43 -2.90 21.73 -9.97 27.03 -20.60c0.63 -1.20 1.13 -2.37 1.13 -2.57c0.00 -0.20 0.20 -0.83 0.47 -1.43c3.80 -8.77 3.03 -24.03 -1.63 -33.30c-3.13 -6.17 -9.83 -13.47 -14.33 -15.53c-0.53 -0.23 -1.23 -0.60 -1.50 -0.77c-5.07 -3.27 -15.37 -5.13 -24.33 -4.37zM639.17 44.53c2.67 0.90 5.50 2.43 7.50 3.97c2.27 1.80 2.27 1.77 5.73 6.90c0.33 0.50 0.60 1.10 0.60 1.37c0.00 0.23 0.13 0.57 0.30 0.73c1.00 1.10 2.13 7.37 2.13 11.83c0.07 16.93 -10.97 27.57 -26.93 25.90c-9.80 -1.03 -17.50 -9.33 -18.70 -20.23c-0.70 -6.40 0.17 -15.17 1.77 -17.50c0.23 -0.37 0.43 -0.83 0.43 -1.10c0.00 -0.83 2.97 -4.90 5.07 -6.97c2.83 -2.77 6.53 -4.63 10.77 -5.47c2.27 -0.43 9.47 -0.10 11.33 0.57zM717.00 30.00c-4.37 0.37 -9.90 2.73 -13.40 5.67c-1.90 1.57 -4.33 4.40 -4.73 5.47c-0.53 1.47 -0.87 -0.27 -0.93 -4.97l-0.10 -5.00l-7.83 -0.00l-7.83 -0.00l0.00 38.33l0.00 38.33l7.93 0.10l7.90 0.07l0.03 -22.07c0.03 -23.13 0.03 -22.87 0.63 -25.87c1.97 -9.67 7.23 -13.53 18.83 -13.83l3.33 -0.07l0.00 -8.17c0.00 -9.37 0.47 -8.40 -3.83 -8.00zM757.00 29.97c-11.97 1.17 -23.97 10.03 -28.47 21.03c-0.33 0.83 -0.80 1.93 -1.03 2.50c-0.43 1.00 -1.10 3.43 -1.87 6.83c-0.77 3.50 -0.77 13.03 0.00 17.17c0.87 4.73 2.30 9.53 3.07 10.30c0.17 0.20 0.30 0.53 0.30 0.77c0.00 1.87 6.37 10.03 10.20 13.13c6.70 5.37 12.90 7.43 22.13 7.43c7.00 -0.00 9.47 -0.50 14.67 -2.90c3.73 -1.70 10.37 -6.80 10.83 -8.27c1.30 -4.10 1.80 13.17 0.53 18.27c-2.07 8.17 -5.97 12.50 -13.70 15.17c-4.10 1.40 -13.13 1.00 -17.17 -0.77c-0.37 -0.17 -1.07 -0.43 -1.53 -0.60c-3.83 -1.37 -9.30 -6.87 -10.10 -10.13c-0.20 -0.90 -0.20 -0.90 -8.03 -0.90c-7.83 -0.00 -7.83 -0.00 -7.83 1.50c0.00 0.83 0.23 2.07 0.50 2.73c0.27 0.63 0.50 1.40 0.50 1.70c0.00 0.90 2.60 5.90 4.03 7.77c4.03 5.17 10.70 9.57 17.47 11.50c8.60 2.50 22.47 2.47 29.27 -0.07c6.47 -2.40 12.37 -6.50 15.67 -10.87c3.40 -4.53 4.77 -7.37 6.93 -14.60c0.33 -1.20 0.47 -9.77 0.53 -44.60l0.13 -43.07l-7.93 0.07l-7.93 0.10l-0.10 5.07c-0.10 5.47 -0.30 6.03 -1.57 4.00c-0.63 -1.00 -4.97 -4.60 -6.33 -5.27c-0.37 -0.17 -1.27 -0.63 -2.00 -1.07c-5.87 -3.30 -13.27 -4.67 -21.17 -3.93zM771.50 44.60c2.93 1.10 3.63 1.43 5.33 2.47c3.90 2.43 7.73 7.20 9.33 11.63c1.33 3.63 1.57 4.97 1.73 9.80c0.17 5.27 -0.20 7.77 -1.83 12.03c-3.30 8.73 -11.67 14.73 -20.67 14.87c-5.07 0.07 -7.83 -0.67 -13.00 -3.37c-0.50 -0.27 -2.10 -1.70 -3.57 -3.17c-5.00 -5.03 -7.53 -11.73 -7.53 -19.70c0.03 -11.87 6.07 -20.90 16.37 -24.53c3.23 -1.10 10.83 -1.13 13.83 -0.03zM847.50 29.97c-2.93 0.23 -3.83 0.43 -8.10 1.73c-10.23 3.13 -19.10 11.73 -22.63 21.93c-3.73 10.90 -3.17 25.07 1.40 34.90c4.07 8.70 12.00 15.73 21.17 18.80c6.30 2.10 18.57 2.63 23.50 1.03c0.57 -0.20 2.00 -0.63 3.27 -1.00c1.23 -0.40 2.50 -0.83 2.83 -1.00c0.30 -0.17 0.93 -0.47 1.40 -0.67c4.10 -1.77 10.60 -7.33 13.30 -11.40c1.80 -2.67 4.47 -8.20 4.23 -8.80c-0.17 -0.43 -1.40 -0.50 -8.30 -0.50c-8.07 -0.00 -8.13 -0.00 -8.83 0.77c-0.40 0.43 -0.73 0.97 -0.73 1.17c0.00 0.60 -4.30 5.03 -5.83 6.03c-5.70 3.70 -14.83 4.00 -21.67 0.67c-3.03 -1.47 -7.90 -6.20 -9.27 -9.03c-1.73 -3.63 -2.93 -8.93 -1.97 -8.93c0.13 -0.00 13.23 -0.03 29.13 -0.10c22.77 -0.03 29.00 -0.17 29.33 -0.50c0.67 -0.67 0.53 -13.63 -0.20 -16.40c-2.27 -8.60 -5.20 -13.97 -10.27 -18.87c-7.87 -7.63 -18.43 -10.90 -31.77 -9.83zM856.37 43.50c2.87 0.53 4.13 0.97 7.30 2.47c2.10 1.00 6.87 5.57 7.70 7.37c1.77 3.77 2.77 8.50 1.93 9.03c-0.27 0.17 -9.80 0.30 -21.23 0.30c-23.67 -0.00 -21.53 0.33 -20.57 -3.27c2.07 -7.83 8.40 -14.23 15.50 -15.70c1.00 -0.20 2.13 -0.43 2.50 -0.50c1.50 -0.30 4.27 -0.17 6.87 0.30zM921.83 30.00c-15.77 1.60 -25.83 12.13 -24.10 25.17c1.03 7.73 5.03 12.23 14.77 16.50c0.60 0.27 4.87 1.67 8.50 2.80c0.83 0.23 2.47 0.73 3.67 1.03c9.20 2.50 15.00 5.10 16.43 7.43c2.43 3.83 0.63 8.90 -4.00 11.30c-4.60 2.40 -13.07 2.23 -17.87 -0.33c-3.17 -1.67 -6.23 -5.67 -6.23 -8.10c0.00 -1.27 -1.03 -1.43 -8.40 -1.43c-7.77 -0.00 -8.27 0.07 -8.27 1.13c0.00 5.67 4.07 12.73 9.83 17.07c6.40 4.83 12.23 6.53 22.17 6.57c9.53 -0.00 14.80 -1.40 20.43 -5.40c4.20 -2.97 8.23 -8.47 8.23 -11.20c0.00 -0.40 0.23 -1.03 0.50 -1.40c0.67 -0.90 0.67 -7.93 0.00 -9.13c-0.27 -0.47 -0.50 -1.13 -0.50 -1.50c-0.10 -2.70 -4.80 -8.43 -8.83 -10.73c-1.50 -0.83 -4.93 -2.47 -6.27 -2.97c-3.00 -1.07 -7.50 -2.50 -9.90 -3.17c-1.37 -0.37 -3.10 -0.87 -3.83 -1.10c-0.73 -0.23 -2.90 -0.93 -4.83 -1.57c-1.93 -0.60 -3.73 -1.30 -4.03 -1.53c-0.27 -0.23 -0.70 -0.43 -0.90 -0.43c-0.23 -0.00 -1.30 -0.90 -2.37 -1.97c-1.67 -1.67 -2.03 -2.23 -2.23 -3.53c-0.93 -6.40 3.83 -10.33 12.53 -10.30c8.10 0.07 12.77 3.20 14.50 9.80c0.37 1.50 0.37 1.50 8.10 1.57c7.43 0.07 7.70 0.03 7.90 -0.60c0.30 -0.93 -0.70 -6.37 -1.50 -7.93c-0.13 -0.30 -0.50 -1.10 -0.80 -1.80c-1.40 -3.23 -5.80 -7.97 -9.57 -10.20c-5.67 -3.40 -14.47 -4.93 -23.13 -4.03z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0.000 8.500 120.688 131.562" width="120.7" height="131.6" class="brand-mark" role="img" aria-label="EcomForges" focusable="false">
+                    <defs><linearGradient id="fb-mark-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#0A2463"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs>
+                    <path fill="url(#fb-mark-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
+                </svg>
+                <span class="brand-rule"></span>
+                <span class="brand-text">Forge<span>Billing</span></span>
+                <span class="brand-badge">Money</span>
+            </div>
+            <div class="header-actions">
+                <span class="header-note" id="header-note">
+                    <span class="dot-status" id="status-dot"></span>
+                    <span id="status-label">Loading…</span>
+                    <span id="condition-badge" style="margin-left:8px;background:var(--red-dim);padding:2px 8px;border-radius:12px;font-size:10px;color:var(--red-bright);display:none;"></span>
+                </span>
+                <button class="btn-logout" id="logout-btn" title="Logout">🚪</button>
+            </div>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Sections">
+            <button class="tab" role="tab" aria-selected="true"  id="tab-overview" aria-controls="panel-overview" data-panel="overview">Overview</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-invoices" aria-controls="panel-invoices" data-panel="invoices">Invoices <span class="tab-count" id="inv-count"></span></button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-clients"  aria-controls="panel-clients"  data-panel="clients">Billable clients <span class="tab-count" id="cli-count"></span></button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-settings" aria-controls="panel-settings" data-panel="settings">Settings</button>
+        </nav>
+    </header>
+
+            <main>
+        <!-- OVERVIEW -->
+        <section class="panel-body active" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+            <div class="card">
+                <h2><span class="dot"></span>Where the money is</h2>
+                <p class="sub">Month to month with no lock-in means churn is quiet. This is the page
+                    that makes it loud. <span id="ov-sync-hint"></span></p>
+                <div class="stat-grid" id="ov-stats"></div>
+            </div>
+            <div class="card">
+                <h2><span class="dot"></span>Needs attention</h2>
+                <div id="ov-attention"></div>
+            </div>
+        </section>
+
+        <!-- INVOICES -->
+        <section class="panel-body" id="panel-invoices" role="tabpanel" aria-labelledby="tab-invoices">
+            <div class="card">
+                <h2><span class="dot"></span>Raise this month</h2>
+                <p class="sub">One invoice per active client per period. Raising twice for the same
+                    period is refused rather than silently duplicated.</p>
+                <div class="controls">
+                    <div class="field">
+                        <label for="run-period">Period</label>
+                        <input type="month" id="run-period" />
+                    </div>
+                    <div class="field">
+                        <label for="run-issue">Issue date</label>
+                        <input type="date" id="run-issue" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="button" class="btn btn-primary" id="run-go">Raise invoices</button>
+                    <span class="variant-note" id="run-note"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="dot"></span>Invoices</h2>
+                <div class="actions" style="margin-top:0;margin-bottom:12px">
+                    <label for="inv-filter" class="sr-only">Filter by status</label>
+                    <select id="inv-filter" aria-label="Filter by status" style="max-width:170px">
+                        <option value="all">All</option>
+                        <option value="draft">Draft</option>
+                        <option value="sent">Sent</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                    <button type="button" class="btn btn-ghost btn-sm" id="inv-export">Export CSV</button>
+                    <span class="variant-note" id="inv-summary"></span>
+                </div>
+                <div id="inv-list"></div>
+            </div>
+        </section>
+
+        <!-- CLIENTS -->
+        <section class="panel-body" id="panel-clients" role="tabpanel" aria-labelledby="tab-clients">
+            <div class="card">
+                <h2><span class="dot"></span>Billable clients</h2>
+                <div class="callout warn" style="margin-bottom:16px">
+                    <strong>Real names live here, unlike the analyst.</strong> The analyst keeps client
+                    codes and never business names, on purpose. An invoice cannot work that way — it
+                    needs the registered name to be a valid document. So this is the one tool holding
+                    identifying client data, it sits behind the same sign-in as the rest, and the
+                    <code>clientCode</code> field is what ties a row here back to the coded tools.
+                </div>
+                <form id="cli-form">
+                    <input type="hidden" id="cli-id" />
+                    <div class="controls">
+                        <div class="field">
+                            <label for="cli-name">Registered name *</label>
+                            <input type="text" id="cli-name" required placeholder="As it appears on SSM" />
+                        </div>
+                        <div class="field">
+                            <label for="cli-code">Client code</label>
+                            <input type="text" id="cli-code" placeholder="MY-BTY-09" autocomplete="off" />
+                            <div class="hint">Ties this row to the analyst and ForgeSprint.</div>
+                        </div>
+                        <div class="field">
+                            <label for="cli-reg">Company / SSM no.</label>
+                            <input type="text" id="cli-reg" />
+                        </div>
+                        <div class="field">
+                            <label for="cli-email">Billing email</label>
+                            <input type="email" id="cli-email" />
+                        </div>
+                        <div class="field">
+                            <label for="cli-tier">Tier</label>
+                            <select id="cli-tier"></select>
+                            <div class="hint" id="cli-tier-hint"></div>
+                        </div>
+                        <div class="field">
+                            <label for="cli-rate">Monthly rate (RM) *</label>
+                            <input type="number" id="cli-rate" min="0" step="1" required />
+                            <div class="hint">Defaults from the tier, override per client.</div>
+                        </div>
+                        <div class="field">
+                            <label for="cli-start">Started</label>
+                            <input type="date" id="cli-start" />
+                        </div>
+                        <div class="field">
+                            <label for="cli-status">Status</label>
+                            <select id="cli-status">
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="ended">Ended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label for="cli-address">Billing address</label>
+                        <textarea id="cli-address" rows="2"></textarea>
+                    </div>
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary" id="cli-save">Add client</button>
+                        <button type="button" class="btn btn-ghost" id="cli-cancel" style="display:none">Cancel edit</button>
+                        <span class="variant-note" id="cli-note"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="card">
+                <h2><span class="dot"></span>The roster</h2>
+                <div id="cli-list"></div>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="panel-body" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+            <div class="card">
+                <h2><span class="dot"></span>Your details</h2>
+                <p class="sub">These print on every invoice. Nothing here is filled in for you —
+                    inventing a bank account or a price would be worse than an empty field.</p>
+                <form id="set-form">
+                    <div class="controls">
+                        <div class="field">
+                            <label for="set-bizname">Business name</label>
+                            <input type="text" id="set-bizname" placeholder="EcomForges" />
+                        </div>
+                        <div class="field">
+                            <label for="set-ssm">SSM / registration no.</label>
+                            <input type="text" id="set-ssm" placeholder="TR0332758-W" />
+                        </div>
+                        <div class="field">
+                            <label for="set-email">Billing email</label>
+                            <input type="email" id="set-email" />
+                        </div>
+                        <div class="field">
+                            <label for="set-phone">Phone</label>
+                            <input type="text" id="set-phone" />
+                        </div>
+                        <div class="field">
+                            <label for="set-prefix">Invoice number prefix</label>
+                            <input type="text" id="set-prefix" placeholder="EF" />
+                            <div class="hint">Numbers run <code>PREFIX-YYYYMM-001</code>.</div>
+                        </div>
+                        <div class="field">
+                            <label for="set-terms">Payment terms (days)</label>
+                            <input type="number" id="set-terms" min="0" step="1" placeholder="14" />
+                        </div>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label for="set-address">Business address</label>
+                        <textarea id="set-address" rows="2"></textarea>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label for="set-bank">Payment details</label>
+                        <textarea id="set-bank" rows="3" placeholder="Bank, account name, account number — exactly as you want it printed."></textarea>
+                    </div>
+
+                    <h3 style="font-size:13px;margin:18px 0 8px;color:var(--red-bright)">Tiers</h3>
+                    <p class="hint" style="margin-bottom:10px">The ladder is deliberately unpublished, so
+                        it lives here rather than in any client-facing copy. RM499 is the entry.</p>
+                    <div id="set-tiers"></div>
+
+                    <h3 style="font-size:13px;margin:18px 0 8px;color:var(--red-bright)">Tax</h3>
+                    <div class="controls">
+                        <div class="field">
+                            <label for="set-sst">Service tax</label>
+                            <select id="set-sst">
+                                <option value="off">Not registered — no tax line</option>
+                                <option value="on">Registered — add a tax line</option>
+                            </select>
+                            <div class="hint">Malaysian service tax applies only if you are registered.
+                                Leave off unless you are.</div>
+                        </div>
+                        <div class="field">
+                            <label for="set-sstrate">Rate (%)</label>
+                            <input type="number" id="set-sstrate" min="0" max="100" step="0.5" placeholder="8" />
+                        </div>
+                        <div class="field">
+                            <label for="set-sstno">Tax registration no.</label>
+                            <input type="text" id="set-sstno" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Save settings</button>
+                        <span class="variant-note" id="set-note"></span>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- INVOICE VIEW -->
+    <div id="doc-overlay" class="hidden">
+        <div class="doc-box">
+            <div id="invoice-paper"></div>
+            <div class="actions no-print">
+                <button type="button" class="btn btn-primary" id="doc-print">Print / save PDF</button>
+                <button type="button" class="btn btn-ghost" id="doc-copy">Copy as text</button>
+                <button type="button" class="btn btn-ghost" id="doc-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied</div>
+</div>
+
+<!-- ─── Firebase SDKs ─── -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   ForgeBilling — who is on the retainer, who has paid, who has not.
+
+   The offer is month to month with no lock-in, which is a good promise and a
+   quiet failure mode: a client who stops is a client who simply does not pay
+   again, and nothing announces it. This tool is the announcement.
+
+   Two things it deliberately does NOT do:
+
+   - It invents no numbers. No bank account, no tier prices beyond the RM499
+     entry that is already public, no tax rate. Those live in Settings, empty
+     until filled. A plausible-looking wrong account number on an invoice is
+     worse than a blank one.
+   - It makes no claim about tax status. Malaysian service tax applies only to
+     a registered business, so the tax line is off until switched on.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDAm72A60sM9ILdiEw3Z1HJJ7P_-viggJ8",
+    authDomain: "leadforge-ffeef.firebaseapp.com",
+    databaseURL: "https://leadforge-ffeef-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "leadforge-ffeef",
+    storageBucket: "leadforge-ffeef.firebasestorage.app",
+    messagingSenderId: "342516241320",
+    appId: "1:342516241320:web:1db878185ef8db706d039d"
+};
+const ALLOWED_DOMAIN = '@ecomforges.com';
+
+// Session counts are the calculator's. Prices are not: only the RM499 entry is
+// public, so the rest start null and are set in Settings.
+const DEFAULT_TIERS = [
+    { id: 'lite',   label: 'Lite — 2 sessions/month',        rate: 499 },
+    { id: 'growth', label: 'Growth — 3 sessions/month',      rate: null },
+    { id: 'elite',  label: 'Elite — up to 5 sessions/month', rate: null }
+];
+
+let fbDB = null, fbUser = null, fbReady = false;
+let clients = [], invoices = [], settings = {};
+
+const loginOverlay = document.getElementById('login-overlay');
+const loginForm = document.getElementById('login-form');
+const loginEmail = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
+const loginError = document.getElementById('login-error');
+const logoutBtn = document.getElementById('logout-btn');
+const appRoot = document.getElementById('app-root');
+const statusDot = document.getElementById('status-dot');
+const statusLabel = document.getElementById('status-label');
+
+function showLoginError(m){ loginError.textContent=m; loginError.classList.toggle('show', !!m); }
+function showApp(){ loginOverlay.classList.add('hidden'); appRoot.style.display='block'; }
+function showLogin(){ loginOverlay.classList.remove('hidden'); appRoot.style.display='none'; }
+function isAllowedEmail(e){ return typeof e==='string' && e.toLowerCase().endsWith(ALLOWED_DOMAIN); }
+function fbStatus(s,m){ statusDot.className='dot-status '+s; statusLabel.textContent=m; }
+function toast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// ─── Local fallback ─────────────────────────────────────────────────────
+const LS = 'forgebilling.v1';
+function localRead(){ try{ return JSON.parse(localStorage.getItem(LS)||'{}'); }catch(e){ return {}; } }
+function localWrite(o){ try{ localStorage.setItem(LS,JSON.stringify(o)); return true; }catch(e){ return false; } }
+function localSync(){ localWrite({clients,invoices,settings}); }
+
+// ─── Money and dates ────────────────────────────────────────────────────
+// Kept in whole sen internally would be safer still, but every amount here is
+// a whole-ringgit retainer, so rounding to 2dp at the edges is enough.
+function rm(n){
+    const v = Number(n);
+    if (!isFinite(v)) return '—';
+    return 'RM' + v.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(v){
+    if(!v) return '—';
+    const d = (typeof v === 'number') ? new Date(v) : new Date(v + 'T00:00:00');
+    if (isNaN(d)) return '—';
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function thisMonth(){ return new Date().toISOString().slice(0,7); }
+function addDays(iso,n){
+    const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n);
+    return d.toISOString().slice(0,10);
+}
+function periodLabel(p){
+    if(!p) return '—';
+    const [y,m]=p.split('-');
+    return `${MONTHS[Number(m)-1]} ${y}`;
+}
+
+// An invoice is overdue when it was sent, is unpaid, and the due date has passed.
+// A draft is not overdue — nobody has been asked for anything yet.
+function isOverdue(inv){
+    return inv.status === 'sent' && inv.dueDate && inv.dueDate < todayISO();
+}
+function effectiveStatus(inv){
+    return isOverdue(inv) ? 'overdue' : inv.status;
+}
+
+function tiers(){
+    const stored = settings.tiers;
+    if (!Array.isArray(stored) || !stored.length) return DEFAULT_TIERS.slice();
+    return stored;
+}
+function tierById(id){ return tiers().find(t=>t.id===id) || null; }
+
+// ─── Persist ────────────────────────────────────────────────────────────
+async function put(path, id, data) {
+    if (fbReady && fbDB) {
+        if (id) { await fbDB.ref(`forgebilling/${path}/${id}`).update(data); return id; }
+        const ref = fbDB.ref(`forgebilling/${path}`).push();
+        await ref.set(data);
+        return ref.key;
+    }
+    const bucket = path === 'clients' ? clients : invoices;
+    if (id) {
+        const i = bucket.findIndex(x => x.id === id);
+        if (i >= 0) bucket[i] = Object.assign({}, bucket[i], data);
+    } else {
+        id = 'x' + Date.now() + Math.floor(Math.random() * 1000);
+        bucket.unshift(Object.assign({ id }, data));
+    }
+    localSync(); renderAll();
+    return id;
+}
+async function drop(path, id) {
+    if (fbReady && fbDB) { await fbDB.ref(`forgebilling/${path}/${id}`).remove(); return; }
+    if (path === 'clients') clients = clients.filter(x => x.id !== id);
+    else invoices = invoices.filter(x => x.id !== id);
+    localSync(); renderAll();
+}
+async function saveSettings(next) {
+    settings = Object.assign({}, settings, next);
+    if (fbReady && fbDB) { await fbDB.ref('forgebilling/settings').update(settings); }
+    else { localSync(); }
+    renderAll();
+}
+
+// ─── Invoice numbering ──────────────────────────────────────────────────
+// PREFIX-YYYYMM-NNN, sequential within the period. Derived from what exists
+// rather than a stored counter, so two devices raising at once cannot both
+// take the same number and silently overwrite one another.
+function nextInvoiceNo(period) {
+    const prefix = (settings.prefix || 'EF').toUpperCase();
+    const stub = `${prefix}-${period.replace('-', '')}-`;
+    const used = invoices
+        .map(i => i.number)
+        .filter(n => typeof n === 'string' && n.startsWith(stub))
+        .map(n => parseInt(n.slice(stub.length), 10))
+        .filter(n => !isNaN(n));
+    const next = (used.length ? Math.max(...used) : 0) + 1;
+    return stub + String(next).padStart(3, '0');
+}
+
+function invoiceTotals(inv) {
+    const sub = Number(inv.amount) || 0;
+    const taxed = inv.taxRate ? sub * (Number(inv.taxRate) / 100) : 0;
+    return { sub, tax: taxed, total: sub + taxed };
+}
+
+// ─── Raising a month ────────────────────────────────────────────────────
+async function raiseInvoices() {
+    const period = document.getElementById('run-period').value;
+    const issue = document.getElementById('run-issue').value || todayISO();
+    if (!period) { toast('Pick a period first'); return; }
+
+    const active = clients.filter(c => c.status === 'active');
+    if (!active.length) { toast('No active clients'); return; }
+
+    const missingRate = active.filter(c => !(Number(c.rate) > 0));
+    if (missingRate.length) {
+        toast(`${missingRate[0].name} has no rate set`);
+        showTab('clients');
+        return;
+    }
+
+    const already = new Set(invoices.filter(i => i.period === period).map(i => i.clientId));
+    const todo = active.filter(c => !already.has(c.id));
+    if (!todo.length) { toast(`${periodLabel(period)} is already raised for every active client`); return; }
+
+    const termDays = Number(settings.terms) > 0 ? Number(settings.terms) : 14;
+    const taxRate = settings.sst === 'on' ? Number(settings.sstRate) || 0 : 0;
+
+    // Sequential rather than parallel: each number is derived from the ones
+    // that exist, so they have to be created one at a time to stay unique.
+    let made = 0;
+    for (const c of todo) {
+        const number = nextInvoiceNo(period);
+        const inv = {
+            number, period, clientId: c.id, clientName: c.name, clientCode: c.clientCode || '',
+            clientReg: c.reg || '', clientEmail: c.email || '', clientAddress: c.address || '',
+            description: `Ecommerce consulting retainer — ${periodLabel(period)}`,
+            amount: Number(c.rate), taxRate,
+            issueDate: issue, dueDate: addDays(issue, termDays),
+            status: 'draft', createdAt: Date.now(),
+            createdBy: fbUser ? fbUser.email : null
+        };
+        const id = await put('invoices', null, inv);
+        if (id && !(fbReady && fbDB)) { /* local path already pushed */ }
+        made++;
+    }
+    document.getElementById('run-note').textContent =
+        `${made} raised for ${periodLabel(period)}${already.size ? `, ${already.size} already existed` : ''}`;
+    toast(`Raised ${made} invoice${made === 1 ? '' : 's'}`);
+    showTab('invoices');
+}
+
+async function setInvoiceStatus(id, status) {
+    const patch = { status };
+    if (status === 'paid') patch.paidAt = Date.now();
+    if (status === 'sent') patch.sentAt = Date.now();
+    await put('invoices', id, patch);
+    toast('Marked ' + status);
+}
+
+// ─── Overview ───────────────────────────────────────────────────────────
+function renderOverview() {
+    const active = clients.filter(c => c.status === 'active');
+    const mrr = active.reduce((n, c) => n + (Number(c.rate) || 0), 0);
+    const unpaid = invoices.filter(i => i.status !== 'paid');
+    const outstanding = unpaid.reduce((n, i) => n + invoiceTotals(i).total, 0);
+    const overdue = invoices.filter(isOverdue);
+    const overdueSum = overdue.reduce((n, i) => n + invoiceTotals(i).total, 0);
+
+    const stats = [
+        ['Monthly recurring', rm(mrr), `${active.length} active client${active.length === 1 ? '' : 's'}`, 'ok'],
+        ['Outstanding', rm(outstanding), `${unpaid.length} unpaid invoice${unpaid.length === 1 ? '' : 's'}`, unpaid.length ? 'warn' : 'ok'],
+        ['Overdue', rm(overdueSum), `${overdue.length} past the due date`, overdue.length ? 'bad' : 'ok'],
+        ['Paused or ended', String(clients.filter(c => c.status !== 'active').length), 'not billing this month', 'muted']
+    ];
+    const wrap = document.getElementById('ov-stats');
+    wrap.innerHTML = '';
+    stats.forEach(([label, value, sub, tone]) => {
+        const d = document.createElement('div');
+        d.className = 'stat ' + tone;
+        const l = document.createElement('div'); l.className = 'stat-label'; l.textContent = label;
+        const v = document.createElement('div'); v.className = 'stat-value'; v.textContent = value;
+        const s = document.createElement('div'); s.className = 'stat-sub'; s.textContent = sub;
+        d.appendChild(l); d.appendChild(v); d.appendChild(s);
+        wrap.appendChild(d);
+    });
+
+    const att = document.getElementById('ov-attention');
+    att.innerHTML = '';
+    const items = [];
+
+    if (!settings.bank) items.push(['bad', 'No payment details set. Invoices will print without a way to pay them — Settings.']);
+    if (!settings.bizname) items.push(['warn', 'No business name set, so invoices print unheaded — Settings.']);
+    tiers().filter(t => t.rate == null).forEach(t =>
+        items.push(['warn', `${t.label} has no price set. Clients on it need a rate typed in per client until it does.`]));
+
+    overdue.sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+    overdue.forEach(i => items.push(['bad',
+        `${i.clientName} — ${i.number} for ${periodLabel(i.period)} was due ${fmtDate(i.dueDate)}. ${rm(invoiceTotals(i).total)}.`]));
+
+    const notRaised = active.filter(c => !invoices.some(i => i.period === thisMonth() && i.clientId === c.id));
+    if (notRaised.length) items.push(['warn',
+        `${notRaised.length} active client${notRaised.length === 1 ? '' : 's'} not yet invoiced for ${periodLabel(thisMonth())}.`]);
+
+    if (!items.length) {
+        const p = document.createElement('p');
+        p.className = 'hint';
+        p.textContent = clients.length ? 'Nothing outstanding. Everything raised and paid.' : 'No clients yet.';
+        att.appendChild(p);
+        return;
+    }
+    items.forEach(([tone, text]) => {
+        const d = document.createElement('div');
+        d.className = 'callout ' + (tone === 'bad' ? 'bad' : 'warn');
+        d.textContent = text;
+        att.appendChild(d);
+    });
+}
+
+// ─── Invoice list ───────────────────────────────────────────────────────
+function renderInvoices() {
+    const wrap = document.getElementById('inv-list');
+    const filter = document.getElementById('inv-filter').value;
+    document.getElementById('inv-count').textContent = invoices.length ? String(invoices.length) : '';
+
+    let list = invoices.slice();
+    if (filter !== 'all') list = list.filter(i => effectiveStatus(i) === filter);
+    list.sort((a, b) => (b.period || '').localeCompare(a.period || '') || (a.number || '').localeCompare(b.number || ''));
+
+    const total = list.reduce((n, i) => n + invoiceTotals(i).total, 0);
+    document.getElementById('inv-summary').textContent =
+        list.length ? `${list.length} shown · ${rm(total)}` : '';
+
+    wrap.innerHTML = '';
+    if (!list.length) {
+        const p = document.createElement('p'); p.className = 'hint';
+        p.textContent = invoices.length ? 'None with that status.' : 'No invoices yet. Raise a month above.';
+        wrap.appendChild(p); return;
+    }
+
+    list.forEach(inv => {
+        const st = effectiveStatus(inv);
+        const item = document.createElement('div');
+        item.className = 'row-item';
+
+        const head = document.createElement('div');
+        head.className = 'row-head';
+        const no = document.createElement('span');
+        no.className = 'row-title'; no.textContent = inv.number;
+        head.appendChild(no);
+
+        const who = document.createElement('span');
+        who.className = 'pill'; who.textContent = inv.clientName;
+        head.appendChild(who);
+
+        const pill = document.createElement('span');
+        pill.className = 'pill ' + st; pill.textContent = st;
+        head.appendChild(pill);
+
+        const amt = document.createElement('span');
+        amt.className = 'row-amount'; amt.textContent = rm(invoiceTotals(inv).total);
+        head.appendChild(amt);
+        item.appendChild(head);
+
+        const meta = document.createElement('div');
+        meta.className = 'row-meta';
+        meta.textContent = `${periodLabel(inv.period)} · issued ${fmtDate(inv.issueDate)} · due ${fmtDate(inv.dueDate)}`
+            + (inv.paidAt ? ` · paid ${fmtDate(inv.paidAt)}` : '');
+        item.appendChild(meta);
+
+        const act = document.createElement('div');
+        act.className = 'actions';
+        const mk = (label, cls, fn) => {
+            const b = document.createElement('button');
+            b.className = 'btn ' + cls + ' btn-sm'; b.textContent = label;
+            b.addEventListener('click', fn); return b;
+        };
+        act.appendChild(mk('View', 'btn-ghost', () => openInvoice(inv.id)));
+        if (inv.status === 'draft') act.appendChild(mk('Mark sent', 'btn-ghost', () => setInvoiceStatus(inv.id, 'sent')));
+        if (inv.status !== 'paid') act.appendChild(mk('Mark paid', 'btn-primary', () => setInvoiceStatus(inv.id, 'paid')));
+        act.appendChild(mk('Delete', 'btn-ghost', async () => {
+            if (window.confirm(`Delete ${inv.number}? Invoice numbers are not reused, so this leaves a gap.`))
+                { await drop('invoices', inv.id); toast('Deleted'); }
+        }));
+        item.appendChild(act);
+        wrap.appendChild(item);
+    });
+}
+
+// ─── The invoice itself ─────────────────────────────────────────────────
+function invoiceText(inv) {
+    const t = invoiceTotals(inv);
+    const L = [];
+    L.push((settings.bizname || 'EcomForges').toUpperCase());
+    if (settings.ssm) L.push('Reg. ' + settings.ssm);
+    if (settings.address) L.push(settings.address);
+    if (settings.email) L.push(settings.email);
+    L.push('', `INVOICE ${inv.number}`, '');
+    L.push('Bill to: ' + inv.clientName);
+    if (inv.clientReg) L.push('Reg. ' + inv.clientReg);
+    if (inv.clientAddress) L.push(inv.clientAddress);
+    L.push('', `Issued: ${fmtDate(inv.issueDate)}`, `Due: ${fmtDate(inv.dueDate)}`, '');
+    L.push(inv.description, rm(t.sub));
+    if (t.tax) L.push(`Service tax ${inv.taxRate}%`, rm(t.tax));
+    L.push('', 'TOTAL ' + rm(t.total), '');
+    if (settings.bank) L.push('Payment', settings.bank);
+    return L.join('\n');
+}
+
+function openInvoice(id) {
+    const inv = invoices.find(i => i.id === id);
+    if (!inv) return;
+    const t = invoiceTotals(inv);
+    const paper = document.getElementById('invoice-paper');
+    paper.innerHTML = '';
+
+    const mk = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;      // textContent throughout
+        return e;
+    };
+
+    const head = mk('div', 'inv-head');
+    const from = mk('div');
+    from.appendChild(mk('div', 'inv-biz', settings.bizname || 'EcomForges'));
+    [settings.ssm ? 'Reg. ' + settings.ssm : '', settings.address || '', settings.email || '', settings.phone || '']
+        .filter(Boolean).forEach(l => from.appendChild(mk('div', 'inv-small', l)));
+    head.appendChild(from);
+    const right = mk('div', 'inv-right');
+    right.appendChild(mk('div', 'inv-word', 'INVOICE'));
+    right.appendChild(mk('div', 'inv-no', inv.number));
+    head.appendChild(right);
+    paper.appendChild(head);
+
+    const parties = mk('div', 'inv-parties');
+    const to = mk('div');
+    to.appendChild(mk('div', 'inv-label', 'Bill to'));
+    to.appendChild(mk('div', 'inv-strong', inv.clientName));
+    [inv.clientReg ? 'Reg. ' + inv.clientReg : '', inv.clientAddress || '', inv.clientEmail || '']
+        .filter(Boolean).forEach(l => to.appendChild(mk('div', 'inv-small', l)));
+    parties.appendChild(to);
+    const dates = mk('div');
+    [['Issued', fmtDate(inv.issueDate)], ['Due', fmtDate(inv.dueDate)], ['Period', periodLabel(inv.period)]]
+        .forEach(([k, v]) => {
+            const r = mk('div', 'inv-daterow');
+            r.appendChild(mk('span', 'inv-label', k));
+            r.appendChild(mk('span', null, v));
+            dates.appendChild(r);
+        });
+    parties.appendChild(dates);
+    paper.appendChild(parties);
+
+    const table = mk('table', 'inv-table');
+    const thead = mk('thead');
+    const htr = mk('tr');
+    htr.appendChild(mk('th', null, 'Description'));
+    const amtTh = mk('th', 'right', 'Amount');
+    htr.appendChild(amtTh);
+    thead.appendChild(htr); table.appendChild(thead);
+    const tb = mk('tbody');
+    const row = mk('tr');
+    row.appendChild(mk('td', null, inv.description));
+    row.appendChild(mk('td', 'right', rm(t.sub)));
+    tb.appendChild(row);
+    if (t.tax) {
+        const tr = mk('tr');
+        tr.appendChild(mk('td', null, `Service tax ${inv.taxRate}%`
+            + (settings.sstNo ? ` (${settings.sstNo})` : '')));
+        tr.appendChild(mk('td', 'right', rm(t.tax)));
+        tb.appendChild(tr);
+    }
+    const tot = mk('tr', 'inv-total');
+    tot.appendChild(mk('td', null, 'Total'));
+    tot.appendChild(mk('td', 'right', rm(t.total)));
+    tb.appendChild(tot);
+    table.appendChild(tb);
+    paper.appendChild(table);
+
+    if (settings.bank) {
+        const pay = mk('div', 'inv-pay');
+        pay.appendChild(mk('div', 'inv-label', 'Payment'));
+        pay.appendChild(mk('div', 'inv-small', settings.bank));
+        paper.appendChild(pay);
+    } else {
+        const warn = mk('div', 'inv-missing',
+            'No payment details set — add them in Settings before sending this.');
+        paper.appendChild(warn);
+    }
+
+    paper.dataset.text = invoiceText(inv);
+    document.getElementById('doc-overlay').classList.remove('hidden');
+}
+
+// ─── Clients ────────────────────────────────────────────────────────────
+function renderClients() {
+    const wrap = document.getElementById('cli-list');
+    document.getElementById('cli-count').textContent = clients.length ? String(clients.length) : '';
+    wrap.innerHTML = '';
+    if (!clients.length) {
+        const p = document.createElement('p'); p.className = 'hint';
+        p.textContent = 'No clients yet. Add one above.'; wrap.appendChild(p); return;
+    }
+    const order = { active: 0, paused: 1, ended: 2 };
+    clients.slice().sort((a, b) =>
+        (order[a.status] ?? 3) - (order[b.status] ?? 3) || (a.name || '').localeCompare(b.name || '')
+    ).forEach(c => {
+        const item = document.createElement('div'); item.className = 'row-item';
+        const head = document.createElement('div'); head.className = 'row-head';
+        const n = document.createElement('span'); n.className = 'row-title'; n.textContent = c.name;
+        head.appendChild(n);
+        if (c.clientCode) {
+            const code = document.createElement('span'); code.className = 'pill'; code.textContent = c.clientCode;
+            head.appendChild(code);
+        }
+        const t = tierById(c.tier);
+        const tp = document.createElement('span'); tp.className = 'pill';
+        tp.textContent = t ? t.label.split(' — ')[0] : (c.tier || '—');
+        head.appendChild(tp);
+        const sp = document.createElement('span'); sp.className = 'pill ' + (c.status || 'active');
+        sp.textContent = c.status || 'active';
+        head.appendChild(sp);
+        const amt = document.createElement('span'); amt.className = 'row-amount';
+        amt.textContent = Number(c.rate) > 0 ? rm(c.rate) + '/mo' : 'no rate';
+        head.appendChild(amt);
+        item.appendChild(head);
+
+        const meta = document.createElement('div'); meta.className = 'row-meta';
+        const paid = invoices.filter(i => i.clientId === c.id && i.status === 'paid').length;
+        const owing = invoices.filter(i => i.clientId === c.id && i.status !== 'paid').length;
+        meta.textContent = [c.email, c.start ? 'since ' + fmtDate(c.start) : '',
+            `${paid} paid`, owing ? `${owing} outstanding` : ''].filter(Boolean).join(' · ');
+        item.appendChild(meta);
+
+        const act = document.createElement('div'); act.className = 'actions';
+        const mk = (label, fn) => {
+            const b = document.createElement('button');
+            b.className = 'btn btn-ghost btn-sm'; b.textContent = label;
+            b.addEventListener('click', fn); return b;
+        };
+        act.appendChild(mk('Edit', () => editClient(c.id)));
+        act.appendChild(mk('Remove', async () => {
+            const mine = invoices.filter(i => i.clientId === c.id).length;
+            const msg = mine
+                ? `${c.name} has ${mine} invoice${mine === 1 ? '' : 's'}. Removing the client leaves them without one. Continue?`
+                : `Remove ${c.name}?`;
+            if (window.confirm(msg)) { await drop('clients', c.id); toast('Removed'); }
+        }));
+        item.appendChild(act);
+        wrap.appendChild(item);
+    });
+}
+
+function clientForm() {
+    const v = id => (document.getElementById(id).value || '').trim();
+    return {
+        name: v('cli-name'), clientCode: v('cli-code').toUpperCase(), reg: v('cli-reg'),
+        email: v('cli-email'), tier: document.getElementById('cli-tier').value,
+        rate: Number(v('cli-rate')), start: v('cli-start'),
+        status: document.getElementById('cli-status').value, address: v('cli-address')
+    };
+}
+function resetClientForm() {
+    document.getElementById('cli-form').reset();
+    document.getElementById('cli-id').value = '';
+    document.getElementById('cli-save').textContent = 'Add client';
+    document.getElementById('cli-cancel').style.display = 'none';
+    document.getElementById('cli-note').textContent = '';
+    applyTier();
+}
+function editClient(id) {
+    const c = clients.find(x => x.id === id); if (!c) return;
+    const set = (el, val) => { document.getElementById(el).value = val == null ? '' : val; };
+    set('cli-id', c.id); set('cli-name', c.name); set('cli-code', c.clientCode); set('cli-reg', c.reg);
+    set('cli-email', c.email); set('cli-tier', c.tier || 'lite'); set('cli-rate', c.rate);
+    set('cli-start', c.start); set('cli-status', c.status || 'active'); set('cli-address', c.address);
+    document.getElementById('cli-save').textContent = 'Save changes';
+    document.getElementById('cli-cancel').style.display = '';
+    document.getElementById('cli-note').textContent = 'Editing ' + c.name;
+    showTab('clients');
+    document.getElementById('cli-name').focus();
+}
+function applyTier() {
+    const t = tierById(document.getElementById('cli-tier').value);
+    const hint = document.getElementById('cli-tier-hint');
+    if (!t) { hint.textContent = ''; return; }
+    hint.textContent = t.rate == null
+        ? 'No price set for this tier — type the rate in, or set it in Settings.'
+        : 'Tier price ' + rm(t.rate) + '.';
+    const rate = document.getElementById('cli-rate');
+    if (!rate.value && t.rate != null) rate.value = t.rate;
+}
+async function submitClient(e) {
+    e.preventDefault();
+    const data = clientForm();
+    if (!data.name) { toast('A registered name is required'); return; }
+    if (!(data.rate > 0)) { toast('A monthly rate is required'); return; }
+    const id = document.getElementById('cli-id').value;
+    const clash = clients.find(c => c.id !== id && (c.name || '').toLowerCase() === data.name.toLowerCase());
+    if (clash && !window.confirm(`${data.name} is already on the roster. Add a second entry anyway?`)) {
+        editClient(clash.id); return;
+    }
+    await put('clients', id || null, id ? data : Object.assign({ createdAt: Date.now() }, data));
+    toast(id ? 'Updated ' + data.name : 'Added ' + data.name);
+    resetClientForm();
+}
+
+// ─── Settings ───────────────────────────────────────────────────────────
+function renderTierEditor() {
+    const wrap = document.getElementById('set-tiers');
+    wrap.innerHTML = '';
+    tiers().forEach(t => {
+        const row = document.createElement('div'); row.className = 'tier-row';
+        const l = document.createElement('span'); l.className = 'tier-label'; l.textContent = t.label;
+        const inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '0'; inp.step = '1'; inp.dataset.tier = t.id;
+        inp.placeholder = 'RM per month';
+        inp.setAttribute('aria-label', t.label + ' monthly price');
+        if (t.rate != null) inp.value = t.rate;
+        row.appendChild(l); row.appendChild(inp);
+        wrap.appendChild(row);
+    });
+}
+function loadSettings() {
+    const g = (id, key, dflt) => { document.getElementById(id).value = settings[key] != null ? settings[key] : (dflt || ''); };
+    g('set-bizname','bizname'); g('set-ssm','ssm'); g('set-email','email'); g('set-phone','phone');
+    g('set-prefix','prefix','EF'); g('set-terms','terms',14); g('set-address','address');
+    g('set-bank','bank'); g('set-sstrate','sstRate'); g('set-sstno','sstNo');
+    document.getElementById('set-sst').value = settings.sst === 'on' ? 'on' : 'off';
+    renderTierEditor();
+}
+async function submitSettings(e) {
+    e.preventDefault();
+    const v = id => (document.getElementById(id).value || '').trim();
+    const nextTiers = tiers().map(t => {
+        const inp = document.querySelector(`#set-tiers input[data-tier="${t.id}"]`);
+        const raw = inp ? inp.value.trim() : '';
+        return { id: t.id, label: t.label, rate: raw === '' ? null : Number(raw) };
+    });
+    await saveSettings({
+        bizname: v('set-bizname'), ssm: v('set-ssm'), email: v('set-email'), phone: v('set-phone'),
+        prefix: v('set-prefix') || 'EF', terms: Number(v('set-terms')) || 14,
+        address: v('set-address'), bank: v('set-bank'),
+        sst: document.getElementById('set-sst').value,
+        sstRate: v('set-sstrate') === '' ? null : Number(v('set-sstrate')),
+        sstNo: v('set-sstno'), tiers: nextTiers
+    });
+    document.getElementById('set-note').textContent = 'Saved';
+    toast('Settings saved');
+}
+
+// ─── CSV ────────────────────────────────────────────────────────────────
+function exportInvoicesCSV() {
+    if (!invoices.length) { toast('Nothing to export'); return; }
+    const cols = ['number','period','clientName','clientCode','description','amount','taxRate',
+                  'total','status','issueDate','dueDate'];
+    const cell = v => {
+        let t = v == null ? '' : String(v);
+        if (/^[=+\-@]/.test(t)) t = "'" + t;      // spreadsheets read these as formulas
+        return '"' + t.replace(/"/g,'""') + '"';
+    };
+    const rows = [cols.join(',')].concat(invoices
+        .slice().sort((a,b)=>(b.period||'').localeCompare(a.period||''))
+        .map(i => cols.map(k => k === 'total' ? cell(invoiceTotals(i).total.toFixed(2))
+                              : k === 'status' ? cell(effectiveStatus(i))
+                              : cell(i[k])).join(',')));
+    const blob = new Blob(['﻿' + rows.join('\r\n')], { type:'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ecomforges-invoices-${todayISO()}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    toast(`Exported ${invoices.length} invoices`);
+}
+
+// ─── Firebase ───────────────────────────────────────────────────────────
+function fbInit() {
+    if (typeof firebase === 'undefined') {
+        fbStatus('local','Offline');
+        showLoginError('Cannot reach the sign-in service. Check your connection, ' +
+                       'or an ad blocker may be blocking Google services.');
+        const b = document.querySelector('.btn-login');
+        if (b) { b.disabled = true; b.textContent = 'Unavailable offline'; }
+        return;
+    }
+    try { firebase.initializeApp(firebaseConfig); } catch (e) {}
+    firebase.auth().onAuthStateChanged(user => {
+        fbUser = user;
+        if (!user) {
+            fbReady = false; fbStatus('local','Local');
+            const o = localRead();
+            clients = o.clients || []; invoices = o.invoices || []; settings = o.settings || {};
+            const h = document.getElementById('ov-sync-hint');
+            if (h) h.textContent = 'This device only — sign in to share.';
+            loadSettings(); renderAll(); showLogin();
+            return;
+        }
+        fbDB = firebase.database();
+        const bind = (path, apply) => fbDB.ref('forgebilling/' + path).on('value', s => {
+            apply(s.val());
+            const h = document.getElementById('ov-sync-hint');
+            if (h) h.textContent = 'Shared with everyone signed in.';
+            renderAll();
+        }, err => { fbStatus('local','Read failed'); toast('Could not read ' + path + ': ' + err.message); });
+
+        bind('clients',  v => { const d = v || {}; clients  = Object.keys(d).map(k => Object.assign({id:k}, d[k])); });
+        bind('invoices', v => { const d = v || {}; invoices = Object.keys(d).map(k => Object.assign({id:k}, d[k])); });
+        bind('settings', v => { settings = v || {}; loadSettings(); });
+
+        fbReady = true; fbStatus('live','Live'); showApp();
+    });
+}
+
+loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = loginEmail.value.trim();
+    showLoginError('');
+    if (!isAllowedEmail(email)) { showLoginError('Only @ecomforges.com accounts are allowed.'); return; }
+    try { await firebase.auth().signInWithEmailAndPassword(email, loginPassword.value); }
+    catch (err) { showLoginError('Sign-in failed: ' + err.message); }
+});
+logoutBtn.addEventListener('click', () => firebase.auth().signOut());
+
+// ─── Tabs ───────────────────────────────────────────────────────────────
+function showTab(name, focusTab) {
+    const tab = document.querySelector(`.tab[data-panel="${name}"]`);
+    const panel = document.getElementById('panel-' + name);
+    if (!tab || !panel) return false;
+    document.querySelectorAll('.tab').forEach(t => { t.setAttribute('aria-selected','false'); t.tabIndex = -1; });
+    tab.setAttribute('aria-selected','true'); tab.tabIndex = 0;
+    if (focusTab) { tab.focus(); tab.scrollIntoView({block:'nearest',inline:'nearest'}); }
+    document.querySelectorAll('.panel-body').forEach(p => p.classList.remove('active'));
+    panel.classList.add('active');
+    return true;
+}
+function renderAll() { renderOverview(); renderInvoices(); renderClients(); }
+
+// ─── Wiring ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    try { fbInit(); } catch (e) {
+        console.error('ForgeBilling: sign-in init failed', e);
+        showLoginError('Sign-in could not start: ' + e.message);
+    }
+
+    const tierSel = document.getElementById('cli-tier');
+    tiers().forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id; o.textContent = t.label;
+        tierSel.appendChild(o);
+    });
+    tierSel.addEventListener('change', applyTier);
+
+    document.getElementById('run-period').value = thisMonth();
+    document.getElementById('run-issue').value = todayISO();
+
+    document.getElementById('run-go').addEventListener('click', raiseInvoices);
+    document.getElementById('inv-filter').addEventListener('change', renderInvoices);
+    document.getElementById('inv-export').addEventListener('click', exportInvoicesCSV);
+    document.getElementById('cli-form').addEventListener('submit', submitClient);
+    document.getElementById('cli-cancel').addEventListener('click', resetClientForm);
+    document.getElementById('set-form').addEventListener('submit', submitSettings);
+
+    const closeDoc = () => document.getElementById('doc-overlay').classList.add('hidden');
+    document.getElementById('doc-close').addEventListener('click', closeDoc);
+    document.getElementById('doc-print').addEventListener('click', () => window.print());
+    document.getElementById('doc-copy').addEventListener('click', () => {
+        const text = document.getElementById('invoice-paper').dataset.text || '';
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => toast('Copied')).catch(() => toast('Could not copy'));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); toast('Copied'); } catch (e) { toast('Select and copy manually'); }
+            document.body.removeChild(ta);
+        }
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !document.getElementById('doc-overlay').classList.contains('hidden')) closeDoc();
+    });
+
+    const tabEls = [...document.querySelectorAll('.tab')];
+    const goTab = (n, f) => { showTab(n, f); history.replaceState(null, '', '#' + n); };
+    tabEls.forEach(tab => {
+        tab.addEventListener('click', () => { goTab(tab.dataset.panel, false); window.scrollTo({top:0,behavior:'smooth'}); });
+        tab.addEventListener('keydown', e => {
+            const i = tabEls.indexOf(tab); let j = null;
+            if (e.key === 'ArrowRight') j = (i+1) % tabEls.length;
+            else if (e.key === 'ArrowLeft') j = (i-1+tabEls.length) % tabEls.length;
+            else if (e.key === 'Home') j = 0;
+            else if (e.key === 'End') j = tabEls.length - 1;
+            if (j === null) return;
+            e.preventDefault(); goTab(tabEls[j].dataset.panel, true);
+        });
+    });
+
+    const o = localRead();
+    clients = o.clients || []; invoices = o.invoices || []; settings = o.settings || {};
+    loadSettings(); renderAll();
+
+    const fromHash = (location.hash || '').replace('#','');
+    if (!showTab(fromHash)) showTab('overview');
+    window.addEventListener('hashchange', () => {
+        const n = (location.hash || '').replace('#','');
+        if (n) showTab(n);
+    });
+});
+</script>
+</body>
+</html>
