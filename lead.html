@@ -2245,9 +2245,19 @@
         const MAX_ATTEMPTS = 5;
 
         // ─── INITIALIZE FIREBASE FIRST ──────────────────────────────────
+        // The SDK comes from a CDN, which can be blocked, offline, or fail to load.
+        // Everything below used to assume it was there, so one missing script threw
+        // at the top level and stopped the rest of this file from running at all —
+        // leaving a dead page. Check once, then degrade visibly instead.
+        const firebaseAvailable = typeof firebase !== 'undefined' && typeof firebase.auth === 'function';
+
         try {
-            firebase.initializeApp(firebaseConfig);
-            console.log('🔥 Firebase initialized successfully');
+            if (firebaseAvailable) {
+                firebase.initializeApp(firebaseConfig);
+                console.log('🔥 Firebase initialized successfully');
+            } else {
+                console.warn('Firebase SDK did not load — sign-in is unavailable.');
+            }
         } catch (e) {
             console.warn('Firebase init (maybe already initialized):', e.message);
         }
@@ -2337,6 +2347,8 @@
                 return;
             }
 
+            if (!firebaseAvailable) { showSignInUnavailable(); return; }
+
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, password);
                 // onAuthStateChanged will handle the rest
@@ -2371,11 +2383,24 @@
 
         // ─── Logout ────────────────────────────────────────────────────────
         logoutBtn.addEventListener('click', () => {
-            firebase.auth().signOut();
+            if (firebaseAvailable) firebase.auth().signOut();
         });
 
         // ─── Auth state listener ──────────────────────────────────────────
-        firebase.auth().onAuthStateChanged((user) => {
+        // No SDK means no way to verify who this is. The gate stays shut: show the
+        // login screen with a reason instead of opening the app unauthenticated.
+        function showSignInUnavailable() {
+            showLogin();
+            loginSubmit.disabled = true;
+            showLoginError(
+                'Cannot reach the sign-in service.',
+                'Check your connection and reload the page. Leads already saved on this device are untouched.'
+            );
+        }
+
+        if (!firebaseAvailable) showSignInUnavailable();
+
+        if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
             if (user && isAllowedEmail(user.email)) {
                 currentUser = user;
                 showApp();
@@ -2401,7 +2426,7 @@
         const syncLabel = document.getElementById('sync-label');
 
         function initFirebaseDB() {
-            if (!USE_FIREBASE) {
+            if (!USE_FIREBASE || !firebaseAvailable) {
                 syncDot.className = 'dot';
                 syncLabel.textContent = 'Local';
                 return;
