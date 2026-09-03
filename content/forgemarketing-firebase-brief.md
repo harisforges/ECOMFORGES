@@ -113,6 +113,8 @@ forgemarketing/
       language      "en" | "bm"
       angle         "stuck" | "money" | "guru" | "education" | "overload"
       fragments/    { hook: <fragId>, problem: <fragId>, ... }
+      author        "haris" | "daniel" — who generated it
+      authorName    their display name, denormalised so the Saved list needs no lookup
       text          the full generated block
       chars         number
       words         number
@@ -126,6 +128,19 @@ forgemarketing/
         {fragId}/
           count       number, incremented per use
           lastUsedAt  server timestamp
+
+  collaborators/
+    {pushId}/
+      name          required
+      type          "reviewer" | "creator" | "freelancer" | "agency" | "referrer" | "other"
+      email, phone, handle
+      rate          number, or null
+      unit          "review" | "post" | "video" | "hour" | "month" | "project"
+      status        "prospect" | "active" | "paused" | "declined"
+      lastContact   ISO date string
+      disclosed     "na" | "no" | "yes"   — whether a paid arrangement is disclosed in writing
+      notes
+      createdAt / createdBy, updatedAt / updatedBy
 
   conditions/
     current/
