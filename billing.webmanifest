@@ -1,0 +1,16 @@
+{
+  "name": "EcomForges ForgeBilling",
+  "short_name": "ForgeBilling",
+  "description": "Who is on the retainer, who has paid, who has not — invoices for a month-to-month offer where churn is otherwise silent.",
+  "start_url": "./billing.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162840",
+  "theme_color": "#162840",
+  "icons": [
+    { "src": "billing-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "billing-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "billing-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -76,12 +76,12 @@ Roughly:
 - A history per client, which is what makes Continue / Coach / Pause honest
 - Same shell, same auth, same offline fallback as the others
 
-## The next gap: billing and invoicing
+## Built: billing and invoicing
 
-**Status: open. Not proposed in detail, not started.**
+**Status: built and live** — `billing.html`, ForgeBilling.
 
 This was originally dismissed here on the assumption it was already handled
-elsewhere. That assumption was wrong — it does not exist yet.
+elsewhere. That assumption was wrong — it did not exist.
 
 So there is no record of who is on RM499 this month, who has paid, who is
 overdue, or who quietly stopped. Month-to-month with no lock-in makes that
@@ -93,8 +93,9 @@ leaving. A client who cancels after three cycles the sprints were never run in
 is a different story from one who cancels after three executed cycles that did
 not move the number, and only the second is a reason to change the method.
 
-Not specified here, because it needs a conversation about how invoicing is done
-today before anything is designed against it.
+Built to hold that information rather than guess it: bank details, the tier
+ladder above the RM499 entry, payment terms and tax status are all empty until
+someone fills them in, and the overview keeps saying so until they are.
 
 ## Also considered, still not tools of their own
 

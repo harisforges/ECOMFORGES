@@ -10,6 +10,7 @@ Internal client decision tools.
 | Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
 | ForgeMarketing — Marketing Masterbase | `forgemarketing.html` | [/ECOMFORGES/forgemarketing.html](https://harisforges.github.io/ECOMFORGES/forgemarketing.html) |
 | ForgeSprint — Cycle Tracker | `sprint.html` | [/ECOMFORGES/sprint.html](https://harisforges.github.io/ECOMFORGES/sprint.html) |
+| ForgeBilling — Invoices | `billing.html` | [/ECOMFORGES/billing.html](https://harisforges.github.io/ECOMFORGES/billing.html) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
@@ -239,6 +240,39 @@ Client codes only, never business names — the same rule the analyst keeps. Eac
 constraint, metric and three moves are the calculator's own, so a cycle opened here is the
 sprint the client was actually handed. One open cycle per client, because two means neither
 number is attributable. History exports to CSV.
+
+## ForgeBilling — Invoices
+
+`billing.html` — who is on the retainer, who has paid, who has not.
+
+Month to month with no lock-in is a good promise and a quiet failure mode: a client who
+stops is a client who simply does not pay again, and nothing announces it. The overview is
+the announcement — recurring revenue, outstanding, overdue, and who has not been invoiced
+yet this month.
+
+Raise a whole month in one press: one invoice per active client per period, numbered
+`PREFIX-YYYYMM-NNN`. Raising the same period twice is refused rather than silently
+duplicated, and numbers are derived from the invoices that exist rather than a stored
+counter, so two devices raising at once cannot take the same number.
+
+An invoice prints or saves to PDF from the browser, and copies as plain text for a WhatsApp
+or email that does not need an attachment.
+
+### It invents nothing
+
+No bank account, no tier prices beyond the RM499 entry that is already public, no tax rate.
+Those live in Settings, empty until filled, and the overview says so until they are. A
+plausible-looking wrong account number on an invoice is worse than a blank one.
+
+Malaysian service tax applies only to a registered business, so the tax line is off until
+switched on, and it applies to invoices raised after that — not retrospectively.
+
+### Real names live here
+
+The analyst keeps client codes and never business names, deliberately. An invoice cannot
+work that way: it needs the registered name to be a valid document. So this is the one tool
+holding identifying client data, behind the same sign-in as the rest, and a `clientCode`
+field ties each row back to the coded tools.
 
 ## Client decks
 
