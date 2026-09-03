@@ -1,0 +1,16 @@
+{
+  "name": "EcomForges ForgeAgreement",
+  "short_name": "ForgeAgreement",
+  "description": "Client engagement letters that say the same thing as the pitch: advisory scope, month to month, no guaranteed result.",
+  "start_url": "./agreement.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162840",
+  "theme_color": "#162840",
+  "icons": [
+    { "src": "agreement-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "agreement-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "agreement-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
