@@ -764,6 +764,8 @@ function pickLocal(key, arr) {
 }
 
 // ─── Record generation ──────────────────────────────────────────────
+const TRACKED_SLOTS = new Set(['hook', 'problem', 'agitate', 'solution', 'wiifm', 'philosophy', 'cta']);
+
 async function fmRecord(gen) {
     if (!fmReady || !fmDB) return;
     try {
@@ -775,24 +777,33 @@ async function fmRecord(gen) {
         }));
         lastGenerationKey = ref.key;
         lastGenData = gen;
+
+        // Increment usage for each fragment the templates actually drew.
         const updates = {};
         Object.keys(lastPicked).forEach(k => {
+            // k looks like "hook.stuck.en" or "aopen.cold.en"
             const parts = k.split('.');
             const lang = parts.pop();
-            const slot = parts.join('.');
+            const slotWithAngle = parts.join('.'); // e.g. "hook.stuck"
+            const slot = slotWithAngle.split('.')[0]; // just the slot name, e.g. "hook"
+            // Only track specific slots
+            if (!TRACKED_SLOTS.has(slot)) return;
+
             const id = fmHash(lastPicked[k]);
-            const base = `forgemarketing/usage/${lang}/${slot}/${id}`;
+            // Sanitize slot for Firebase key: replace '.' with '_'
+            const safeSlot = slotWithAngle.replace(/\./g, '_');
+            const base = `forgemarketing/usage/${lang}/${safeSlot}/${id}`;
             updates[base + '/lastUsedAt'] = firebase.database.ServerValue.TIMESTAMP;
             updates[base + '/count'] = firebase.database.ServerValue.increment(1);
         });
         if (Object.keys(updates).length) {
             await fmDB.ref().update(updates);
+            console.log('📊 Updated usage for', Object.keys(updates).length, 'fragments');
         }
     } catch (e) {
         console.warn('ForgeMarketing: generation not recorded', e);
     }
 }
-
 async function fmMark(status) {
     if (!fmReady || !fmDB || !lastGenerationKey) {
         toast('Sign in or generate copy first');
