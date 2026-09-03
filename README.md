@@ -9,6 +9,7 @@ Internal client decision tools.
 | LeadForge — Acquisition Hub | `lead.html` | [/ECOMFORGES/lead.html](https://harisforges.github.io/ECOMFORGES/lead.html) |
 | Client Portal (prototype) | `app/index.html` | [/ECOMFORGES/app/](https://harisforges.github.io/ECOMFORGES/app/) |
 | ForgeMarketing — Marketing Masterbase | `forgemarketing.html` | [/ECOMFORGES/forgemarketing.html](https://harisforges.github.io/ECOMFORGES/forgemarketing.html) |
+| ForgeSprint — Cycle Tracker | `sprint.html` | [/ECOMFORGES/sprint.html](https://harisforges.github.io/ECOMFORGES/sprint.html) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
@@ -205,6 +206,39 @@ own Conflicts tab. Settle them before publishing anything.
 
 The written masterbase lives in [`marketing/`](marketing/); the tool mirrors it. When the
 Markdown changes, the tool's banks need the same change.
+
+## ForgeSprint — Cycle Tracker
+
+`sprint.html` — the thirty days between sessions. The calculator picks the Forge Track, the
+analyst reads the numbers, and this holds what happens next: one constraint, three moves in
+order, one owner, one number, thirty days.
+
+It exists because of a promise the other two tools already make. Both close their client deck
+with the same sentence:
+
+> By the next session, [metric] should have moved. If it has not, either the sprint was not
+> executed or the reading was wrong — and we will say which.
+
+Answering *which* needs a record of whether the three moves were done. Nothing held that, so
+at the next session it was reconstructed from memory — which is exactly when a client
+remembers it differently.
+
+### The part that matters
+
+Closing a cycle asks for the number now. If it moved, nothing else is asked. If it did not,
+the tool offers the two reasons the promise allows — **and will not let "our reading was
+wrong" be picked below 67% executed.** A diagnosis is only wrong if it was tested, and it is
+only tested if the sprint was run. The tool decides that from the move states rather than
+leaving it to whoever is filling in the form at the end of a long day.
+
+That record is what makes **Continue**, **Coach** and **Pause** an argument rather than an
+impression: sprints run and the number moves, sprints run and it doesn't, or sprints that
+don't run.
+
+Client codes only, never business names — the same rule the analyst keeps. Each track's
+constraint, metric and three moves are the calculator's own, so a cycle opened here is the
+sprint the client was actually handed. One open cycle per client, because two means neither
+number is attributable. History exports to CSV.
 
 ## Client decks
 

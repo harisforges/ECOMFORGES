@@ -1,0 +1,16 @@
+{
+  "name": "EcomForges ForgeSprint",
+  "short_name": "ForgeSprint",
+  "description": "The thirty days between sessions: one constraint, three moves, one number, and the record of whether it was executed.",
+  "start_url": "./sprint.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#162840",
+  "theme_color": "#162840",
+  "icons": [
+    { "src": "sprint-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "sprint-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "sprint-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

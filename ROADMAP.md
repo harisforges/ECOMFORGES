@@ -25,9 +25,12 @@ Nothing here needs doing yet. It is written down so the next tool is built in a
 way that does not make the merge harder: same theme tokens, same header pattern,
 same auth, and a client identifier that means the same thing everywhere.
 
-## The gap: nothing tracks the sprint
+## Built: the sprint tracker
 
-**Status: proposed, awaiting review. Not approved, not started.**
+**Status: built and live** — `sprint.html`, ForgeSprint. What follows is the reasoning it was
+built on, kept because it explains why the tool refuses things.
+
+### The gap it filled**
 
 Five tools cover finding a client, qualifying them, diagnosing them, and writing
 the marketing. Nothing covers **delivery between sessions**, which is the part
@@ -73,11 +76,27 @@ Roughly:
 - A history per client, which is what makes Continue / Coach / Pause honest
 - Same shell, same auth, same offline fallback as the others
 
-### Why nothing else is on this list
+## The next gap: billing and invoicing
 
-Billing, invoicing and contracts are real work but almost certainly already
-handled elsewhere, and a tool built on an assumption about that would be waste.
+**Status: open. Not proposed in detail, not started.**
+
+This was originally dismissed here on the assumption it was already handled
+elsewhere. That assumption was wrong — it does not exist yet.
+
+So there is no record of who is on RM499 this month, who has paid, who is
+overdue, or who quietly stopped. Month-to-month with no lock-in makes that
+harder rather than easier: churn is silent, and the only signal is an invoice
+nobody chased.
+
+Worth noting it now sits next to a tool that can answer *why* a client is
+leaving. A client who cancels after three cycles the sprints were never run in
+is a different story from one who cancels after three executed cycles that did
+not move the number, and only the second is a reason to change the method.
+
+Not specified here, because it needs a conversation about how invoicing is done
+today before anything is designed against it.
+
+## Also considered, still not tools of their own
+
 Session notes and a client roster both matter, but they are parts of the sprint
-tracker and the super-app respectively rather than tools of their own.
-
-This is the only gap where the toolset promises something it cannot do.
+tracker and the super app respectively.
