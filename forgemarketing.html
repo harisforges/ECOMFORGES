@@ -15,6 +15,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <style>
+        /* same as before — exactly as you had */
         :root {
             --navy: #162840;
             --main-blue: #1C3350;
@@ -123,8 +124,6 @@
         }
         .header-note .dot-status.live { background: var(--green); }
         .header-note .dot-status.local { background: var(--amber); }
-        .header-note .dot-status.offline { background: var(--red); }
-        .header-note .dot-status.error { background: var(--red); }
         .btn-logout {
             background: var(--red-dim); color: var(--red); border: 1px solid transparent;
             padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm);
@@ -285,7 +284,6 @@
         }
         .toast.show { opacity: 1; transform: translateX(-50%); }
 
-        /* ── Mobile: status dot always visible ── */
         @media (max-width: 720px) {
             .brand-lockup { display: none; }
             .brand-mark { display: block; }
@@ -456,8 +454,11 @@
         <!-- SAVED -->
         <section class="panel-body" id="panel-saved" role="tabpanel">
             <div class="card">
-                <h2><span class="dot"></span>Saved copy</h2>
-                <p class="sub">Your saved copy is synced across all devices. Sign in to access it anywhere.</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                    <h2 style="margin-bottom:0;"><span class="dot"></span>Saved copy</h2>
+                    <button class="btn btn-ghost btn-sm" id="refresh-saved">🔄 Refresh</button>
+                </div>
+                <p class="sub">Your saved copy is synced across all devices. Tap Refresh to force a reload.</p>
                 <div id="saved-list"></div>
             </div>
         </section>
@@ -680,7 +681,8 @@ function fmInit() {
             if (data) {
                 savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
             }
-            // Re-render if the Saved tab is visible, or just update the count
+            console.log('📦 Saved generations updated:', savedGenerations.length);
+            // Always re-render if the Saved tab is visible, otherwise just update count
             const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
             if (isSavedTab) {
                 renderSaved();
@@ -1685,6 +1687,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-mark-used').addEventListener('click', () => fmMark('used'));
     document.getElementById('btn-mark-discard').addEventListener('click', () => fmMark('discarded'));
 
+    // Refresh saved button
+    document.getElementById('refresh-saved').addEventListener('click', renderSaved);
+
     ['f-platform', 'f-audience', 'f-language', 'f-angle'].forEach(id => {
         document.getElementById(id).addEventListener('change', () => {
             savePrefs();
@@ -1737,7 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ─── Reference tabs (fixed all apostrophes) ──────────────────────────
+// ─── Reference tabs ──────────────────────────────────────────────
 function renderReference() {
     document.getElementById('ref-positioning').innerHTML = `
         <h3>Core</h3>
