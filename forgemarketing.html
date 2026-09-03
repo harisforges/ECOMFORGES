@@ -15,7 +15,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <style>
-        /* ── same as before ── */
         :root {
             --navy: #162840;
             --main-blue: #1C3350;
@@ -124,6 +123,8 @@
         }
         .header-note .dot-status.live { background: var(--green); }
         .header-note .dot-status.local { background: var(--amber); }
+        .header-note .dot-status.offline { background: var(--red); }
+        .header-note .dot-status.error { background: var(--red); }
         .btn-logout {
             background: var(--red-dim); color: var(--red); border: 1px solid transparent;
             padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm);
@@ -131,7 +132,7 @@
         }
         .btn-logout:hover { background: var(--red); color: var(--navy); }
 
-        /* ── Rest of styles (same as original) ── */
+        /* ── Tabs ── */
         .tabs {
             max-width: 1080px; margin: 0 auto; padding: 0 16px;
             display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
@@ -284,14 +285,46 @@
         }
         .toast.show { opacity: 1; transform: translateX(-50%); }
 
+        /* ── Mobile: status dot always visible ── */
         @media (max-width: 720px) {
             .brand-lockup { display: none; }
             .brand-mark { display: block; }
             .bank-list { columns: 1; }
-            .header-note { display: none; }
+            .header-note {
+                font-size: 10px;
+                gap: 4px;
+            }
+            .header-note #status-label {
+                display: none;
+            }
+            .header-note .dot-status {
+                width: 8px;
+                height: 8px;
+            }
+            .header-note #condition-badge {
+                font-size: 8px;
+                padding: 1px 5px;
+                margin-left: 4px !important;
+            }
             main { padding: 16px 12px; }
             .card { padding: 15px; }
             .cond-grid { grid-template-columns: 1fr; }
+            .brand-badge { display: none; }
+        }
+
+        @media (max-width: 420px) {
+            .header-actions {
+                gap: 4px;
+            }
+            .btn-logout {
+                font-size: 10px;
+                padding: 2px 6px;
+                min-height: 28px;
+            }
+            .header-note .dot-status {
+                width: 6px;
+                height: 6px;
+            }
         }
     </style>
 </head>
@@ -356,7 +389,7 @@
     </header>
 
     <main>
-        <!-- ══ GENERATE ══════════════════════════════════════════════════════ -->
+        <!-- GENERATE -->
         <section class="panel-body active" id="panel-generate" role="tabpanel">
             <div class="card">
                 <h2><span class="dot"></span>Generate copy</h2>
@@ -420,18 +453,16 @@
             </div>
         </section>
 
-        <!-- ══ SAVED ════════════════════════════════════════════════════════ -->
+        <!-- SAVED -->
         <section class="panel-body" id="panel-saved" role="tabpanel">
             <div class="card">
                 <h2><span class="dot"></span>Saved copy</h2>
-                <p class="sub">Kept in this browser only — not synced between devices, and cleared if you
-                    clear site data. Syncing is the Firebase work described in
-                    <code>content/forgemarketing-firebase-brief.md</code>.</p>
+                <p class="sub">Your saved copy is synced across all devices. Sign in to access it anywhere.</p>
                 <div id="saved-list"></div>
             </div>
         </section>
 
-        <!-- ══ CONDITIONS ════════════════════════════════════════════════════ -->
+        <!-- CONDITIONS -->
         <section class="panel-body" id="panel-conditions" role="tabpanel">
             <div class="card">
                 <h2><span class="dot"></span>Current Condition</h2>
@@ -483,7 +514,7 @@
             </div>
         </section>
 
-        <!-- ══ REFERENCE TABS ═══════════════════════════════════════════════ -->
+        <!-- REFERENCE TABS -->
         <section class="panel-body" id="panel-positioning" role="tabpanel"><div class="card ref" id="ref-positioning"></div></section>
         <section class="panel-body" id="panel-voice"       role="tabpanel"><div class="card ref" id="ref-voice"></div></section>
         <section class="panel-body" id="panel-messaging"   role="tabpanel"><div class="card ref" id="ref-messaging"></div></section>
@@ -494,7 +525,7 @@
     </main>
 
     <div class="toast" id="toast">Copied</div>
-</div> <!-- end app-root -->
+</div>
 
 <!-- ─── Firebase SDKs ──────────────────────────────────────────────────── -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -555,6 +586,9 @@ let lastPicked = {};
 let lastGenerationKey = null;
 let lastGenData = null;
 
+// ─── Saved generations (synced from Firebase) ──────────────────────
+let savedGenerations = [];
+
 // ─── DOM refs for status ───────────────────────────────────────────
 const statusDot = document.getElementById('status-dot');
 const statusLabel = document.getElementById('status-label');
@@ -589,7 +623,6 @@ loginForm.addEventListener('submit', async (e) => {
     }
     try {
         await firebase.auth().signInWithEmailAndPassword(email, password);
-        // onAuthStateChanged will handle the rest
     } catch (err) {
         showLoginError('Sign-in failed: ' + err.message);
     }
@@ -621,18 +654,39 @@ function fmInit() {
             fmReady = false;
             fmSetStatus('local', 'Local');
             fmSetSyncHint(false);
+            savedGenerations = [];
+            renderSaved();
             showLogin();
             return;
         }
         fmDB = firebase.database();
 
+        // Usage listener
         fmDB.ref('forgemarketing/usage').on('value', s => {
             usageMap = s.val() || {};
             fmSetSyncHint(true);
         });
+
+        // Conditions listener
         fmDB.ref('forgemarketing/conditions/current').on('value', s => {
             condition = s.val() || null;
             fmRenderCondition();
+        });
+
+        // ─── Saved generations listener (synced across devices) ───
+        fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
+            const data = snapshot.val();
+            savedGenerations = [];
+            if (data) {
+                savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+            }
+            // Re-render if the Saved tab is visible, or just update the count
+            const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
+            if (isSavedTab) {
+                renderSaved();
+            } else {
+                updateSavedCount();
+            }
         });
 
         fmReady = true;
@@ -640,7 +694,14 @@ function fmInit() {
         fmSetSyncHint(true);
         console.log('🔥 ForgeMarketing: Firebase ready, user:', user.email);
         showApp();
+        renderSaved(); // initial render
     });
+}
+
+function updateSavedCount() {
+    const count = document.getElementById('tab-count');
+    const savedItems = savedGenerations.filter(g => g.saved === true);
+    count.textContent = savedItems.length ? String(savedItems.length) : '';
 }
 
 function fmRenderCondition() {
@@ -773,7 +834,8 @@ async function fmRecord(gen) {
         await ref.set(Object.assign({}, gen, {
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             createdBy: fmUser ? fmUser.uid : null,
-            status: 'generated'
+            status: 'generated',
+            saved: false
         }));
         lastGenerationKey = ref.key;
         lastGenData = gen;
@@ -781,16 +843,13 @@ async function fmRecord(gen) {
         // Increment usage for each fragment the templates actually drew.
         const updates = {};
         Object.keys(lastPicked).forEach(k => {
-            // k looks like "hook.stuck.en" or "aopen.cold.en"
             const parts = k.split('.');
             const lang = parts.pop();
-            const slotWithAngle = parts.join('.'); // e.g. "hook.stuck"
-            const slot = slotWithAngle.split('.')[0]; // just the slot name, e.g. "hook"
-            // Only track specific slots
+            const slotWithAngle = parts.join('.');
+            const slot = slotWithAngle.split('.')[0];
             if (!TRACKED_SLOTS.has(slot)) return;
 
             const id = fmHash(lastPicked[k]);
-            // Sanitize slot for Firebase key: replace '.' with '_'
             const safeSlot = slotWithAngle.replace(/\./g, '_');
             const base = `forgemarketing/usage/${lang}/${safeSlot}/${id}`;
             updates[base + '/lastUsedAt'] = firebase.database.ServerValue.TIMESTAMP;
@@ -804,6 +863,7 @@ async function fmRecord(gen) {
         console.warn('ForgeMarketing: generation not recorded', e);
     }
 }
+
 async function fmMark(status) {
     if (!fmReady || !fmDB || !lastGenerationKey) {
         toast('Sign in or generate copy first');
@@ -819,6 +879,38 @@ async function fmMark(status) {
         document.getElementById('btn-mark-discard').textContent = '❌ Discard ✓';
     } catch (e) {
         toast('Failed to mark: ' + e.message);
+    }
+}
+
+// ─── Save / Unsave (synced) ────────────────────────────────────────
+async function fmToggleSave() {
+    if (!lastGenerationKey) {
+        toast('Generate something first');
+        return;
+    }
+    if (!fmReady || !fmDB) {
+        toast('Sign in to sync saves');
+        return;
+    }
+    try {
+        const existing = savedGenerations.find(g => g.id === lastGenerationKey);
+        const newVal = (existing && existing.saved === true) ? null : true;
+        await fmDB.ref('forgemarketing/generations/' + lastGenerationKey).update({ saved: newVal });
+        const label = newVal ? 'Saved to cloud' : 'Unsaved';
+        toast(label);
+        document.getElementById('btn-save').textContent = newVal ? 'Saved ✓' : 'Save';
+    } catch (e) {
+        toast('Save failed: ' + e.message);
+    }
+}
+
+async function fmUnsave(id) {
+    if (!fmReady || !fmDB) { toast('Sign in to unsave'); return; }
+    try {
+        await fmDB.ref('forgemarketing/generations/' + id).update({ saved: null });
+        toast('Unsaved');
+    } catch (e) {
+        toast('Failed to unsave: ' + e.message);
     }
 }
 
@@ -852,8 +944,7 @@ const ANGLES = [
     { id: 'overload', label: 'Owner overload', hint: 'Too many things to fix, no order to fix them in.' }
 ];
 
-// ─── Copy banks (full, as per original) ────────────────────────────
-// (I've placed the full BANK here – exactly as you had it)
+// ─── Copy banks ─────────────────────────────────────────────────────
 const BANK = {
     en: {
         hook: {
@@ -1259,14 +1350,14 @@ const TEMPLATES = {
     }
 };
 
-// ─── Local storage ──────────────────────────────────────────────────
+// ─── Local storage (for preferences only) ──────────────────────────
 const LS_KEY = 'forgemarketing.v1';
 const SAVED_CAP = 60;
 function lsRead() {
     try {
         const raw = localStorage.getItem(LS_KEY);
         const o = raw ? JSON.parse(raw) : {};
-        return { prefs: o.prefs || {}, saved: Array.isArray(o.saved) ? o.saved : [] };
+        return { prefs: o.prefs || {}, saved: [] };
     } catch (e) {
         return { prefs: {}, saved: [] };
     }
@@ -1359,7 +1450,9 @@ function generate() {
     document.getElementById('btn-copy').disabled = false;
     document.getElementById('btn-copy').dataset.text = plain;
     document.getElementById('btn-save').disabled = false;
-    document.getElementById('btn-save').textContent = 'Save';
+    // Check if already saved
+    const existing = savedGenerations.find(g => g.id === lastGenerationKey);
+    document.getElementById('btn-save').textContent = (existing && existing.saved === true) ? 'Saved ✓' : 'Save';
     document.getElementById('btn-mark-used').disabled = true;
     document.getElementById('btn-mark-discard').disabled = true;
     document.getElementById('btn-mark-used').textContent = '✅ Used';
@@ -1425,65 +1518,76 @@ function fallbackCopy(text, done) {
     document.body.removeChild(ta);
 }
 
-function saveCurrent() {
-    if (!lastGen) return;
-    if (store.saved.some(e => e.text === lastGen.text)) { showToast('Already saved'); return; }
-    store.saved.unshift(Object.assign({ id: 'g' + Date.now(), at: Date.now() }, lastGen));
-    if (store.saved.length > SAVED_CAP) store.saved.length = SAVED_CAP;
-    if (lsWrite(store)) {
-        showToast('Saved');
-        document.getElementById('btn-save').textContent = 'Saved ✓';
-    } else {
-        store.saved.shift();
-        showToast('Could not save — storage unavailable');
+// ─── Save / Unsave ──────────────────────────────────────────────────
+function fmToggleSave() {
+    if (!lastGenerationKey) {
+        toast('Generate something first');
+        return;
     }
-    renderSaved();
-}
-function deleteSaved(id) {
-    store.saved = store.saved.filter(e => e.id !== id);
-    lsWrite(store);
-    renderSaved();
+    if (!fmReady || !fmDB) {
+        toast('Sign in to sync saves');
+        return;
+    }
+    const existing = savedGenerations.find(g => g.id === lastGenerationKey);
+    const newVal = (existing && existing.saved === true) ? null : true;
+    fmDB.ref('forgemarketing/generations/' + lastGenerationKey).update({ saved: newVal })
+        .then(() => {
+            const label = newVal ? 'Saved to cloud' : 'Unsaved';
+            toast(label);
+            document.getElementById('btn-save').textContent = newVal ? 'Saved ✓' : 'Save';
+        })
+        .catch(e => toast('Save failed: ' + e.message));
 }
 
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmtDate(ms) {
-    const d = new Date(ms);
-    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
 function renderSaved() {
     const wrap = document.getElementById('saved-list');
     const count = document.getElementById('tab-count');
-    count.textContent = store.saved.length ? String(store.saved.length) : '';
+    const savedItems = savedGenerations.filter(g => g.saved === true);
+
+    count.textContent = savedItems.length ? String(savedItems.length) : '';
     wrap.innerHTML = '';
-    if (!store.saved.length) {
+
+    if (!savedItems.length) {
         const empty = document.createElement('p');
         empty.className = 'hint';
-        empty.textContent = 'Nothing saved yet. Generate something and press Save.';
+        empty.textContent = 'No saved copy. Generate something and press Save.';
         wrap.appendChild(empty);
         return;
     }
-    store.saved.forEach(entry => {
+
+    savedItems.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    savedItems.forEach(entry => {
         const P = PLATFORMS.find(x => x.id === entry.platform);
         const A = AUDIENCES.find(x => x.id === entry.audience);
         const G = ANGLES.find(x => x.id === entry.angle);
+
         const item = document.createElement('div');
         item.className = 'saved-item';
+
         const head = document.createElement('div');
         head.className = 'out-head';
-        [[P ? P.label : entry.platform, true], [A ? A.label : entry.audience, false],
-         [G ? G.label : entry.angle, false], [entry.language === 'bm' ? 'BM' : 'English', false],
-         [fmtDate(entry.at), false]]
-            .forEach(([label, accent]) => {
-                const c = document.createElement('span');
-                c.className = 'chip' + (accent ? ' accent' : '');
-                c.textContent = label;
-                head.appendChild(c);
-            });
+        const labels = [
+            [P ? P.label : entry.platform, true],
+            [A ? A.label : entry.audience, false],
+            [G ? G.label : entry.angle, false],
+            [entry.language === 'bm' ? 'BM' : 'English', false],
+            [entry.createdAt ? fmtDate(entry.createdAt) : '—', false]
+        ];
+        labels.forEach(([label, accent]) => {
+            const c = document.createElement('span');
+            c.className = 'chip' + (accent ? ' accent' : '');
+            c.textContent = label;
+            head.appendChild(c);
+        });
+
         const body = document.createElement('div');
         body.className = 'out saved-text';
         body.textContent = entry.text;
+
         const row = document.createElement('div');
         row.className = 'actions';
+
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn btn-ghost btn-sm';
         copyBtn.textContent = 'Copy';
@@ -1494,17 +1598,33 @@ function renderSaved() {
             copyOut();
             t.dataset.text = prev;
         });
-        const delBtn = document.createElement('button');
-        delBtn.className = 'btn btn-ghost btn-sm';
-        delBtn.textContent = 'Delete';
-        delBtn.addEventListener('click', () => deleteSaved(entry.id));
+
+        const unsaveBtn = document.createElement('button');
+        unsaveBtn.className = 'btn btn-ghost btn-sm';
+        unsaveBtn.textContent = 'Unsave';
+        unsaveBtn.addEventListener('click', () => fmUnsave(entry.id));
+
         row.appendChild(copyBtn);
-        row.appendChild(delBtn);
+        row.appendChild(unsaveBtn);
         item.appendChild(head);
         item.appendChild(body);
         item.appendChild(row);
         wrap.appendChild(item);
     });
+}
+
+function fmUnsave(id) {
+    if (!fmReady || !fmDB) { toast('Sign in to unsave'); return; }
+    fmDB.ref('forgemarketing/generations/' + id).update({ saved: null })
+        .then(() => toast('Unsaved'))
+        .catch(e => toast('Failed to unsave: ' + e.message));
+}
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(ms) {
+    if (!ms) return '—';
+    const d = new Date(ms);
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ─── Tabs ──────────────────────────────────────────────────────────
@@ -1516,6 +1636,8 @@ function showTab(name) {
     tab.setAttribute('aria-selected', 'true');
     document.querySelectorAll('.panel-body').forEach(pn => pn.classList.remove('active'));
     panel.classList.add('active');
+    // If the Saved tab is shown, re-render
+    if (name === 'saved') renderSaved();
     return true;
 }
 
@@ -1537,7 +1659,6 @@ function fillSelect(id, items, hintId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Init Firebase first
     fmInit();
 
     store = lsRead();
@@ -1560,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-generate').addEventListener('click', generate);
     document.getElementById('btn-copy').addEventListener('click', copyOut);
-    document.getElementById('btn-save').addEventListener('click', saveCurrent);
+    document.getElementById('btn-save').addEventListener('click', fmToggleSave);
     document.getElementById('btn-mark-used').addEventListener('click', () => fmMark('used'));
     document.getElementById('btn-mark-discard').addEventListener('click', () => fmMark('discarded'));
 
@@ -1616,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ─── Reference tabs (fixed all apostrophes) ──────────────────────────────
+// ─── Reference tabs (fixed all apostrophes) ──────────────────────────
 function renderReference() {
     document.getElementById('ref-positioning').innerHTML = `
         <h3>Core</h3>
