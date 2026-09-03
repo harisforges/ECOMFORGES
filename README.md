@@ -11,6 +11,7 @@ Internal client decision tools.
 | ForgeMarketing — Marketing Masterbase | `forgemarketing.html` | [/ECOMFORGES/forgemarketing.html](https://harisforges.github.io/ECOMFORGES/forgemarketing.html) |
 | ForgeSprint — Cycle Tracker | `sprint.html` | [/ECOMFORGES/sprint.html](https://harisforges.github.io/ECOMFORGES/sprint.html) |
 | ForgeBilling — Invoices | `billing.html` | [/ECOMFORGES/billing.html](https://harisforges.github.io/ECOMFORGES/billing.html) |
+| ForgeAgreement — Client Agreements | `agreement.html` | [/ECOMFORGES/agreement.html](https://harisforges.github.io/ECOMFORGES/agreement.html) |
 
 Brand assets (logo SVGs and PNG exports) live in [`assets/`](assets/).
 
@@ -273,6 +274,30 @@ The analyst keeps client codes and never business names, deliberately. An invoic
 work that way: it needs the registered name to be a valid document. So this is the one tool
 holding identifying client data, behind the same sign-in as the rest, and a `clientCode`
 field ties each row back to the coded tools.
+
+## ForgeAgreement — Client Agreements
+
+`agreement.html` — the engagement letter, drafted from the billing roster so a client typed
+once is not typed twice.
+
+The clauses were written from what EcomForges already promises in public: advisory scope,
+month to month, no lock-in, no guaranteed result. The point is that the paperwork says the
+same thing as the pitch — a contract that lets EcomForges touch accounts, or implies a
+result, contradicts the homepage.
+
+**It is not legal advice and nobody who wrote it is a lawyer.** The tool says so on the
+Template tab and again in "Before you send", which names the three clauses most in need of a
+Malaysian lawyer's eye: liability, ownership, and personal data.
+
+### Wording is versioned by copy, not reference
+
+Clause text is copied into an agreement when it is created. Editing the template afterwards
+does not touch agreements that already exist — someone who signed a document keeps the words
+they signed. A new agreement picks up the current template. Editing one that has already been
+sent changes your record, not the copy in their inbox, and the form says so.
+
+An unsigned document carries a **DRAFT — NOT YET SIGNED** marker that clears when it is marked
+signed. There is no e-signature: print or save to PDF, send it, mark it signed when it returns.
 
 ## Client decks
 

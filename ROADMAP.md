@@ -97,7 +97,26 @@ Built to hold that information rather than guess it: bank details, the tier
 ladder above the RM499 entry, payment terms and tax status are all empty until
 someone fills them in, and the overview keeps saying so until they are.
 
+## Built: contracts
+
+**Status: built and live** — `agreement.html`, ForgeAgreement. Engagement letters
+drafted from the billing roster, worded from what is already promised publicly,
+and explicitly not legal advice: the template names liability, ownership and
+personal data as the clauses wanting a lawyer.
+
 ## Also considered, still not tools of their own
 
 Session notes and a client roster both matter, but they are parts of the sprint
 tracker and the super app respectively.
+
+## A note for tool eight
+
+Seven tools now use seven accent colours — cyan, amber, green, red, violet, blue
+and magenta. The wheel is close to full, and the last two additions sit nearer
+their neighbours than any of the first five did. An eighth tool should not
+expect a colour that separates cleanly at 48px; it probably needs a second
+distinguishing signal, a glyph inside the mark rather than a new hue.
+
+This also raises the cost of not merging: eight home-screen icons that are hard
+to tell apart is an argument for the super app rather than a reason to keep
+adding pages.
