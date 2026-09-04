@@ -2969,14 +2969,14 @@
                 let notesHtml = '';
                 if (lead.notes) {
                     const snippet = lead.notes.length > 80 ? lead.notes.slice(0, 80) + '…' : lead.notes;
-                    notesHtml = `<div class="notes-preview"><span class="emoji">📝</span> ${snippet}</div>`;
+                    notesHtml = `<div class="notes-preview"><span class="emoji">📝</span> ${esc(snippet)}</div>`;
                 }
 
                 let activityHtml = '';
                 if (lead.history && lead.history.length > 0) {
                     const entries = lead.history.slice(-3).reverse();
                     activityHtml = `<div class="activity-log">${entries.map(e =>
-                    `<div class="entry"><span class="time">${formatDateTime(e.date)}</span><span class="who">${e.who || 'user'}</span><span class="msg">${e.note || 'Activity'}</span></div>`
+                    `<div class="entry"><span class="time">${esc(formatDateTime(e.date))}</span><span class="who">${esc(e.who || 'user')}</span><span class="msg">${esc(e.note || 'Activity')}</span></div>`
                     ).join('')}</div>`;
                 }
 
@@ -2996,26 +2996,26 @@
                 const platformsHtml = (lead.platforms || []).length ?
                     `<span class="item"><span class="emoji">🛒</span> ${esc((lead.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' · '))}</span>` : '';
 
-                const companySafe = (lead.company || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const picSafe = (lead.pic || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const companySafe = esc(lead.company || '');
+                const picSafe = esc(lead.pic || '');
 
                 html += `
-              <div class="lead-card ${bulkMode ? 'bulk-mode' : ''}" data-id="${lead.id}">
+              <div class="lead-card ${bulkMode ? 'bulk-mode' : ''}" data-id="${esc(lead.id)}">
                 <div class="checkbox-wrap">
-                  <input type="checkbox" class="lead-checkbox" data-id="${lead.id}" ${checked} />
+                  <input type="checkbox" class="lead-checkbox" data-id="${esc(lead.id)}" ${checked} />
                 </div>
-                <div class="top-row" onclick="openDetail('${lead.id}')">
+                <div class="top-row" data-open="${esc(lead.id)}">
                   <div>
                     <div class="company">${companySafe}</div>
-                    <div class="pic"><strong>${picSafe}</strong> · ${lead.phone || '—'}</div>
+                    <div class="pic"><strong>${picSafe}</strong> · ${esc(lead.phone || '—')}</div>
                     ${assignedHtml}
                     ${followupHtml}
                   </div>
                   <span class="status-badge ${statusCls}">${statusLbl}</span>
                 </div>
-                <div class="details" onclick="openDetail('${lead.id}')">
-                  ${lead.email ? `<span class="item"><span class="emoji">✉</span> ${lead.email}</span>` : ''}
-                  ${lead.website ? `<span class="item"><span class="emoji">🌐</span> ${lead.website}</span>` : ''}
+                <div class="details" data-open="${esc(lead.id)}">
+                  ${lead.email ? `<span class="item"><span class="emoji">✉</span> ${esc(lead.email)}</span>` : ''}
+                  ${lead.website ? `<span class="item"><span class="emoji">🌐</span> ${esc(lead.website)}</span>` : ''}
                   ${lead.industry ? `<span class="item"><span class="emoji">🏢</span> ${esc(labelOf(INDUSTRIES, lead.industry))}</span>` : ''}
                   ${sourceHtml}
                   ${platformsHtml}
@@ -3024,11 +3024,11 @@
                 ${notesHtml}
                 ${activityHtml}
                 <div class="actions">
-                  <button class="btn btn-contact ${isContacted ? 'contacted' : ''}" data-action="contact" data-id="${lead.id}">${contactLabel}</button>
-                  <button class="btn btn-edit" data-action="edit" data-id="${lead.id}">✎ Edit</button>
-                  <button class="btn btn-note" data-action="note" data-id="${lead.id}">📝 Note</button>
-                  <button class="btn btn-assign" data-action="assign" data-id="${lead.id}">👤 Assign</button>
-                  <button class="btn btn-delete" data-action="delete" data-id="${lead.id}">✕</button>
+                  <button class="btn btn-contact ${isContacted ? 'contacted' : ''}" data-action="contact" data-id="${esc(lead.id)}">${contactLabel}</button>
+                  <button class="btn btn-edit" data-action="edit" data-id="${esc(lead.id)}">✎ Edit</button>
+                  <button class="btn btn-note" data-action="note" data-id="${esc(lead.id)}">📝 Note</button>
+                  <button class="btn btn-assign" data-action="assign" data-id="${esc(lead.id)}">👤 Assign</button>
+                  <button class="btn btn-delete" data-action="delete" data-id="${esc(lead.id)}">✕</button>
                 </div>
               </div>
             `;
@@ -3264,17 +3264,17 @@
             const opener = openerFor(lead.platforms);
 
             let html = `
-            <div class="field-row"><div class="label">PIC</div><div class="value">${lead.pic || '—'}</div></div>
-            <div class="field-row"><div class="label">Phone</div><div class="value">${lead.phone || '—'}</div></div>
-            ${lead.email ? `<div class="field-row"><div class="label">Email</div><div class="value">${lead.email}</div></div>` : ''}
-            ${lead.website ? `<div class="field-row"><div class="label">Website</div><div class="value">${lead.website}</div></div>` : ''}
+            <div class="field-row"><div class="label">PIC</div><div class="value">${esc(lead.pic || '—')}</div></div>
+            <div class="field-row"><div class="label">Phone</div><div class="value">${esc(lead.phone || '—')}</div></div>
+            ${lead.email ? `<div class="field-row"><div class="label">Email</div><div class="value">${esc(lead.email)}</div></div>` : ''}
+            ${lead.website ? `<div class="field-row"><div class="label">Website</div><div class="value">${esc(lead.website)}</div></div>` : ''}
             ${lead.industry ? `<div class="field-row"><div class="label">Industry</div><div class="value">${esc(labelOf(INDUSTRIES, lead.industry))}</div></div>` : ''}
             ${lead.source ? `<div class="field-row"><div class="label">Source</div><div class="value">${esc(labelOf(SOURCES, lead.source))}</div></div>` : ''}
             ${(lead.platforms || []).length ? `<div class="field-row"><div class="label">Sells on</div><div class="value">${esc(lead.platforms.map(v => labelOf(PLATFORMS, v)).join(', '))}</div></div>` : ''}
             ${opener ? `<div class="field-row"><div class="label">Opener</div><div class="value">${esc(opener.text)}</div></div>` : ''}
             ${lead.assigned ? `<div class="field-row"><div class="label">Assigned</div><div class="value">${esc(labelOf(ASSIGNEES, lead.assigned))}</div></div>` : ''}
             ${lead.followup ? `<div class="field-row"><div class="label">Follow-up</div><div class="value">${formatDate(lead.followup)}${isOverdue(lead.followup) ? ' ⚠️ Overdue' : ''}</div></div>` : ''}
-            ${lead.notes ? `<div class="field-row"><div class="label">Notes</div><div class="value">${lead.notes}</div></div>` : ''}
+            ${lead.notes ? `<div class="field-row"><div class="label">Notes</div><div class="value" style="white-space:pre-wrap">${esc(lead.notes)}</div></div>` : ''}
             <div class="field-row"><div class="label">Created</div><div class="value">${formatDateTime(lead.createdAt)}</div></div>
             <div class="field-row"><div class="label">Updated</div><div class="value">${formatDateTime(lead.updatedAt)}</div></div>
           `;
@@ -3284,9 +3284,9 @@
                 const entries = [...lead.history].reverse();
                 for (const e of entries) {
                     html += `<div class="entry">
-                <span class="time">${formatDateTime(e.date)}</span>
-                <span class="who">${e.who || 'user'}</span>
-                <span class="msg">${e.note || 'Activity'}</span>
+                <span class="time">${esc(formatDateTime(e.date))}</span>
+                <span class="who">${esc(e.who || 'user')}</span>
+                <span class="msg">${esc(e.note || 'Activity')}</span>
               </div>`;
                 }
                 html += `</div>`;
@@ -3547,7 +3547,7 @@
         function esc(s) {
             return String(s == null ? '' : s)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function fillSelect(sel, list, placeholder) {
@@ -4221,6 +4221,8 @@
         // ─── Event delegation ──────────────────────────────────────────
         function setupCardListeners() {
             listEl.addEventListener('click', (e) => {
+                const opener = e.target.closest('[data-open]');
+                if (opener && !e.target.closest('button')) { openDetail(opener.dataset.open); return; }
                 const btn = e.target.closest('button[data-action]');
                 if (!btn) return;
                 const id = btn.dataset.id;
