@@ -2,7 +2,7 @@
   "name": "EcomForges Client Decision Tools",
   "short_name": "Forge Tools",
   "description": "Client qualification, Forge Track selection and engagement status review.",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
