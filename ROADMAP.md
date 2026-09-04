@@ -5,9 +5,9 @@ sessions and between people.
 
 ## Decided: one super app, later
 
-**All the existing tools become a single application.** Five separate pages,
-five sign-ins, five copies of the brand header and five places a client's name
-can be spelled differently is friction that grows with every tool added.
+**All the existing tools become a single application.** Seven separate pages,
+seven sign-ins, seven copies of the brand header and seven places a client's
+name can be spelled differently is friction that grows with every tool added.
 
 **Not now.** More tools are likely first, and merging a moving target costs more
 than merging a settled one. The tools stay separate until the set stops growing.
@@ -24,6 +24,17 @@ When it happens, the work is mostly:
 Nothing here needs doing yet. It is written down so the next tool is built in a
 way that does not make the merge harder: same theme tokens, same header pattern,
 same auth, and a client identifier that means the same thing everywhere.
+
+### Done in the meantime: one shared switcher
+
+Every tool now carries the same **Tools** menu in its header, listing all seven
+with the current one marked. It is a stopgap, not the merge: the pages are still
+separate, still sign in separately, still hold their own slice of the client. It
+just stops anyone having to remember seven file names.
+
+Being one identical block in seven files, it is also a small rehearsal of the
+merge — when the shell becomes real this markup becomes its navigation and the
+`href`s go away.
 
 ## Built: the sprint tracker
 

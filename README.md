@@ -160,20 +160,34 @@ picks the Forge Track *before* an engagement runs. The analyst scores an engagem
 *already* running. None of them replaces another, and neither the analyst nor LeadForge work
 has ever touched `index.html`.
 
-They install as three independent home-screen apps, which is why each has its own manifest and
-its own icon:
+They install as independent home-screen apps, which is why each has its own manifest and its
+own icon:
 
-| | Calculator | Analyst | LeadForge |
+| Tool | Page | Manifest | Icon |
 |---|---|---|---|
-| Page | `index.html` | `analyst.html` | `lead.html` |
-| Manifest | `manifest.webmanifest` | `analyst.webmanifest` | `lead.webmanifest` |
-| Home-screen label | Forge Tools | Forge Analyst | Forge Leads |
-| Icon | cyan hexagon | **amber** hexagon | **neon green** hexagon |
+| Client Decision Tools | `index.html` | `manifest.webmanifest` | cyan hexagon |
+| Growth Analyst | `analyst.html` | `analyst.webmanifest` | **amber** hexagon |
+| LeadForge | `lead.html` | `lead.webmanifest` | **neon green** hexagon |
+| ForgeMarketing | `forgemarketing.html` | `marketing.webmanifest` | **red** hexagon |
+| ForgeSprint | `sprint.html` | `sprint.webmanifest` | **violet** hexagon |
+| ForgeBilling | `billing.html` | `billing.webmanifest` | **blue** hexagon |
+| ForgeAgreement | `agreement.html` | `agreement.webmanifest` | **magenta** hexagon |
 
-Add all three to your home screen; the colour tells them apart at a glance. Both derived icon
-sets are recoloured from the calculator's by
-`ecomforges-analyst/scripts/analyst-icons.py` and `scripts/lead-icons.py`, so the mark can
-never drift from the brand — only its accent moves.
+Add the ones you use to your home screen; the colour tells them apart at a glance. Every
+derived icon set is recoloured from the calculator's by the scripts in `scripts/` (and
+`ecomforges-analyst/scripts/analyst-icons.py`), so the mark can never drift from the brand —
+only its accent moves.
+
+### Getting from one to another
+
+Separate does not have to mean unreachable. Every tool carries the same **Tools** button in
+its header: one menu, all seven, the colour dot matching that tool's icon and the current
+page marked rather than linked. It works on a keyboard — down-arrow to open, arrows to walk,
+Escape to close — and the menu is nudged back on screen when the button sits near an edge.
+
+It is deliberately the smallest thing that solves the problem. When the tools merge into one
+app (see `ROADMAP.md`) this becomes the app's own navigation and the links go away; until
+then nobody has to remember seven file names.
 
 The theme's own `--green` (#2DD4A0) is not that accent. At 48px on a navy ground it reads as a
 duller cyan and collides with the calculator, so the icon ramp tops out at #39FF7E instead.
