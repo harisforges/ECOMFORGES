@@ -884,11 +884,28 @@ function fill(text, a) {
 }
 
 // ─── Persist ────────────────────────────────────────────────────────────
+/* A denied write is the likeliest failure here and the least obvious: the
+   database rules have to name forgeagreement/ explicitly, and until they do every button
+   on this page fails silently. Say which it was. */
+function reportWriteFailure(e) {
+    const msg = String((e && e.message) || e);
+    if (/permission|denied/i.test(msg)) {
+        toast('Saved nothing — the database refused the write. The rules need to allow forgeagreement/.');
+        faStatus('local', 'No write access');
+    } else {
+        toast('Could not save: ' + msg);
+    }
+    console.error('ForgeAgreement write failed', e);
+}
+
+/* Returns the id on success, null when the write failed. Callers must check. */
 async function put(id, data) {
     if (faReady && faDB) {
-        if (id) { await faDB.ref('forgeagreement/agreements/' + id).update(data); return id; }
-        const ref = faDB.ref('forgeagreement/agreements').push();
-        await ref.set(data); return ref.key;
+        try {
+            if (id) { await faDB.ref('forgeagreement/agreements/' + id).update(data); return id; }
+            const ref = faDB.ref('forgeagreement/agreements').push();
+            await ref.set(data); return ref.key;
+        } catch (e) { reportWriteFailure(e); return null; }
     }
     if (id) {
         const i = agreements.findIndex(x => x.id === id);
@@ -900,14 +917,21 @@ async function put(id, data) {
     localSync(); renderAll(); return id;
 }
 async function drop(id) {
-    if (faReady && faDB) { await faDB.ref('forgeagreement/agreements/' + id).remove(); return; }
+    if (faReady && faDB) {
+        try { await faDB.ref('forgeagreement/agreements/' + id).remove(); return true; }
+        catch (e) { reportWriteFailure(e); return false; }
+    }
     agreements = agreements.filter(x => x.id !== id); localSync(); renderAll();
 }
 async function saveClauses(next) {
+    const prev = clauses;
     clauses = next;
-    if (faReady && faDB) await faDB.ref('forgeagreement/template').set({ clauses: next, updatedAt: Date.now() });
-    else localSync();
+    if (faReady && faDB) {
+        try { await faDB.ref('forgeagreement/template').set({ clauses: next, updatedAt: Date.now() }); }
+        catch (e) { clauses = prev; reportWriteFailure(e); renderClauses(); return false; }
+    } else { localSync(); }
     renderClauses();
+    return true;
 }
 
 // ─── Agreements list ────────────────────────────────────────────────────
@@ -916,8 +940,8 @@ async function setStatus(id, status) {
     if (status === 'signed') patch.signedAt = Date.now();
     if (status === 'sent')   patch.sentAt = Date.now();
     if (status === 'ended')  patch.endedAt = Date.now();
-    await put(id, patch);
-    toast('Marked ' + status);
+    const ok = await put(id, patch);
+    if (ok) toast('Marked ' + status);
 }
 
 function renderAgreements() {
@@ -1154,15 +1178,16 @@ async function submitAgreement(e) {
     };
 
     if (id) {
-        await put(id, data);
+        if (!await put(id, data)) return;
         toast('Updated');
     } else {
         // The clause text is copied in at creation. An agreement someone signed
         // must keep the words they signed, whatever the template says later.
-        await put(null, Object.assign({
+        const made = await put(null, Object.assign({
             clauses: collectClausesForNew(), status: 'draft',
             createdAt: Date.now(), createdBy: faUser ? faUser.email : null
         }, data));
+        if (!made) return;               // keep the form so the typing is not lost
         toast('Draft created for ' + data.clientName);
     }
     resetAgreementForm();
@@ -1354,7 +1379,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('agr-export').addEventListener('click', exportCSV);
 
     document.getElementById('tpl-save').addEventListener('click', async () => {
-        await saveClauses(collectClauses());
+        if (!await saveClauses(collectClauses())) {
+            document.getElementById('tpl-note').textContent = 'Not saved';
+            return;
+        }
         document.getElementById('tpl-note').textContent = 'Saved — new agreements use this wording';
         toast('Template saved');
     });

@@ -853,12 +853,29 @@ function tiers(){
 function tierById(id){ return tiers().find(t=>t.id===id) || null; }
 
 // ─── Persist ────────────────────────────────────────────────────────────
+/* A denied write is the likeliest failure here and the least obvious: the
+   database rules have to name forgebilling/ explicitly, and until they do every button
+   on this page fails silently. Say which it was. */
+function reportWriteFailure(e) {
+    const msg = String((e && e.message) || e);
+    if (/permission|denied/i.test(msg)) {
+        toast('Saved nothing — the database refused the write. The rules need to allow forgebilling/.');
+        fbStatus('local', 'No write access');
+    } else {
+        toast('Could not save: ' + msg);
+    }
+    console.error('ForgeBilling write failed', e);
+}
+
+/* Returns the id on success, null when the write failed. Callers must check. */
 async function put(path, id, data) {
     if (fbReady && fbDB) {
-        if (id) { await fbDB.ref(`forgebilling/${path}/${id}`).update(data); return id; }
-        const ref = fbDB.ref(`forgebilling/${path}`).push();
-        await ref.set(data);
-        return ref.key;
+        try {
+            if (id) { await fbDB.ref(`forgebilling/${path}/${id}`).update(data); return id; }
+            const ref = fbDB.ref(`forgebilling/${path}`).push();
+            await ref.set(data);
+            return ref.key;
+        } catch (e) { reportWriteFailure(e); return null; }
     }
     const bucket = path === 'clients' ? clients : invoices;
     if (id) {
@@ -872,16 +889,24 @@ async function put(path, id, data) {
     return id;
 }
 async function drop(path, id) {
-    if (fbReady && fbDB) { await fbDB.ref(`forgebilling/${path}/${id}`).remove(); return; }
+    if (fbReady && fbDB) {
+        try { await fbDB.ref(`forgebilling/${path}/${id}`).remove(); return true; }
+        catch (e) { reportWriteFailure(e); return false; }
+    }
     if (path === 'clients') clients = clients.filter(x => x.id !== id);
     else invoices = invoices.filter(x => x.id !== id);
     localSync(); renderAll();
+    return true;
 }
 async function saveSettings(next) {
+    const prev = settings;
     settings = Object.assign({}, settings, next);
-    if (fbReady && fbDB) { await fbDB.ref('forgebilling/settings').update(settings); }
-    else { localSync(); }
+    if (fbReady && fbDB) {
+        try { await fbDB.ref('forgebilling/settings').update(settings); }
+        catch (e) { settings = prev; reportWriteFailure(e); renderAll(); return false; }
+    } else { localSync(); }
     renderAll();
+    return true;
 }
 
 // ─── Invoice numbering ──────────────────────────────────────────────────
@@ -944,7 +969,9 @@ async function raiseInvoices() {
             createdBy: fbUser ? fbUser.email : null
         };
         const id = await put('invoices', null, inv);
-        if (id && !(fbReady && fbDB)) { /* local path already pushed */ }
+        // Stop on the first refusal rather than looping through every client
+        // producing the same error, and report what was actually created.
+        if (!id) break;
         made++;
     }
     document.getElementById('run-note').textContent =
@@ -957,8 +984,8 @@ async function setInvoiceStatus(id, status) {
     const patch = { status };
     if (status === 'paid') patch.paidAt = Date.now();
     if (status === 'sent') patch.sentAt = Date.now();
-    await put('invoices', id, patch);
-    toast('Marked ' + status);
+    const ok = await put('invoices', id, patch);
+    if (ok) toast('Marked ' + status);
 }
 
 // ─── Overview ───────────────────────────────────────────────────────────
@@ -1303,7 +1330,8 @@ async function submitClient(e) {
     if (clash && !window.confirm(`${data.name} is already on the roster. Add a second entry anyway?`)) {
         editClient(clash.id); return;
     }
-    await put('clients', id || null, id ? data : Object.assign({ createdAt: Date.now() }, data));
+    const ok = await put('clients', id || null, id ? data : Object.assign({ createdAt: Date.now() }, data));
+    if (!ok) return;                     // keep the form so the typing is not lost
     toast(id ? 'Updated ' + data.name : 'Added ' + data.name);
     resetClientForm();
 }
@@ -1340,7 +1368,7 @@ async function submitSettings(e) {
         const raw = inp ? inp.value.trim() : '';
         return { id: t.id, label: t.label, rate: raw === '' ? null : Number(raw) };
     });
-    await saveSettings({
+    const saved = await saveSettings({
         bizname: v('set-bizname'), ssm: v('set-ssm'), email: v('set-email'), phone: v('set-phone'),
         prefix: v('set-prefix') || 'EF', terms: Number(v('set-terms')) || 14,
         address: v('set-address'), bank: v('set-bank'),
@@ -1348,6 +1376,7 @@ async function submitSettings(e) {
         sstRate: v('set-sstrate') === '' ? null : Number(v('set-sstrate')),
         sstNo: v('set-sstno'), tiers: nextTiers
     });
+    if (!saved) { document.getElementById('set-note').textContent = 'Not saved'; return; }
     document.getElementById('set-note').textContent = 'Saved';
     toast('Settings saved');
 }

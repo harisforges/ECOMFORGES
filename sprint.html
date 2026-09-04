@@ -786,17 +786,41 @@ function reasonLabel(r) {
 }
 
 // ─── Persist ────────────────────────────────────────────────────────────
+
+/* A denied write is the likeliest failure here and the least obvious: the
+   database rules have to name forgesprint/ explicitly, and until they do every
+   button on this page fails silently. Say which it was. */
+function reportWriteFailure(e) {
+    const msg = String((e && e.message) || e);
+    if (/permission|denied/i.test(msg)) {
+        toast('Saved nothing — the database refused the write. The rules need to allow forgesprint/.');
+        fsStatus('local', 'No write access');
+    } else {
+        toast('Could not save: ' + msg);
+    }
+    console.error('ForgeSprint write failed', e);
+}
+/* Returns the id on success, or null when the write failed.
+
+   Every caller must check. A rejected write used to be an unhandled promise
+   rejection: the button did nothing, said nothing, and looked broken — which is
+   exactly what a database rule denying this path produces. */
 async function saveCycle(cycle, id) {
     if (fsReady && fsDB) {
-        const payload = Object.assign({}, cycle, {
-            updatedAt: firebase.database.ServerValue.TIMESTAMP,
-            updatedBy: fsUser ? fsUser.email : null
-        });
-        if (id) { await fsDB.ref('forgesprint/cycles/' + id).update(payload); return id; }
-        payload.openedAt = payload.openedAt || Date.now();
-        const ref = fsDB.ref('forgesprint/cycles').push();
-        await ref.set(payload);
-        return ref.key;
+        try {
+            const payload = Object.assign({}, cycle, {
+                updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                updatedBy: fsUser ? fsUser.email : null
+            });
+            if (id) { await fsDB.ref('forgesprint/cycles/' + id).update(payload); return id; }
+            payload.openedAt = payload.openedAt || Date.now();
+            const ref = fsDB.ref('forgesprint/cycles').push();
+            await ref.set(payload);
+            return ref.key;
+        } catch (e) {
+            reportWriteFailure(e);
+            return null;
+        }
     }
     const list = localRead();
     if (id) {
@@ -818,7 +842,7 @@ async function deleteCycle(id) {
     if (!window.confirm(`Delete the ${c.clientCode} cycle? The execution record goes with it.`)) return;
     if (fsReady && fsDB) {
         try { await fsDB.ref('forgesprint/cycles/' + id).remove(); toast('Deleted'); }
-        catch (e) { toast('Could not delete: ' + e.message); }
+        catch (e) { reportWriteFailure(e); }
     } else {
         cycles = localRead().filter(x => x.id !== id);
         localWrite(cycles); toast('Deleted'); renderAll();
@@ -829,8 +853,8 @@ async function setMoveState(id, index, state) {
     const c = cycles.find(x => x.id === id);
     if (!c) return;
     const moves = (c.moves || []).map((m, i) => i === index ? Object.assign({}, m, { state: state }) : m);
-    await saveCycle({ moves: moves }, id);
-    if (fsReady && fsDB) toast('Saved');
+    const ok = await saveCycle({ moves: moves }, id);
+    if (ok && fsReady && fsDB) toast('Saved');
 }
 
 // ─── Open cycles ────────────────────────────────────────────────────────
@@ -1020,7 +1044,7 @@ async function confirmClose() {
         reason = picked ? picked.value : honestReason(c);
     }
 
-    await saveCycle({
+    const ok = await saveCycle({
         status: 'closed',
         closingValue: Number(raw),
         closedAt: Date.now(),
@@ -1030,6 +1054,9 @@ async function confirmClose() {
         executionAtClose: executionScore(c),
         closeNote: document.getElementById('close-note').value.trim()
     }, closingId);
+
+    // Leave the dialog open on failure so the reading typed in is not lost.
+    if (!ok) return;
 
     document.getElementById('close-overlay').classList.add('hidden');
     closingId = null;
