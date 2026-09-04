@@ -613,6 +613,59 @@
     }
     a[href]::after { content: ""; }
   }
+
+    /* ── Tool switcher ─────────────────────────────────────────────────
+       Seven tools, no way to get from one to another until now. This is
+       the same block in every file; when they merge into one app it
+       becomes the app's own nav and the hrefs go away.               */
+    .tool-switch { position: relative; display: inline-flex; }
+    .ts-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
+        color: #C6D4E3; font: inherit; font-size: 12px; font-weight: 600;
+        letter-spacing: .02em; padding: 6px 11px; border-radius: 8px;
+        cursor: pointer; min-height: 34px; line-height: 1;
+        transition: background .15s, border-color .15s, color .15s;
+    }
+    .ts-btn:hover, .ts-btn[aria-expanded="true"] {
+        background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.28); color: #fff;
+    }
+    .ts-btn:focus-visible { outline: 2px solid #20F6F8; outline-offset: 2px; }
+    .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ts-grid i { width: 4px; height: 4px; border-radius: 1px; background: currentColor; display: block; }
+    .ts-caret { font-size: 9px; opacity: .65; }
+    .ts-menu {
+        position: absolute; top: calc(100% + 7px); right: 0; z-index: 400;
+        width: 274px; max-width: calc(100vw - 24px);
+        background: #101d2e; border: 1px solid rgba(255,255,255,.16);
+        border-radius: 11px; padding: 6px;
+        box-shadow: 0 18px 44px rgba(0,0,0,.55);
+    }
+    .ts-menu[hidden] { display: none; }
+    .ts-head {
+        font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
+        color: #6E829B; padding: 7px 10px 6px;
+    }
+    .ts-item {
+        display: flex; align-items: flex-start; gap: 9px;
+        padding: 8px 10px; border-radius: 8px; text-decoration: none;
+        color: #DCE6F1; line-height: 1.35;
+    }
+    .ts-item:hover, .ts-item:focus-visible { background: rgba(255,255,255,.07); outline: none; }
+    .ts-item:focus-visible { box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+    .ts-item b { display: block; font-size: 12.5px; font-weight: 600; }
+    .ts-item small { display: block; font-size: 11px; color: #7F93AC; margin-top: 1px; }
+    .ts-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; margin-top: 5px; }
+    .ts-item[aria-current="page"] { background: rgba(255,255,255,.05); cursor: default; }
+    .ts-item[aria-current="page"] b::after {
+        content: "you are here"; float: right; font-size: 9.5px; font-weight: 500;
+        text-transform: uppercase; letter-spacing: .07em; color: #6E829B;
+    }
+    @media (max-width: 560px) {
+        .ts-btn .ts-label { display: none; }
+        .ts-btn { padding: 6px 9px; }
+        .ts-menu { right: -4px; }
+    }
 </style>
 </head>
 <body>
@@ -635,6 +688,23 @@
       Status Review<small>Every 3 cycles</small>
     </button>
   </div>
+  <div class="tool-switch">
+      <button type="button" class="ts-btn" id="ts-btn"
+              aria-expanded="false" aria-controls="ts-menu" title="Switch tool">
+          <span class="ts-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="ts-label">Tools</span><span class="ts-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="ts-menu" id="ts-menu" hidden>
+          <p class="ts-head">EcomForges tools</p>
+      <span class="ts-item" aria-current="page"><span class="ts-dot" style="background:#20F6F8"></span><span><b>Client Decision Tools</b><small>Qualify, pick the track, review the account</small></span></span>
+      <a class="ts-item" href="analyst.html"><span class="ts-dot" style="background:#F6A820"></span><span><b>Growth Analyst</b><small>Turn platform figures into a brief</small></span></a>
+      <a class="ts-item" href="lead.html"><span class="ts-dot" style="background:#39FF7E"></span><span><b>LeadForge</b><small>The pipeline</small></span></a>
+      <a class="ts-item" href="forgemarketing.html"><span class="ts-dot" style="background:#FF3D57"></span><span><b>ForgeMarketing</b><small>Copy, the masterbase, collaborators</small></span></a>
+      <a class="ts-item" href="sprint.html"><span class="ts-dot" style="background:#A855F7"></span><span><b>ForgeSprint</b><small>Thirty-day cycles and what they proved</small></span></a>
+      <a class="ts-item" href="billing.html"><span class="ts-dot" style="background:#3B82F6"></span><span><b>ForgeBilling</b><small>Invoices and what is still owed</small></span></a>
+      <a class="ts-item" href="agreement.html"><span class="ts-dot" style="background:#E879F9"></span><span><b>ForgeAgreement</b><small>Engagement letters and their clauses</small></span></a>
+      </div>
+  </div>
 </header>
 
 <div class="page">
@@ -644,7 +714,7 @@
   <button class="btn btn-sm" onclick="makePDF('all')">Full report PDF</button>
   <button class="btn btn-sm" onclick="document.getElementById('load-input').click()">Load</button>
   <button class="btn btn-sm btn-cyan" onclick="saveFile()">Save</button>
-  <input type="file" id="load-input" accept="application/json,.json" style="display:none" onchange="loadFile(event)" />
+  <input type="file" id="load-input" accept="application/json,.json" aria-label="Open a saved engagement file" style="display:none" onchange="loadFile(event)" />
 </div>
 
 <!-- ══════════════ STAGE 1 — QUALIFY ══════════════ -->
@@ -1619,8 +1689,8 @@ function renderCycles() {
       </div>
       <div class="cyc-grid">
         ${CYCLE_FIELDS.map(f => `
-          <div class="field"><label>${f.label}</label>
-            <select onchange="setCycle(${c.n},'${f.id}',this.value)">
+          <div class="field"><label for="cyc-${c.n}-${f.id}">${f.label}</label>
+            <select id="cyc-${c.n}-${f.id}" onchange="setCycle(${c.n},'${f.id}',this.value)">
               ${f.opts.map(o=>`<option value="${o[1]}"${c[f.id]===o[1]?' selected':''}>${o[0]}</option>`).join('')}
             </select></div>`).join('')}
       </div>
@@ -3284,7 +3354,13 @@ const strip = s => String(s).replace(/<[^>]*>/g,'').replace(/&mdash;/g,'—')
   .replace(/&lsquo;/g,"'").replace(/&ndash;/g,'–').replace(/&divide;/g,'÷').replace(/&times;/g,'×')
   .replace(/&rarr;/g,'→').replace(/&nbsp;/g,' ').replace(/&quot;/g,'"')
   .replace(/&amp;/g,'&');   // last, so an escaped entity is not double-decoded
-const csvCell = s => `"${String(s).replace(/"/g,'""')}"`;
+// A leading =, +, - or @ makes a spreadsheet read the cell as a formula, and a
+// client name is free text. The apostrophe keeps it text.
+const csvCell = s => {
+  let t = s == null ? '' : String(s);
+  if (/^[=+\-@]/.test(t)) t = "'" + t;
+  return `"${t.replace(/"/g,'""')}"`;
+};
 
 /* Anchor must be in the document for Safari to honour the click, and the object
    URL must outlive it — revoking on the next line cancelled the download in
@@ -3431,6 +3507,58 @@ if (_logoEl && !LOGO_CACHE) _logoEl.addEventListener('load', prepareLogo, { once
 addCycle();                    // start the log with one row so the shape is obvious
 recompute(); computeTrack(); computeReview();
 offerRecovery();               // after the first render, so the bar sits on a built page
+
+    /* ── Tool switcher ────────────────────────────────────────────────
+       Click, Escape and click-outside; the arrow keys walk the list so
+       the menu is usable without a mouse. The menu is anchored to the
+       button, which sits at a different place in each tool, so it is
+       nudged back on screen after opening rather than assuming there is
+       room to its left.                                               */
+    (function () {
+        var btn = document.getElementById('ts-btn');
+        var menu = document.getElementById('ts-menu');
+        if (!btn || !menu) return;
+        function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
+        function place() {
+            menu.style.left = 'auto'; menu.style.right = '0'; menu.style.transform = '';
+            var r = menu.getBoundingClientRect();
+            if (r.left < 8) { menu.style.left = '0'; menu.style.right = 'auto'; r = menu.getBoundingClientRect(); }
+            var over = r.right - (window.innerWidth - 8);
+            if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
+            else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
+        }
+        function open(focusFirst) {
+            menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); place();
+            if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
+        }
+        function close(refocus) {
+            menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+            if (refocus) btn.focus();
+        }
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menu.hidden ? open(false) : close(false);
+        });
+        /* Escape and the arrow keys are caught on the document, because after a
+           click the focus is still on the button, not inside the menu. */
+        document.addEventListener('keydown', function (e) {
+            if (menu.hidden) {
+                if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault(); open(true); }
+                return;
+            }
+            var list = items(), i = list.indexOf(document.activeElement);
+            if (e.key === 'Escape') { e.preventDefault(); close(true); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); list[i < 0 ? 0 : (i + 1) % list.length].focus(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); }
+            else if (e.key === 'Home' && i >= 0) { e.preventDefault(); list[0].focus(); }
+            else if (e.key === 'End' && i >= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+            else if (e.key === 'Tab' && i < 0) { close(false); }
+        });
+        document.addEventListener('click', function (e) {
+            if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
+        });
+        window.addEventListener('resize', function () { if (!menu.hidden) place(); });
+    })();
 </script>
 
 </body>
