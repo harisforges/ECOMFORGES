@@ -15,9 +15,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <style>
-        /* ═══════════════════════════════════════════════════════════════════
-           THEME — Dark blue with neon cyan accent, brand icon is green
-           ═══════════════════════════════════════════════════════════════════ */
+        /* ── same as before ── */
         :root {
             --navy: #162840;
             --main-blue: #1C3350;
@@ -2315,10 +2313,6 @@
         const MAX_ATTEMPTS = 5;
 
         // ─── INITIALIZE FIREBASE FIRST ──────────────────────────────────
-        // The SDK comes from a CDN, which can be blocked, offline, or fail to load.
-        // Everything below used to assume it was there, so one missing script threw
-        // at the top level and stopped the rest of this file from running at all —
-        // leaving a dead page. Check once, then degrade visibly instead.
         const firebaseAvailable = typeof firebase !== 'undefined' && typeof firebase.auth === 'function';
 
         try {
@@ -2357,7 +2351,6 @@
         function showApp() {
             loginOverlay.classList.add('hidden');
             appRoot.classList.add('show');
-            // Reset attempts on successful login
             loginAttempts = 0;
             isLockedOut = false;
             loginSubmit.disabled = false;
@@ -2366,7 +2359,6 @@
         function showLogin() {
             loginOverlay.classList.remove('hidden');
             appRoot.classList.remove('show');
-            // Reset form state but keep attempts
             loginPassword.value = '';
             loginError.classList.remove('show');
             loginError.innerHTML = '';
@@ -2377,16 +2369,13 @@
             return typeof email === 'string' && email.toLowerCase().endsWith(ALLOWED_DOMAIN);
         }
 
-        // ─── Password visibility toggle ─────────────────────────────────
         togglePasswordBtn.addEventListener('click', () => {
             const isPassword = loginPassword.type === 'password';
             loginPassword.type = isPassword ? 'text' : 'password';
             togglePasswordBtn.textContent = isPassword ? '🙈' : '👁️';
         });
 
-        // ─── Auto-clear password on focus after failed attempt ──────────
         let shouldClearPassword = false;
-
         loginPassword.addEventListener('focus', () => {
             if (shouldClearPassword) {
                 loginPassword.value = '';
@@ -2394,46 +2383,35 @@
             }
         });
 
-        // ─── Login form ────────────────────────────────────────────────────
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             if (isLockedOut) {
                 showLoginError('Too many failed attempts. Please contact IT support for help.', 'Support: help@ecomforges.com');
                 return;
             }
-
             const email = loginEmail.value.trim();
             const password = loginPassword.value;
             showLoginError('');
-
             if (!isAllowedEmail(email)) {
                 showLoginError('Only @ecomforges.com accounts are allowed.');
                 return;
             }
-
             if (!password) {
                 showLoginError('Please enter your password.');
                 return;
             }
-
             if (!firebaseAvailable) { showSignInUnavailable(); return; }
-
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, password);
-                // onAuthStateChanged will handle the rest
             } catch (err) {
                 loginAttempts++;
                 const remaining = MAX_ATTEMPTS - loginAttempts;
-
                 if (loginAttempts >= MAX_ATTEMPTS) {
                     isLockedOut = true;
                     loginSubmit.disabled = true;
                     showLoginError('Too many failed attempts. Please contact IT support for help.', 'Support: help@ecomforges.com');
                     return;
                 }
-
-                // Differentiate wrong password vs user not found vs other errors
                 let msg = 'Sign-in failed. ';
                 let sub = '';
                 if (err.code === 'auth/wrong-password') {
@@ -2441,24 +2419,19 @@
                     sub = `${remaining} attempt${remaining > 1 ? 's' : ''} remaining before lockout.`;
                 } else if (err.code === 'auth/user-not-found') {
                     msg = 'No account found with this email. Please check your email.';
-                    sub = `Please try again or contact support.`;
+                    sub = 'Please try again or contact support.';
                 } else {
                     msg = err.message || 'Sign-in failed. Please try again.';
                 }
                 showLoginError(msg, sub);
-                // Mark password field to be cleared on next focus
                 shouldClearPassword = true;
             }
         });
 
-        // ─── Logout ────────────────────────────────────────────────────────
         logoutBtn.addEventListener('click', () => {
             if (firebaseAvailable) firebase.auth().signOut();
         });
 
-        // ─── Auth state listener ──────────────────────────────────────────
-        // No SDK means no way to verify who this is. The gate stays shut: show the
-        // login screen with a reason instead of opening the app unauthenticated.
         function showSignInUnavailable() {
             showLogin();
             loginSubmit.disabled = true;
@@ -2479,7 +2452,6 @@
                     initApp();
                 }
             } else if (user && !isAllowedEmail(user.email)) {
-                // Non-matching account — kick them out
                 firebase.auth().signOut();
                 showLoginError('This account is not authorized (must be @ecomforges.com).');
             } else {
@@ -2504,7 +2476,6 @@
             try {
                 const db = firebase.database();
                 dbRef = db.ref('leads');
-
                 dbRef.on('value', async (snapshot) => {
                     const val = snapshot.val();
                     if (val && Array.isArray(val)) {
@@ -2529,7 +2500,6 @@
                     syncDot.className = 'dot offline';
                     syncLabel.textContent = 'Offline';
                 });
-
                 dbRef.once('value').then((snapshot) => {
                     const val = snapshot.val();
                     if (!val || !Array.isArray(val) || val.length === 0) {
@@ -2543,7 +2513,6 @@
                     syncDot.className = 'dot offline';
                     syncLabel.textContent = 'Offline';
                 });
-
             } catch (e) {
                 console.warn('Firebase DB init error:', e);
                 syncDot.className = 'dot offline';
@@ -2551,7 +2520,7 @@
             }
         }
 
-        // ─── Taxonomy (same as before) ────────────────────────────────────
+        // ─── Taxonomy ────────────────────────────────────────────────────
         const ASSIGNEES = [
             { value: 'haris', label: 'Haris' },
             { value: 'dq', label: 'DQ' },
@@ -3474,21 +3443,12 @@
         }
 
         // ─── CSV Export ──────────────────────────────────────────────────
-        /* One cell, written the way every spreadsheet reads it back.
-           Quotes are always used, because a company name with a comma used to
-           shift every column after it, and notes had their commas replaced with
-           semicolons to hide the problem. A leading =, +, - or @ is prefixed
-           with an apostrophe so a pasted formula stays text. */
         function csvCell(v) {
             let t = v == null ? '' : String(v);
             if (/^[=+\-@]/.test(t)) t = "'" + t;
             return '"' + t.replace(/"/g, '""') + '"';
         }
 
-        /* Parses RFC 4180: quoted fields, doubled quotes inside them, commas and
-           newlines inside quotes, and either line ending. Returns rows of cells.
-           The old importer split on , and \n, so anything Excel produced —
-           including this tool's own export — came back in the wrong columns. */
         function parseCSV(text) {
             const rows = [];
             let row = [], cell = '', quoted = false;
@@ -3513,7 +3473,6 @@
             return rows;
         }
 
-        // Undo the apostrophe the exporter adds in front of a formula-looking cell.
         function unguard(v) {
             return /^'[=+\-@]/.test(v) ? v.slice(1) : v;
         }
@@ -3559,7 +3518,6 @@
             return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
         }
 
-        // ─── CSV Import ──────────────────────────────────────────────────
         function importCSV(file) {
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -3795,11 +3753,8 @@
         }
 
         function openAdd() { openModal('Add Lead', null); }
-        // ─── Quick Add: offline paste parser ────────────────────────────
-        // Everything here runs in the browser on text the user already has.
-        // Nothing is fetched: Facebook, TikTok and Google all refuse cross-origin
-        // reads, so we parse the link shape and whatever page text was pasted.
 
+        // ─── Quick Add ────────────────────────────────────────────────
         const QA_FB_RESERVED = new Set([
             'profile.php', 'people', 'pages', 'pg', 'groups', 'marketplace', 'watch',
             'events', 'share', 'permalink.php', 'story.php', 'photo', 'photo.php',
@@ -3819,22 +3774,40 @@
             'selangor', 'terengganu', 'kuala lumpur', 'labuan', 'putrajaya',
         ];
         const QA_INDUSTRY_HINTS = {
-            beauty: ['beauty', 'skincare', 'skin care', 'cosmetic', 'makeup', 'serum', 'facial', 'haircare', 'hair care', 'perfume', 'fragrance', 'kecantikan', 'solek'],
-            health: ['supplement', 'vitamin', 'health', 'herbal', 'wellness', 'nutrition', 'pharmacy', 'farmasi', 'kesihatan', 'organic'],
-            fashion: ['fashion', 'apparel', 'clothing', 'boutique', 'baju', 'tudung', 'hijab', 'muslimah', 'streetwear', 'tshirt', 't-shirt', 'dress', 'pakaian', 'kurung'],
-            jewellery: ['jewellery', 'jewelry', 'emas', 'gold', 'silver', 'necklace', 'earring', 'bracelet', 'watches', 'barang kemas'],
-            home: ['homeware', 'household', 'kitchen', 'bedding', 'cleaning', 'home essentials', 'home decor', 'home & living', 'home and living', 'peralatan rumah'],
+            beauty: ['beauty', 'skincare', 'skin care', 'cosmetic', 'makeup', 'serum', 'facial', 'haircare', 'hair care',
+                'perfume', 'fragrance', 'kecantikan', 'solek'
+            ],
+            health: ['supplement', 'vitamin', 'health', 'herbal', 'wellness', 'nutrition', 'pharmacy', 'farmasi',
+                'kesihatan', 'organic'
+            ],
+            fashion: ['fashion', 'apparel', 'clothing', 'boutique', 'baju', 'tudung', 'hijab', 'muslimah', 'streetwear',
+                'tshirt', 't-shirt', 'dress', 'pakaian', 'kurung'
+            ],
+            jewellery: ['jewellery', 'jewelry', 'emas', 'gold', 'silver', 'necklace', 'earring', 'bracelet', 'watches',
+                'barang kemas'
+            ],
+            home: ['homeware', 'household', 'kitchen', 'bedding', 'cleaning', 'home essentials', 'home decor',
+                'home & living', 'home and living', 'peralatan rumah'
+            ],
             furniture: ['furniture', 'decor', 'sofa', 'interior', 'perabot', 'mattress'],
             electronics: ['electronic', 'gadget', 'laptop', 'camera', 'audio', 'smart home', 'appliance', 'elektrik'],
-            'mobile-accessories': ['phone case', 'casing', 'mobile accessor', 'charger', 'powerbank', 'power bank', 'screen protector', 'earbud'],
+            'mobile-accessories': ['phone case', 'casing', 'mobile accessor', 'charger', 'powerbank', 'power bank',
+                'screen protector', 'earbud'
+            ],
             baby: ['baby', 'infant', 'diaper', 'stroller', 'maternity', 'bayi', 'ibu dan anak'],
             toys: ['toy', 'hobby', 'puzzle', 'lego', 'collectible', 'figurine', 'board game', 'permainan'],
             sports: ['sport', 'fitness', 'gym', 'outdoor', 'cycling', 'running', 'hiking', 'yoga', 'sukan'],
             pet: ['pet ', 'pets', 'dog', 'cat food', 'aquarium', 'haiwan', 'grooming'],
-            fnb: ['food', 'beverage', 'snack', 'cafe', 'restaurant', 'kuih', 'coffee', 'bakery', 'catering', 'makanan', 'frozen', 'minuman', 'sambal'],
-            automotive: ['automotive', 'motorcycle', 'tyre', 'vehicle', 'workshop', 'kereta', 'motosikal', 'car accessor'],
+            fnb: ['food', 'beverage', 'snack', 'cafe', 'restaurant', 'kuih', 'coffee', 'bakery', 'catering', 'makanan',
+                'frozen', 'minuman', 'sambal'
+            ],
+            automotive: ['automotive', 'motorcycle', 'tyre', 'vehicle', 'workshop', 'kereta', 'motosikal',
+                'car accessor'
+            ],
             books: ['bookstore', 'stationery', 'buku', 'printing', 'notebook', 'alat tulis'],
-            digital: ['software', 'saas', 'agency', 'online course', 'ebook', 'consulting', 'digital marketing', 'web design'],
+            digital: ['software', 'saas', 'agency', 'online course', 'ebook', 'consulting', 'digital marketing',
+                'web design'
+            ],
         };
 
         function qaCleanName(s) {
@@ -3906,8 +3879,6 @@
             const out = [];
             const full = text.match(/\bhttps?:\/\/[^\s<>"')\]]+/gi) || [];
             for (const u of full) out.push(u.replace(/[.,;:)\]]+$/, ''));
-            // Bare domains ("acmebeauty.com.my"). The leading boundary excludes the
-            // domain half of an email address, which must not become a website.
             const bareRe = /(?:^|[\s(,;:|])((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|net|org|my|co|shop|store|biz|io|me|asia)(?:\.[a-z]{2})?(?:\/[^\s<>"')\]]*)?)/gi;
             let bm;
             while ((bm = bareRe.exec(text))) {
@@ -3919,7 +3890,6 @@
             return [...new Set(out)];
         }
 
-        // Reads what a link's shape can tell us. No network call is made or possible.
         function qaParseUrl(raw) {
             let u;
             try { u = new URL(raw); } catch (e) { return null; }
@@ -3994,9 +3964,6 @@
                 return out;
             }
 
-            // Anything else is treated as the prospect's own store. A name squeezed
-            // out of a domain is a poor guess, so it is flagged weak and only used
-            // when nothing better turns up.
             out.platform = 'own';
             out.website = u.origin + (u.pathname === '/' ? '' : u.pathname);
             out.company = qaTitleCase(host.replace(/\.(com|net|org|my|co|shop|store|biz|io|me|asia)(\.[a-z]{2})?$/, ''));
@@ -4007,14 +3974,18 @@
 
         function qaGuessIndustry(text) {
             const hay = ' ' + text.toLowerCase() + ' ';
-            let best = '', bestScore = 0;
+            let best = '',
+                bestScore = 0;
             for (const [key, words] of Object.entries(QA_INDUSTRY_HINTS)) {
                 let score = 0;
                 for (const w of words) {
-                    let from = 0, i;
-                    while ((i = hay.indexOf(w, from)) !== -1) { score++; from = i + w.length; }
+                    let from = 0,
+                        i;
+                    while ((i = hay.indexOf(w, from)) !== -1) { score++;
+                        from = i + w.length; }
                 }
-                if (score > bestScore) { bestScore = score; best = key; }
+                if (score > bestScore) { bestScore = score;
+                    best = key; }
             }
             return bestScore > 0 ? best : '';
         }
@@ -4056,15 +4027,10 @@
                 if (candidates.length >= 3) break;
             }
             if (!candidates.length) return '';
-            // A first line like "acme.my" is the handle; prefer a real name below it.
             const named = candidates.find(c => /\s/.test(c) && !/^@/.test(c));
             return named || candidates[0];
         }
 
-        /**
-         * Parse pasted text — a link, a page dump, or both — into lead fields.
-         * Returns the same shape openModal() accepts, plus a `found` list for the preview.
-         */
         function parseLeadPaste(raw) {
             const text = String(raw || '').replace(/\u00A0/g, ' ').trim();
             const result = {
@@ -4078,20 +4044,21 @@
             const urls = qaFindUrls(text);
             const parsedUrls = urls.map(qaParseUrl).filter(Boolean);
             const platforms = new Set();
-            let urlCompany = '', weakCompany = '', website = '';
+            let urlCompany = '',
+                weakCompany = '',
+                website = '';
 
             for (const p of parsedUrls) {
                 if (p.shortLink) { result.shortLinks.push(p.url); continue; }
                 if (p.platform) platforms.add(p.platform);
                 if (p.company) {
-                    if (p.weakCompany) { if (!weakCompany) weakCompany = p.company; }
-                    else if (!urlCompany) urlCompany = p.company;
+                    if (p.weakCompany) { if (!weakCompany) weakCompany = p.company; } else if (!urlCompany) urlCompany = p
+                        .company;
                 }
                 if (p.website && !website) website = p.website;
                 result.links.push({ url: p.url, label: p.label });
             }
 
-            // Marketplaces named in the text but not linked still count as channels.
             const low = text.toLowerCase();
             if (/\bshopee\b/.test(low)) platforms.add('shopee');
             if (/\blazada\b/.test(low)) platforms.add('lazada');
@@ -4102,9 +4069,6 @@
             const emails = qaFindEmails(text);
             const isLinkOnly = urls.length > 0 && text.replace(/\bhttps?:\/\/[^\s]+/gi, '').trim().length < 12;
 
-            // Name precedence: a real account handle beats pasted text, which beats a
-            // domain stem — except that a multi-word name from the page ("Acme Home &
-            // Living") reads better than a squashed marketplace handle ("acmehome").
             const textCompany = isLinkOnly ? '' : qaGuessCompanyFromText(text);
             const textReadsBetter = textCompany && /\s/.test(textCompany) && urlCompany && !/\s/.test(urlCompany);
             result.company = textReadsBetter ? textCompany : (urlCompany || textCompany || weakCompany);
@@ -4115,7 +4079,6 @@
             result.industry = qaGuessIndustry(isLinkOnly ? (urlCompany + ' ' + urls.join(' ')) : text);
             result.platforms = normalisePlatforms([...platforms]);
 
-            // Notes carry the provenance plus anything we found but could not slot.
             const notes = [];
             if (result.links.length) {
                 notes.push('Source links:');
@@ -4136,7 +4099,6 @@
             return result;
         }
 
-        // ─── Quick Add UI ───────────────────────────────────────────────
         let qaParsed = null;
         let qaTimer = null;
 
@@ -4200,7 +4162,6 @@
                 toast(`Still needs: ${missing.join(', ')}`, 3500);
             }
         }
-
 
         // ─── Form submit ──────────────────────────────────────────────
         leadForm.addEventListener('submit', async (e) => {
@@ -4368,58 +4329,65 @@
         }
 
         console.log('LeadForge v2.3 loaded — waiting for authentication...');
-    
-    /* ── Tool switcher ────────────────────────────────────────────────
-       Click, Escape and click-outside; the arrow keys walk the list so
-       the menu is usable without a mouse. The menu is anchored to the
-       button, which sits at a different place in each tool, so it is
-       nudged back on screen after opening rather than assuming there is
-       room to its left.                                               */
-    (function () {
-        var btn = document.getElementById('ts-btn');
-        var menu = document.getElementById('ts-menu');
-        if (!btn || !menu) return;
-        function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
-        function place() {
-            menu.style.left = 'auto'; menu.style.right = '0'; menu.style.transform = '';
-            var r = menu.getBoundingClientRect();
-            if (r.left < 8) { menu.style.left = '0'; menu.style.right = 'auto'; r = menu.getBoundingClientRect(); }
-            var over = r.right - (window.innerWidth - 8);
-            if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
-            else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
-        }
-        function open(focusFirst) {
-            menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); place();
-            if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
-        }
-        function close(refocus) {
-            menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
-            if (refocus) btn.focus();
-        }
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            menu.hidden ? open(false) : close(false);
-        });
-        /* Escape and the arrow keys are caught on the document, because after a
-           click the focus is still on the button, not inside the menu. */
-        document.addEventListener('keydown', function (e) {
-            if (menu.hidden) {
-                if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault(); open(true); }
-                return;
+
+        // ── Tool switcher ────────────────────────────────────────────────
+        (function() {
+            var btn = document.getElementById('ts-btn');
+            var menu = document.getElementById('ts-menu');
+            if (!btn || !menu) return;
+
+            function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
+
+            function place() {
+                menu.style.left = 'auto';
+                menu.style.right = '0';
+                menu.style.transform = '';
+                var r = menu.getBoundingClientRect();
+                if (r.left < 8) { menu.style.left = '0';
+                    menu.style.right = 'auto';
+                    r = menu.getBoundingClientRect(); }
+                var over = r.right - (window.innerWidth - 8);
+                if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
+                else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
             }
-            var list = items(), i = list.indexOf(document.activeElement);
-            if (e.key === 'Escape') { e.preventDefault(); close(true); }
-            else if (e.key === 'ArrowDown') { e.preventDefault(); list[i < 0 ? 0 : (i + 1) % list.length].focus(); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); }
-            else if (e.key === 'Home' && i >= 0) { e.preventDefault(); list[0].focus(); }
-            else if (e.key === 'End' && i >= 0) { e.preventDefault(); list[list.length - 1].focus(); }
-            else if (e.key === 'Tab' && i < 0) { close(false); }
-        });
-        document.addEventListener('click', function (e) {
-            if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
-        });
-        window.addEventListener('resize', function () { if (!menu.hidden) place(); });
-    })();
-</script>
+
+            function open(focusFirst) {
+                menu.hidden = false;
+                btn.setAttribute('aria-expanded', 'true');
+                place();
+                if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
+            }
+
+            function close(refocus) {
+                menu.hidden = true;
+                btn.setAttribute('aria-expanded', 'false');
+                if (refocus) btn.focus();
+            }
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.hidden ? open(false) : close(false);
+            });
+            document.addEventListener('keydown', function(e) {
+                if (menu.hidden) {
+                    if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault();
+                        open(true); }
+                    return;
+                }
+                var list = items(),
+                    i = list.indexOf(document.activeElement);
+                if (e.key === 'Escape') { e.preventDefault();
+                    close(true); } else if (e.key === 'ArrowDown') { e.preventDefault();
+                    list[i < 0 ? 0 : (i + 1) % list.length].focus(); } else if (e.key === 'ArrowUp') { e.preventDefault();
+                    list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); } else if (e.key ===
+                    'Home' && i >= 0) { e.preventDefault();
+                    list[0].focus(); } else if (e.key === 'End' && i >= 0) { e.preventDefault();
+                    list[list.length - 1].focus(); } else if (e.key === 'Tab' && i < 0) { close(false); }
+            });
+            document.addEventListener('click', function(e) {
+                if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
+            });
+            window.addEventListener('resize', function() { if (!menu.hidden) place(); });
+        })();
+    </script>
 </body>
 </html>
