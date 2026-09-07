@@ -2279,7 +2279,7 @@
         <footer>
             <div class="divider"></div>
             <span id="footer-sync">● Synced with IndexedDB</span> · Data stays on this device<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.1
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.4
         </footer>
 
     </div>
@@ -2293,8 +2293,7 @@
     <script>
         /**
          * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v2.3 — Full acquisition tool with Firebase Auth,
-         * domain restriction, password visibility toggle, and attempt lockout.
+         * LEADFORGE v2.4 — Full acquisition tool with improved sync.
          * ═══════════════════════════════════════════════════════════════════
          */
 
@@ -2445,6 +2444,15 @@
 
         if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
             if (user && isAllowedEmail(user.email)) {
+                // ─── EMAIL VERIFICATION CHECK (NEW) ──────────────────
+                if (!user.emailVerified) {
+                    firebase.auth().signOut();
+                    showLoginError(
+                        'Please verify your email before using this tool.',
+                        'Check your inbox for the verification link sent when your account was created.'
+                    );
+                    return;
+                }
                 currentUser = user;
                 showApp();
                 if (!appInitialized) {
@@ -2464,6 +2472,7 @@
         let dbRef = null;
         let firebaseReady = false;
         let useFirebase = false;
+        let saving = false; // prevent echo loops
         const syncDot = document.getElementById('sync-dot');
         const syncLabel = document.getElementById('sync-label');
 
@@ -2476,22 +2485,54 @@
             try {
                 const db = firebase.database();
                 dbRef = db.ref('leads');
+
+                // ─── Listener: MERGE remote changes (no write-back loop) ──
                 dbRef.on('value', async (snapshot) => {
+                    if (saving) return; // ignore our own writes
+
                     const val = snapshot.val();
                     if (val && Array.isArray(val)) {
                         const remote = val;
                         let changed = false;
+                        const currentLeads = leads.slice(); // snapshot
+
+                        // 1. Merge remote into currentLeads
                         for (const r of remote) {
-                            const local = leads.find(l => l.id === r.id);
                             const incoming = migrateLead(r);
-                            if (!local) { leads.push(incoming);
-                                changed = true; } else if (JSON.stringify(local) !== JSON.stringify(incoming)) { Object
-                                    .assign(local, incoming);
-                                changed = true; }
+                            const local = currentLeads.find(l => l.id === incoming.id);
+                            if (!local) {
+                                currentLeads.push(incoming);
+                                changed = true;
+                            } else if ((incoming.updatedAt || 0) > (local.updatedAt || 0)) {
+                                // Remote is newer
+                                Object.assign(local, incoming);
+                                changed = true;
+                            }
                         }
-                        if (changed) { await saveLeads();
-                            render(); }
+
+                        if (changed) {
+                            leads = currentLeads;
+                            // Save to IndexedDB
+                            for (const lead of leads) {
+                                await dbPut(lead);
+                            }
+                            render();
+                            // Write back to Firebase (once) to push local-only leads up
+                            saving = true;
+                            try { await dbRef.set(leads); } catch (e) { /* ignore */ }
+                            saving = false;
+                            toast('Synced from another device');
+                        }
+                    } else {
+                        // Remote is empty or invalid – leave local data untouched
+                        // If local has data and remote is empty, upload local
+                        if (leads.length > 0) {
+                            saving = true;
+                            try { await dbRef.set(leads); } catch (e) { /* ignore */ }
+                            saving = false;
+                        }
                     }
+
                     firebaseReady = true;
                     useFirebase = true;
                     syncDot.className = 'dot';
@@ -2500,10 +2541,13 @@
                     syncDot.className = 'dot offline';
                     syncLabel.textContent = 'Offline';
                 });
+
+                // Initial sync: if remote is empty, upload local
                 dbRef.once('value').then((snapshot) => {
                     const val = snapshot.val();
-                    if (!val || !Array.isArray(val) || val.length === 0) {
-                        if (leads.length) dbRef.set(leads);
+                    if ((!val || !Array.isArray(val) || val.length === 0) && leads.length > 0) {
+                        saving = true;
+                        dbRef.set(leads).finally(() => { saving = false; });
                     }
                     firebaseReady = true;
                     useFirebase = true;
@@ -2866,7 +2910,9 @@
                     localStorage.setItem('leadforge_leads', JSON.stringify(leads));
                 }
                 if (useFirebase && firebaseReady && dbRef) {
+                    saving = true;
                     try { await dbRef.set(leads); } catch (e) { /* ignore */ }
+                    saving = false;
                 }
                 return true;
             } catch (e) {
@@ -4324,11 +4370,11 @@
                 if (leads.length) await saveLeads();
             }, 30000);
 
-            console.log('LeadForge v2.3 initialized');
+            console.log('LeadForge v2.4 initialized');
             console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
         }
 
-        console.log('LeadForge v2.3 loaded — waiting for authentication...');
+        console.log('LeadForge v2.4 loaded — waiting for authentication...');
 
         // ── Tool switcher ────────────────────────────────────────────────
         (function() {
