@@ -919,96 +919,85 @@ function fmInit() {
         firebase.initializeApp(firebaseConfig);
     } catch (e) { /* already initialised */ }
 
-    firebase.auth().onAuthStateChanged(async user => {
-        fmUser = user;
+    // ─── REPLACE the onAuthStateChanged block with this ──────────────
+firebase.auth().onAuthStateChanged(async user => {
+    fmUser = user;
 
-        // ─── EMAIL VERIFICATION CHECK ──────────────────────────────
-        if (user && !user.emailVerified) {
-            // Unverified user – sign them out and show an error.
-            await firebase.auth().signOut();
-            showLoginError(
-                'Please verify your email before using this tool.',
-                'Check your inbox for the verification link sent when your account was created.'
-            );
-            showLogin();
-            fmUser = null;
-            fmReady = false;
-            return;
-        }
+    // ✅ emailVerified check REMOVED
 
-        if (!user) {
-            fmReady = false;
-            fmSetStatus('local', 'Local');
-            fmSetSyncHint(false);
-            savedGenerations = [];
-            renderSaved();
-            collaborators = collabLocalRead();
-            const hint = document.getElementById('collab-sync-hint');
-            if (hint) hint.textContent = 'This browser only — sign in to share the list.';
-            renderCollaborators();
-            showLogin();
-            return;
-        }
-
-        fmDB = firebase.database();
-
-        // Usage listener
-        fmDB.ref('forgemarketing/usage').on('value', s => {
-            if (saving) return;
-            usageMap = s.val() || {};
-            fmSetSyncHint(true);
-        });
-
-        // Collaborators listener — shared across everyone signed in.
-        fmDB.ref('forgemarketing/collaborators').on('value', snap => {
-            if (saving) return;
-            const data = snap.val() || {};
-            collaborators = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
-            const hint = document.getElementById('collab-sync-hint');
-            if (hint) hint.textContent = 'Shared with everyone signed in.';
-            renderCollaborators();
-        });
-
-        // Conditions listener
-        fmDB.ref('forgemarketing/conditions/current').on('value', s => {
-            if (saving) return;
-            condition = s.val() || null;
-            fmRenderCondition();
-        });
-
-        // ─── Saved generations listener (synced across devices) ───
-        fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
-            if (saving) return;
-            const data = snapshot.val();
-            savedGenerations = [];
-            if (data) {
-                savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-            }
-            console.log('📦 Saved generations updated:', savedGenerations.length);
-            const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
-            if (isSavedTab) {
-                renderSaved();
-            } else {
-                updateSavedCount();
-            }
-        });
-
-        // Default the author to whoever signed in; an explicit choice wins.
-        const guessed = authorFromEmail(user.email);
-        const authorSel = document.getElementById('f-author');
-        if (guessed && authorSel && !store.prefs.author) {
-            authorSel.value = guessed;
-            authorSel.dispatchEvent(new Event('change'));
-        }
-
-        fmReady = true;
-        fmSetStatus('live', 'Live');
-        fmSetSyncHint(true);
-        console.log('🔥 ForgeMarketing: Firebase ready, user:', user.email);
-        showApp();
+    if (!user) {
+        fmReady = false;
+        fmSetStatus('local', 'Local');
+        fmSetSyncHint(false);
+        savedGenerations = [];
         renderSaved();
+        // Offline/signed out: show this browser's own list rather than nothing.
+        collaborators = collabLocalRead();
+        const hint = document.getElementById('collab-sync-hint');
+        if (hint) hint.textContent = 'This browser only — sign in to share the list.';
+        renderCollaborators();
+        showLogin();
+        return;
+    }
+
+    fmDB = firebase.database();
+
+    // Usage listener
+    fmDB.ref('forgemarketing/usage').on('value', s => {
+        if (saving) return;
+        usageMap = s.val() || {};
+        fmSetSyncHint(true);
     });
-}
+
+    // Collaborators listener
+    fmDB.ref('forgemarketing/collaborators').on('value', snap => {
+        if (saving) return;
+        const data = snap.val() || {};
+        collaborators = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
+        const hint = document.getElementById('collab-sync-hint');
+        if (hint) hint.textContent = 'Shared with everyone signed in.';
+        renderCollaborators();
+    });
+
+    // Conditions listener
+    fmDB.ref('forgemarketing/conditions/current').on('value', s => {
+        if (saving) return;
+        condition = s.val() || null;
+        fmRenderCondition();
+    });
+
+    // Saved generations listener
+    fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
+        if (saving) return;
+        const data = snapshot.val();
+        savedGenerations = [];
+        if (data) {
+            savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        }
+        console.log('📦 Saved generations updated:', savedGenerations.length);
+        const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
+        if (isSavedTab) {
+            renderSaved();
+        } else {
+            updateSavedCount();
+        }
+    });
+
+    // Default the author to whoever signed in; an explicit choice wins.
+    const guessed = authorFromEmail(user.email);
+    const authorSel = document.getElementById('f-author');
+    if (guessed && authorSel && !store.prefs.author) {
+        authorSel.value = guessed;
+        authorSel.dispatchEvent(new Event('change'));
+    }
+
+    fmReady = true;
+    fmSetStatus('live', 'Live');
+    fmSetSyncHint(true);
+    console.log('🔥 ForgeMarketing: Firebase ready, user:', user.email);
+    showApp();
+    renderSaved(); // initial render
+});
 
 function updateSavedCount() {
     const count = document.getElementById('tab-count');
