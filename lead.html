@@ -2442,31 +2442,24 @@
 
         if (!firebaseAvailable) showSignInUnavailable();
 
-        if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
-            if (user && isAllowedEmail(user.email)) {
-                // ─── EMAIL VERIFICATION CHECK (NEW) ──────────────────
-                if (!user.emailVerified) {
-                    firebase.auth().signOut();
-                    showLoginError(
-                        'Please verify your email before using this tool.',
-                        'Check your inbox for the verification link sent when your account was created.'
-                    );
-                    return;
-                }
-                currentUser = user;
-                showApp();
-                if (!appInitialized) {
-                    appInitialized = true;
-                    initApp();
-                }
-            } else if (user && !isAllowedEmail(user.email)) {
-                firebase.auth().signOut();
-                showLoginError('This account is not authorized (must be @ecomforges.com).');
-            } else {
-                currentUser = null;
-                showLogin();
-            }
-        });
+        // ─── REPLACE the onAuthStateChanged block with this ──────────────
+if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
+    if (user && isAllowedEmail(user.email)) {
+        // ✅ emailVerified check REMOVED
+        currentUser = user;
+        showApp();
+        if (!appInitialized) {
+            appInitialized = true;
+            initApp();
+        }
+    } else if (user && !isAllowedEmail(user.email)) {
+        firebase.auth().signOut();
+        showLoginError('This account is not authorized (must be @ecomforges.com).');
+    } else {
+        currentUser = null;
+        showLogin();
+    }
+});
 
         // ─── Firebase Realtime DB ──────────────────────────────────────────
         let dbRef = null;
