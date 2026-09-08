@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <style>
-        /* ── same as before ── */
+        /* ── Variables ── */
         :root {
             --navy: #162840;
             --main-blue: #1C3350;
@@ -304,7 +304,7 @@
         header {
             background: var(--main-blue);
             border-bottom: 2px solid var(--cyan);
-            padding: 14px 18px 12px;
+            padding: 12px 18px 10px;
             position: sticky;
             top: 0;
             z-index: 50;
@@ -364,7 +364,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .sync-badge {
             font-size: 10px;
@@ -408,40 +408,51 @@
             color: var(--navy);
         }
 
-        /* ── Stats bar ── */
-        .stats {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .stat {
-            background: var(--navy);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 5px 12px;
-            font-size: 12px;
-            color: var(--text-soft);
+        /* ── Stats row (minimal, like ForgeMarketing) ── */
+        .stats-row {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 4px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex: 1 0 auto;
-            min-width: 56px;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-soft);
+            margin-top: 0;
         }
-        .stat strong {
-            font-size: 16px;
+        .stats-row::-webkit-scrollbar {
+            display: none;
+        }
+        .stats-row .stat-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 0;
+            flex-shrink: 0;
+        }
+        .stats-row .stat-item strong {
             font-weight: 700;
             color: var(--text);
-            margin-right: 2px;
+            font-size: 13px;
         }
-        .stat .label {
+        .stats-row .stat-item .label {
             opacity: 0.7;
+            font-size: 11px;
+        }
+        .stats-row .divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+            flex-shrink: 0;
         }
 
         /* ── Toolbar ── */
         .toolbar {
             max-width: 880px;
-            margin: 14px auto 0;
+            margin: 12px auto 0;
             padding: 0 16px;
             display: flex;
             flex-wrap: wrap;
@@ -1543,35 +1554,6 @@
             color: var(--text-soft);
         }
 
-        /* ── Install prompt ── */
-        .install-banner {
-            background: var(--main-blue);
-            border: 1px solid var(--cyan);
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            margin: 0 16px 12px;
-            display: none;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            max-width: 880px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .install-banner.show {
-            display: flex;
-        }
-        .install-banner p {
-            font-size: 13px;
-            color: var(--text-soft);
-            flex: 1;
-            min-width: 140px;
-        }
-        .install-banner .btn {
-            flex-shrink: 0;
-        }
-
         /* ── Hidden file input ── */
         #file-input {
             display: none;
@@ -1580,7 +1562,7 @@
         /* ── Responsive ── */
         @media (max-width: 620px) {
             header {
-                padding: 12px 14px 10px;
+                padding: 10px 14px 8px;
             }
             .brand-text {
                 font-size: 16px;
@@ -1595,13 +1577,16 @@
             .brand-badge {
                 display: none;
             }
-            .stat {
+            .stats-row {
                 font-size: 11px;
-                padding: 4px 10px;
-                min-width: 44px;
+                gap: 8px;
+                padding: 4px 12px;
             }
-            .stat strong {
-                font-size: 14px;
+            .stats-row .stat-item strong {
+                font-size: 12px;
+            }
+            .stats-row .stat-item .label {
+                font-size: 10px;
             }
             .lead-card {
                 padding: 13px 14px;
@@ -1676,13 +1661,6 @@
                 font-size: 10px;
                 padding: 3px 8px;
                 min-height: 26px;
-            }
-            .stat {
-                font-size: 10px;
-                padding: 3px 8px;
-            }
-            .stat strong {
-                font-size: 12px;
             }
             .filter-btn {
                 font-size: 10px;
@@ -1762,7 +1740,6 @@
             .fab,
             .btn-add,
             .btn-export,
-            .install-banner,
             .filters .filter-btn:not(.active),
             .filters .own-btn:not(.active),
             .search-wrap,
@@ -1911,67 +1888,63 @@
             line-height: 1.55;
             color: var(--text-muted);
         }
-    
-    /* ── Tool switcher ─────────────────────────────────────────────────
-       Seven tools, no way to get from one to another until now. This is
-       the same block in every file; when they merge into one app it
-       becomes the app's own nav and the hrefs go away.               */
-    .tool-switch { position: relative; display: inline-flex; }
-    .ts-btn {
-        display: inline-flex; align-items: center; gap: 7px;
-        background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
-        color: #C6D4E3; font: inherit; font-size: 12px; font-weight: 600;
-        letter-spacing: .02em; padding: 6px 11px; border-radius: 8px;
-        cursor: pointer; min-height: 34px; line-height: 1;
-        transition: background .15s, border-color .15s, color .15s;
-    }
-    .ts-btn:hover, .ts-btn[aria-expanded="true"] {
-        background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.28); color: #fff;
-    }
-    .ts-btn:focus-visible { outline: 2px solid #20F6F8; outline-offset: 2px; }
-    .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-    .ts-grid i { width: 4px; height: 4px; border-radius: 1px; background: currentColor; display: block; }
-    .ts-caret { font-size: 9px; opacity: .65; }
-    .ts-menu {
-        position: absolute; top: calc(100% + 7px); right: 0; z-index: 400;
-        width: 274px; max-width: calc(100vw - 24px);
-        background: #101d2e; border: 1px solid rgba(255,255,255,.16);
-        border-radius: 11px; padding: 6px;
-        box-shadow: 0 18px 44px rgba(0,0,0,.55);
-    }
-    .ts-menu[hidden] { display: none; }
-    .ts-head {
-        font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
-        color: #6E829B; padding: 7px 10px 6px;
-    }
-    .ts-item {
-        display: flex; align-items: flex-start; gap: 9px;
-        padding: 8px 10px; border-radius: 8px; text-decoration: none;
-        color: #DCE6F1; line-height: 1.35;
-    }
-    .ts-item:hover, .ts-item:focus-visible { background: rgba(255,255,255,.07); outline: none; }
-    .ts-item:focus-visible { box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
-    .ts-item b { display: block; font-size: 12.5px; font-weight: 600; }
-    .ts-item small { display: block; font-size: 11px; color: #7F93AC; margin-top: 1px; }
-    .ts-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; margin-top: 5px; }
-    .ts-item[aria-current="page"] { background: rgba(255,255,255,.05); cursor: default; }
-    .ts-item[aria-current="page"] b::after {
-        content: "you are here"; float: right; font-size: 9.5px; font-weight: 500;
-        text-transform: uppercase; letter-spacing: .07em; color: #6E829B;
-    }
-    @media (max-width: 560px) {
-        .ts-btn .ts-label { display: none; }
-        .ts-btn { padding: 6px 9px; }
-        .ts-menu { right: -4px; }
-    }
-</style>
+
+        /* ── Tool switcher ── */
+        .tool-switch { position: relative; display: inline-flex; }
+        .ts-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
+            color: #C6D4E3; font: inherit; font-size: 12px; font-weight: 600;
+            letter-spacing: .02em; padding: 6px 11px; border-radius: 8px;
+            cursor: pointer; min-height: 34px; line-height: 1;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+        .ts-btn:hover, .ts-btn[aria-expanded="true"] {
+            background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.28); color: #fff;
+        }
+        .ts-btn:focus-visible { outline: 2px solid #20F6F8; outline-offset: 2px; }
+        .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+        .ts-grid i { width: 4px; height: 4px; border-radius: 1px; background: currentColor; display: block; }
+        .ts-caret { font-size: 9px; opacity: .65; }
+        .ts-menu {
+            position: absolute; top: calc(100% + 7px); right: 0; z-index: 400;
+            width: 274px; max-width: calc(100vw - 24px);
+            background: #101d2e; border: 1px solid rgba(255,255,255,.16);
+            border-radius: 11px; padding: 6px;
+            box-shadow: 0 18px 44px rgba(0,0,0,.55);
+        }
+        .ts-menu[hidden] { display: none; }
+        .ts-head {
+            font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
+            color: #6E829B; padding: 7px 10px 6px;
+        }
+        .ts-item {
+            display: flex; align-items: flex-start; gap: 9px;
+            padding: 8px 10px; border-radius: 8px; text-decoration: none;
+            color: #DCE6F1; line-height: 1.35;
+        }
+        .ts-item:hover, .ts-item:focus-visible { background: rgba(255,255,255,.07); outline: none; }
+        .ts-item:focus-visible { box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+        .ts-item b { display: block; font-size: 12.5px; font-weight: 600; }
+        .ts-item small { display: block; font-size: 11px; color: #7F93AC; margin-top: 1px; }
+        .ts-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; margin-top: 5px; }
+        .ts-item[aria-current="page"] { background: rgba(255,255,255,.05); cursor: default; }
+        .ts-item[aria-current="page"] b::after {
+            content: "you are here"; float: right; font-size: 9.5px; font-weight: 500;
+            text-transform: uppercase; letter-spacing: .07em; color: #6E829B;
+        }
+        @media (max-width: 560px) {
+            .ts-btn .ts-label { display: none; }
+            .ts-btn { padding: 6px 9px; }
+            .ts-menu { right: -4px; }
+        }
+    </style>
 </head>
 <body>
 
     <!-- ─── LOGIN OVERLAY ─── -->
     <div id="login-overlay">
         <div class="login-box">
-            <!-- Branding: exactly like the main header -->
             <div class="login-brand">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" width="958" height="147" style="width:180px;height:auto" role="img" aria-label="EcomForges" focusable="false">
                     <defs><linearGradient id="login-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#0E5C33"/><stop offset="1" stop-color="#39FF7E"/></linearGradient></defs>
@@ -2002,12 +1975,6 @@
 
         <!-- ─── Toast ─── -->
         <div id="toast"><span id="toast-msg"></span><button class="undo-btn" id="toast-undo" style="display:none">Undo</button></div>
-
-        <!-- ─── Install Banner ─── -->
-        <div class="install-banner" id="install-banner">
-            <p>📲 Add to home screen for offline access &amp; faster launch</p>
-            <button class="btn btn-primary" id="install-btn">Install App</button>
-        </div>
 
         <!-- ─── Header ─── -->
         <header>
@@ -2054,15 +2021,22 @@
                     <button class="btn-logout" id="logout-btn" title="Logout">🚪</button>
                 </div>
             </div>
-            <div class="stats" id="stats-row">
-                <div class="stat"><strong id="stat-total">0</strong> <span class="label">Total</span></div>
-                <div class="stat"><strong id="stat-contacted">0</strong> <span class="label">Contacted</span></div>
-                <div class="stat"><strong id="stat-qualified">0</strong> <span class="label">Qualified</span></div>
-                <div class="stat"><strong id="stat-converted">0</strong> <span class="label">Converted</span></div>
-                <div class="stat"><strong id="stat-rate">0%</strong> <span class="label">Conv.</span></div>
-                <div class="stat"><strong id="stat-overdue">0</strong> <span class="label">Overdue</span></div>
-            </div>
         </header>
+
+        <!-- ─── Stats Row (minimal, horizontal scroll) ─── -->
+        <div class="stats-row" id="stats-row">
+            <span class="stat-item"><strong id="stat-total">0</strong> <span class="label">Total</span></span>
+            <span class="divider"></span>
+            <span class="stat-item"><strong id="stat-contacted">0</strong> <span class="label">Contacted</span></span>
+            <span class="divider"></span>
+            <span class="stat-item"><strong id="stat-qualified">0</strong> <span class="label">Qualified</span></span>
+            <span class="divider"></span>
+            <span class="stat-item"><strong id="stat-converted">0</strong> <span class="label">Converted</span></span>
+            <span class="divider"></span>
+            <span class="stat-item"><strong id="stat-rate">0%</strong> <span class="label">Conv.</span></span>
+            <span class="divider"></span>
+            <span class="stat-item"><strong id="stat-overdue">0</strong> <span class="label">Overdue</span></span>
+        </div>
 
         <!-- ─── Bulk Actions Bar ─── -->
         <div class="bulk-bar" id="bulk-bar">
@@ -2233,7 +2207,7 @@
             </div>
         </div>
 
-        <!-- ─── Quick Add (paste a link or page text) ─── -->
+        <!-- ─── Quick Add ─── -->
         <div class="modal-overlay" id="qa-overlay">
             <div class="modal" id="qa-modal">
                 <div class="modal-head">
@@ -2279,7 +2253,7 @@
         <footer>
             <div class="divider"></div>
             <span id="footer-sync">● Synced with IndexedDB</span> · Data stays on this device<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.4
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.5
         </footer>
 
     </div>
@@ -2293,7 +2267,8 @@
     <script>
         /**
          * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v2.4 — Full acquisition tool with improved sync.
+         * LEADFORGE v2.5 — Fixed deletion sync, removed install banner,
+         * cleaned stats row.
          * ═══════════════════════════════════════════════════════════════════
          */
 
@@ -2442,30 +2417,29 @@
 
         if (!firebaseAvailable) showSignInUnavailable();
 
-        // ─── REPLACE the onAuthStateChanged block with this ──────────────
-if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
-    if (user && isAllowedEmail(user.email)) {
-        // ✅ emailVerified check REMOVED
-        currentUser = user;
-        showApp();
-        if (!appInitialized) {
-            appInitialized = true;
-            initApp();
-        }
-    } else if (user && !isAllowedEmail(user.email)) {
-        firebase.auth().signOut();
-        showLoginError('This account is not authorized (must be @ecomforges.com).');
-    } else {
-        currentUser = null;
-        showLogin();
-    }
-});
+        // ─── onAuthStateChanged (emailVerified check removed) ──────────
+        if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
+            if (user && isAllowedEmail(user.email)) {
+                currentUser = user;
+                showApp();
+                if (!appInitialized) {
+                    appInitialized = true;
+                    initApp();
+                }
+            } else if (user && !isAllowedEmail(user.email)) {
+                firebase.auth().signOut();
+                showLoginError('This account is not authorized (must be @ecomforges.com).');
+            } else {
+                currentUser = null;
+                showLogin();
+            }
+        });
 
         // ─── Firebase Realtime DB ──────────────────────────────────────────
         let dbRef = null;
         let firebaseReady = false;
         let useFirebase = false;
-        let saving = false; // prevent echo loops
+        let saving = false;
         const syncDot = document.getElementById('sync-dot');
         const syncLabel = document.getElementById('sync-label');
 
@@ -2479,51 +2453,60 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
                 const db = firebase.database();
                 dbRef = db.ref('leads');
 
-                // ─── Listener: MERGE remote changes (no write-back loop) ──
+                // ─── FIXED Listener: properly handles deletions ──
                 dbRef.on('value', async (snapshot) => {
-                    if (saving) return; // ignore our own writes
+                    if (saving) return;
 
                     const val = snapshot.val();
-                    if (val && Array.isArray(val)) {
-                        const remote = val;
-                        let changed = false;
-                        const currentLeads = leads.slice(); // snapshot
+                    const remote = (val && Array.isArray(val)) ? val : [];
+                    const remoteMap = new Map();
+                    for (const r of remote) {
+                        const incoming = migrateLead(r);
+                        remoteMap.set(incoming.id, incoming);
+                    }
 
-                        // 1. Merge remote into currentLeads
-                        for (const r of remote) {
-                            const incoming = migrateLead(r);
-                            const local = currentLeads.find(l => l.id === incoming.id);
-                            if (!local) {
-                                currentLeads.push(incoming);
-                                changed = true;
-                            } else if ((incoming.updatedAt || 0) > (local.updatedAt || 0)) {
-                                // Remote is newer
-                                Object.assign(local, incoming);
+                    let changed = false;
+                    const newLeads = [];
+
+                    // 1. Process local leads: keep only those that still exist remotely
+                    for (const local of leads) {
+                        const remoteLead = remoteMap.get(local.id);
+                        if (remoteLead) {
+                            // Remote has it → check if it's newer
+                            if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
+                                Object.assign(local, remoteLead);
                                 changed = true;
                             }
+                            newLeads.push(local);
+                        } else {
+                            // Remote does NOT have it → this lead was deleted elsewhere
+                            console.log('🗑️ Deleting local lead:', local.company);
+                            changed = true;
+                            // Do NOT add it to newLeads (this syncs the deletion)
                         }
+                    }
 
-                        if (changed) {
-                            leads = currentLeads;
-                            // Save to IndexedDB
+                    // 2. Add entirely new remote leads that don't exist locally
+                    for (const [id, remoteLead] of remoteMap) {
+                        if (!newLeads.some(l => l.id === id)) {
+                            newLeads.push(remoteLead);
+                            changed = true;
+                        }
+                    }
+
+                    if (changed) {
+                        leads = newLeads;
+                        // Save to IndexedDB and write back to Firebase once
+                        saving = true;
+                        try {
                             for (const lead of leads) {
                                 await dbPut(lead);
                             }
-                            render();
-                            // Write back to Firebase (once) to push local-only leads up
-                            saving = true;
-                            try { await dbRef.set(leads); } catch (e) { /* ignore */ }
-                            saving = false;
-                            toast('Synced from another device');
-                        }
-                    } else {
-                        // Remote is empty or invalid – leave local data untouched
-                        // If local has data and remote is empty, upload local
-                        if (leads.length > 0) {
-                            saving = true;
-                            try { await dbRef.set(leads); } catch (e) { /* ignore */ }
-                            saving = false;
-                        }
+                            await dbRef.set(leads);
+                        } catch (e) { /* ignore */ }
+                        saving = false;
+                        render();
+                        toast('Synced with remote');
                     }
 
                     firebaseReady = true;
@@ -2637,10 +2620,8 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
         let sortBy = 'created-desc';
         let editingId = null;
         let userId = 'user_' + Math.random().toString(36).slice(2, 7);
-        let deferredPrompt = null;
         let bulkMode = false;
         let selectedIds = new Set();
-        let deletedLead = null;
         let touchStartX = 0;
         let touchStartY = 0;
         let isSwiping = false;
@@ -2694,8 +2675,6 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
         const toastEl = document.getElementById('toast');
         const toastMsg = document.getElementById('toast-msg');
         const toastUndo = document.getElementById('toast-undo');
-        const installBanner = document.getElementById('install-banner');
-        const installBtn = document.getElementById('install-btn');
         const btnExportCsv = document.getElementById('btn-export-csv');
         const btnImportCsv = document.getElementById('btn-import-csv');
         const fileInput = document.getElementById('file-input');
@@ -3794,6 +3773,7 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
         function openAdd() { openModal('Add Lead', null); }
 
         // ─── Quick Add ────────────────────────────────────────────────
+        // (unchanged – same as your existing code)
         const QA_FB_RESERVED = new Set([
             'profile.php', 'people', 'pages', 'pg', 'groups', 'marketplace', 'watch',
             'events', 'share', 'permalink.php', 'story.php', 'photo', 'photo.php',
@@ -4308,30 +4288,6 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
         // ─── Export ──────────────────────────────────────────────────
         btnExportCsv.addEventListener('click', exportCSV);
 
-        // ─── PWA Install ──────────────────────────────────────────────────
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBanner.classList.add('show');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) { toast('App already installed'); return; }
-            const result = await deferredPrompt.prompt();
-            if (result.outcome === 'accepted') {
-                toast('App installed!');
-                installBanner.classList.remove('show');
-            } else {
-                toast('Installation declined');
-            }
-            deferredPrompt = null;
-        });
-
-        window.addEventListener('appinstalled', () => {
-            installBanner.classList.remove('show');
-            toast('App installed!');
-        });
-
         // ─── Event delegation ──────────────────────────────────────────
         function setupCardListeners() {
             listEl.addEventListener('click', (e) => {
@@ -4363,11 +4319,11 @@ if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
                 if (leads.length) await saveLeads();
             }, 30000);
 
-            console.log('LeadForge v2.4 initialized');
+            console.log('LeadForge v2.5 initialized');
             console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
         }
 
-        console.log('LeadForge v2.4 loaded — waiting for authentication...');
+        console.log('LeadForge v2.5 loaded — waiting for authentication...');
 
         // ── Tool switcher ────────────────────────────────────────────────
         (function() {
