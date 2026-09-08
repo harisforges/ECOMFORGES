@@ -31,7 +31,6 @@
             --cyan-dim: rgba(32, 246, 248, 0.12);
             --cyan-glow: rgba(32, 246, 248, 0.25);
             --green: #2DD4A0;
-            --green-dark: #1A7A5E;
             --green-dim: rgba(45, 212, 160, 0.12);
             --amber: #F6B83D;
             --amber-dim: rgba(246, 184, 61, 0.12);
@@ -300,75 +299,70 @@
             transform: scale(0.95);
         }
 
-        /* ── Header ── */
+        /* ── Header (matched to ForgeMarketing) ── */
         header {
-            background: var(--main-blue);
-            border-bottom: 2px solid var(--cyan);
-            padding: 10px 16px 8px;
+            background: linear-gradient(180deg, var(--main-blue) 0%, var(--navy) 100%);
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 50;
-            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
         }
-        header .top {
+        .top {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         .brand {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             min-width: 0;
-            flex-shrink: 1;
         }
         .brand-lockup {
-            height: 24px;
+            height: 26px;
             width: auto;
             display: block;
-            flex-shrink: 0;
         }
         .brand-mark {
             display: none;
-            height: 28px;
+            height: 26px;
             width: auto;
-            flex-shrink: 0;
         }
         .brand-rule {
             width: 1px;
-            height: 20px;
+            height: 22px;
             background: var(--border-light);
-            flex-shrink: 0;
+            flex: none;
         }
         .brand-text {
-            font-size: 17px;
             font-weight: 700;
+            font-size: 16px;
             letter-spacing: -0.2px;
-            color: var(--text);
             white-space: nowrap;
         }
         .brand-text span {
             color: var(--cyan);
         }
         .brand-badge {
-            font-size: 8px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-soft);
-            background: var(--navy);
-            padding: 2px 8px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            margin-left: 2px;
+            letter-spacing: 0.8px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border: 1px solid rgba(32, 246, 248, 0.3);
             white-space: nowrap;
         }
-
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
+            gap: 8px;
+            margin-left: auto;
         }
         .sync-badge {
             font-size: 10px;
@@ -376,7 +370,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 3px 8px;
+            padding: 3px 10px;
             border-radius: 20px;
             background: var(--navy);
             border: 1px solid var(--border);
@@ -394,19 +388,17 @@
         .sync-badge .dot.error {
             background: var(--red);
         }
-
         .btn-logout {
             background: var(--red-dim);
             color: var(--red);
             border: 1px solid transparent;
-            padding: 3px 8px;
+            padding: 4px 10px;
             font-size: 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-family: inherit;
             transition: all var(--transition);
-            min-height: 30px;
-            line-height: 1;
+            min-height: 34px;
         }
         .btn-logout:hover {
             background: var(--red);
@@ -453,124 +445,9 @@
             flex-shrink: 0;
         }
 
-        /* ── Toolbar (Search + Sort only) ── */
-        .toolbar {
-            max-width: 880px;
-            margin: 12px auto 0;
-            padding: 0 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-        .search-wrap {
-            flex: 1;
-            min-width: 140px;
-            position: relative;
-        }
-        .search-wrap input {
-            width: 100%;
-            padding: 10px 14px 10px 38px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            background: var(--panel);
-            color: var(--text);
-            transition: border-color var(--transition);
-            outline: none;
-            font-family: inherit;
-            min-height: 42px;
-        }
-        .search-wrap input:focus {
-            border-color: var(--cyan);
-            box-shadow: 0 0 0 3px var(--cyan-dim);
-        }
-        .search-wrap input::placeholder {
-            color: var(--text-muted);
-        }
-        .search-wrap .icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.5;
-            font-size: 15px;
-            pointer-events: none;
-        }
-
-        .sort-wrap {
-            position: relative;
-            flex-shrink: 0;
-        }
-        .sort-wrap select {
-            padding: 10px 32px 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 500;
-            background: var(--panel);
-            color: var(--text);
-            font-family: inherit;
-            outline: none;
-            min-height: 42px;
-            -webkit-appearance: none;
-            appearance: none;
-            background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
-                linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
-            background-position: calc(100% - 14px) calc(50% + 2px), calc(100% - 9px) calc(50% + 2px);
-            background-size: 5px 5px, 5px 5px;
-            background-repeat: no-repeat;
-            cursor: pointer;
-        }
-        .sort-wrap select:focus {
-            border-color: var(--cyan);
-        }
-        .sort-wrap select option {
-            background: var(--panel);
-            color: var(--text);
-        }
-
-        /* ── Action Bar (CSV, Import, Bulk Select) ── */
-        .action-bar {
-            max-width: 880px;
-            margin: 8px auto 0;
-            padding: 0 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-        .action-bar .btn {
-            font-size: 12px;
-            padding: 6px 12px;
-            min-height: 34px;
-            background: var(--panel);
-            color: var(--text-soft);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-family: inherit;
-            transition: all var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .action-bar .btn:hover {
-            border-color: var(--cyan);
-            color: var(--text);
-        }
-        .action-bar .btn.active {
-            background: var(--cyan-dim);
-            border-color: var(--cyan);
-            color: var(--cyan);
-        }
-        .action-bar .spacer {
-            flex: 1;
-        }
-
-        /* ── Filters ── */
+        /* ── Status Filters ── */
         .filters {
-            max-width: 880px;
+            max-width: 1080px;
             margin: 10px auto 0;
             padding: 0 16px;
             display: flex;
@@ -622,7 +499,22 @@
             color: var(--navy);
         }
 
-        /* Owner filters (above status filters) */
+        /* ── Owner Filters (below status) ── */
+        .owner-filters {
+            max-width: 1080px;
+            margin: 6px auto 0;
+            padding: 0 16px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            align-items: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .owner-filters::-webkit-scrollbar {
+            display: none;
+        }
         .filters-label {
             font-size: 9px;
             text-transform: uppercase;
@@ -630,8 +522,6 @@
             color: var(--text-muted);
             flex-shrink: 0;
             padding-right: 4px;
-            display: flex;
-            align-items: center;
         }
         .own-btn {
             background: var(--panel);
@@ -672,9 +562,47 @@
             color: var(--navy);
         }
 
+        /* ── Action Bar ── */
+        .action-bar {
+            max-width: 1080px;
+            margin: 8px auto 0;
+            padding: 0 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        .action-bar .btn {
+            font-size: 12px;
+            padding: 6px 12px;
+            min-height: 34px;
+            background: var(--panel);
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .action-bar .btn:hover {
+            border-color: var(--cyan);
+            color: var(--text);
+        }
+        .action-bar .btn.active {
+            background: var(--cyan-dim);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        .action-bar .spacer {
+            flex: 1;
+        }
+
         /* ── Bulk actions bar ── */
         .bulk-bar {
-            max-width: 880px;
+            max-width: 1080px;
             margin: 8px auto 0;
             padding: 0 16px;
             display: none;
@@ -703,76 +631,96 @@
             padding: 6px 14px;
         }
 
+        /* ── Toolbar ── */
+        .toolbar {
+            max-width: 1080px;
+            margin: 12px auto 0;
+            padding: 0 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-wrap {
+            flex: 1;
+            min-width: 140px;
+            position: relative;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--panel);
+            color: var(--text);
+            transition: border-color var(--transition);
+            outline: none;
+            font-family: inherit;
+            min-height: 42px;
+        }
+        .search-wrap input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px var(--cyan-dim);
+        }
+        .search-wrap input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-wrap .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            font-size: 15px;
+            pointer-events: none;
+        }
+        .sort-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .sort-wrap select {
+            padding: 10px 32px 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            background: var(--panel);
+            color: var(--text);
+            font-family: inherit;
+            outline: none;
+            min-height: 42px;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+                linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+            background-position: calc(100% - 14px) calc(50% + 2px), calc(100% - 9px) calc(50% + 2px);
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+        .sort-wrap select:focus {
+            border-color: var(--cyan);
+        }
+        .sort-wrap select option {
+            background: var(--panel);
+            color: var(--text);
+        }
+
         /* ── Lead List ── */
         .list-wrap {
-            max-width: 880px;
+            max-width: 1080px;
             margin: 14px auto 0;
             padding: 0 16px;
             position: relative;
         }
 
-        /* Pull to refresh indicator */
-        .pull-indicator {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 12px;
-            padding: 8px 0;
-            opacity: 0;
-            transition: opacity 0.2s;
-            height: 0;
-            overflow: hidden;
-        }
-        .pull-indicator.show {
-            opacity: 1;
-            height: 36px;
-        }
-        .pull-indicator .spinner-sm {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--border);
-            border-top-color: var(--cyan);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-soft);
-            background: var(--main-blue);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-        .empty-state .big {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 12px;
-            opacity: 0.6;
-        }
-        .empty-state h3 {
-            font-size: 18px;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-        .empty-state p {
-            font-size: 14px;
-            opacity: 0.7;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .empty-state .btn {
-            margin-top: 16px;
-        }
-
-        /* ── Lead Card ── */
+        /* ── Lead Card (cleaner, rounded) ── */
         .lead-card {
             background: var(--main-blue);
-            border-radius: var(--radius);
+            border-radius: 16px;
             border: 1px solid var(--border);
-            padding: 15px 16px;
+            padding: 14px 16px;
             margin-bottom: 12px;
             transition: border-color var(--transition), box-shadow var(--transition), transform 0.15s;
             position: relative;
@@ -784,6 +732,7 @@
         }
         .lead-card:hover {
             border-color: var(--border-light);
+            box-shadow: 0 0 0 1px var(--border-light);
         }
         .lead-card .checkbox-wrap {
             display: none;
@@ -1485,7 +1434,7 @@
 
         /* ── Footer ── */
         footer {
-            max-width: 880px;
+            max-width: 1080px;
             margin: 30px auto 0;
             padding: 0 20px 20px;
             text-align: center;
@@ -1510,195 +1459,62 @@
             display: none;
         }
 
-        /* ── Responsive ── */
-        @media (max-width: 620px) {
-            header {
-                padding: 8px 12px 6px;
-            }
-            header .top {
-                gap: 6px;
-            }
-            .brand-text {
-                font-size: 15px;
-            }
-            .brand-lockup {
-                display: none;
-            }
-            .brand-mark {
-                display: block;
-                height: 24px;
-            }
-            .brand-badge {
-                display: none;
-            }
-            .brand-rule {
-                display: none;
-            }
-            .stats-row {
-                font-size: 12px;
-                gap: 10px;
-                padding: 5px 12px;
-            }
-            .stats-row .stat-item strong {
-                font-size: 14px;
-            }
-            .stats-row .stat-item .label {
-                font-size: 10px;
-            }
-            .toolbar {
-                gap: 6px;
-                margin-top: 8px;
-                padding: 0 12px;
-            }
-            .search-wrap input {
-                font-size: 14px;
-                padding: 8px 10px 8px 32px;
-                min-height: 38px;
-            }
-            .sort-wrap select {
-                font-size: 12px;
-                padding: 8px 28px 8px 10px;
-                min-height: 38px;
-            }
-            .action-bar {
-                gap: 4px;
-                padding: 0 12px;
-            }
-            .action-bar .btn {
-                font-size: 11px;
-                padding: 4px 10px;
-                min-height: 30px;
-            }
-            .filters {
-                gap: 4px;
-                padding: 0 12px;
-                margin-top: 6px;
-            }
-            .filter-btn {
-                font-size: 11px;
-                padding: 4px 10px;
-                min-height: 28px;
-            }
-            .own-btn {
-                font-size: 11px;
-                padding: 4px 10px;
-                min-height: 28px;
-            }
-            .filters-label {
-                font-size: 8px;
-            }
-            .lead-card {
-                padding: 13px 14px;
-            }
-            .lead-card.bulk-mode {
-                padding-left: 38px;
-            }
-            .lead-card .company {
-                font-size: 15px;
-            }
-            .lead-card .details {
-                font-size: 12px;
-                gap: 4px 12px;
-            }
-            .lead-card .actions .btn {
-                font-size: 11px;
-                padding: 4px 10px;
-                min-height: 30px;
-            }
-            .bulk-bar {
-                padding: 6px 12px;
-            }
-            .bulk-bar .btn {
-                font-size: 11px;
-                padding: 4px 10px;
-                min-height: 30px;
-            }
-            .detail-overlay .detail-body .field-row {
-                flex-direction: column;
-                gap: 2px;
-                padding: 6px 0;
-            }
-            .detail-overlay .detail-body .field-row .label {
-                min-width: auto;
-                font-size: 11px;
-            }
-            .list-wrap {
-                padding: 0 12px;
-                margin-top: 10px;
-            }
+        /* ── Pull to refresh ── */
+        .pull-indicator {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 8px 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 0;
+            overflow: hidden;
         }
-        @media (max-width: 380px) {
-            .brand-text {
-                font-size: 13px;
-            }
-            .brand-mark {
-                height: 20px;
-            }
-            .stats-row .stat-item strong {
-                font-size: 12px;
-            }
-            .stats-row {
-                font-size: 10px;
-                gap: 6px;
-            }
-            .action-bar .btn {
-                font-size: 10px;
-                padding: 3px 8px;
-                min-height: 26px;
-            }
-            .lead-card .actions {
-                gap: 4px;
-            }
-            .lead-card .actions .btn {
-                font-size: 10px;
-                padding: 3px 8px;
-                min-height: 26px;
-            }
-            .filter-btn {
-                font-size: 10px;
-                padding: 3px 8px;
-                min-height: 24px;
-            }
-            .own-btn {
-                font-size: 10px;
-                padding: 3px 8px;
-                min-height: 24px;
-            }
+        .pull-indicator.show {
+            opacity: 1;
+            height: 36px;
+        }
+        .pull-indicator .spinner-sm {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
         }
 
-        @media (pointer: coarse) {
-            .btn,
-            .filter-btn,
-            .own-btn,
-            .fab,
-            .modal .form-group input,
-            .modal .form-group select,
-            .modal .form-group textarea,
-            .sort-wrap select,
-            .search-wrap input {
-                min-height: 44px;
-            }
-            .lead-card .actions .btn {
-                min-height: 36px;
-            }
-            .search-wrap input {
-                font-size: 16px;
-            }
-            .action-bar .btn {
-                min-height: 38px;
-            }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-soft);
+            background: var(--main-blue);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .empty-state .big {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 14px;
+            opacity: 0.7;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .empty-state .btn {
+            margin-top: 16px;
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-
-        /* ── Loading ── */
         .loader {
             text-align: center;
             padding: 40px 20px;
@@ -1938,6 +1754,213 @@
             .ts-btn { padding: 6px 9px; }
             .ts-menu { right: -4px; }
         }
+
+        /* ── Responsive ── */
+        @media (max-width: 720px) {
+            .brand-lockup { display: none; }
+            .brand-mark { display: block; }
+            .header-note {
+                font-size: 10px;
+                gap: 4px;
+            }
+            .header-note #status-label {
+                display: none;
+            }
+            .header-note .dot-status {
+                width: 8px;
+                height: 8px;
+            }
+        }
+        @media (max-width: 620px) {
+            header .top {
+                padding: 10px 12px 8px;
+                gap: 8px;
+            }
+            .brand-text {
+                font-size: 15px;
+            }
+            .brand-mark {
+                height: 24px;
+            }
+            .brand-badge {
+                display: none;
+            }
+            .brand-rule {
+                display: none;
+            }
+            .stats-row {
+                font-size: 12px;
+                gap: 10px;
+                padding: 5px 12px;
+            }
+            .stats-row .stat-item strong {
+                font-size: 14px;
+            }
+            .stats-row .stat-item .label {
+                font-size: 10px;
+            }
+            .filters {
+                gap: 4px;
+                padding: 0 12px;
+            }
+            .filter-btn {
+                font-size: 11px;
+                padding: 4px 10px;
+                min-height: 28px;
+            }
+            .owner-filters {
+                gap: 4px;
+                padding: 0 12px;
+            }
+            .own-btn {
+                font-size: 11px;
+                padding: 4px 10px;
+                min-height: 28px;
+            }
+            .filters-label {
+                font-size: 8px;
+            }
+            .action-bar {
+                gap: 4px;
+                padding: 0 12px;
+            }
+            .action-bar .btn {
+                font-size: 11px;
+                padding: 4px 10px;
+                min-height: 30px;
+            }
+            .toolbar {
+                gap: 6px;
+                margin-top: 8px;
+                padding: 0 12px;
+            }
+            .search-wrap input {
+                font-size: 14px;
+                padding: 8px 10px 8px 32px;
+                min-height: 38px;
+            }
+            .sort-wrap select {
+                font-size: 12px;
+                padding: 8px 28px 8px 10px;
+                min-height: 38px;
+            }
+            .lead-card {
+                padding: 12px 14px;
+            }
+            .lead-card.bulk-mode {
+                padding-left: 38px;
+            }
+            .lead-card .company {
+                font-size: 15px;
+            }
+            .lead-card .details {
+                font-size: 12px;
+                gap: 4px 12px;
+            }
+            .lead-card .actions .btn {
+                font-size: 11px;
+                padding: 4px 10px;
+                min-height: 30px;
+            }
+            .bulk-bar {
+                padding: 6px 12px;
+            }
+            .bulk-bar .btn {
+                font-size: 11px;
+                padding: 4px 10px;
+                min-height: 30px;
+            }
+            .detail-overlay .detail-body .field-row {
+                flex-direction: column;
+                gap: 2px;
+                padding: 6px 0;
+            }
+            .detail-overlay .detail-body .field-row .label {
+                min-width: auto;
+                font-size: 11px;
+            }
+            .list-wrap {
+                padding: 0 12px;
+                margin-top: 10px;
+            }
+            .fab {
+                width: 54px;
+                height: 54px;
+                font-size: 26px;
+                bottom: 20px;
+                right: 18px;
+            }
+        }
+        @media (max-width: 380px) {
+            .brand-text {
+                font-size: 13px;
+            }
+            .brand-mark {
+                height: 20px;
+            }
+            .stats-row .stat-item strong {
+                font-size: 12px;
+            }
+            .stats-row {
+                font-size: 10px;
+                gap: 6px;
+            }
+            .action-bar .btn {
+                font-size: 10px;
+                padding: 3px 8px;
+                min-height: 26px;
+            }
+            .lead-card .actions {
+                gap: 4px;
+            }
+            .lead-card .actions .btn {
+                font-size: 10px;
+                padding: 3px 8px;
+                min-height: 26px;
+            }
+            .filter-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+                min-height: 24px;
+            }
+            .own-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+                min-height: 24px;
+            }
+        }
+
+        @media (pointer: coarse) {
+            .btn,
+            .filter-btn,
+            .own-btn,
+            .fab,
+            .modal .form-group input,
+            .modal .form-group select,
+            .modal .form-group textarea,
+            .sort-wrap select,
+            .search-wrap input {
+                min-height: 44px;
+            }
+            .lead-card .actions .btn {
+                min-height: 36px;
+            }
+            .search-wrap input {
+                font-size: 16px;
+            }
+            .action-bar .btn {
+                min-height: 38px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2006,13 +2029,13 @@
                         </button>
                         <div class="ts-menu" id="ts-menu" hidden>
                             <p class="ts-head">EcomForges tools</p>
-                        <a class="ts-item" href="index.html"><span class="ts-dot" style="background:#20F6F8"></span><span><b>Client Decision Tools</b><small>Qualify, pick the track, review the account</small></span></a>
-                        <a class="ts-item" href="analyst.html"><span class="ts-dot" style="background:#F6A820"></span><span><b>Growth Analyst</b><small>Turn platform figures into a brief</small></span></a>
-                        <span class="ts-item" aria-current="page"><span class="ts-dot" style="background:#39FF7E"></span><span><b>LeadForge</b><small>The pipeline</small></span></span>
-                        <a class="ts-item" href="forgemarketing.html"><span class="ts-dot" style="background:#FF3D57"></span><span><b>ForgeMarketing</b><small>Copy, the masterbase, collaborators</small></span></a>
-                        <a class="ts-item" href="sprint.html"><span class="ts-dot" style="background:#A855F7"></span><span><b>ForgeSprint</b><small>Thirty-day cycles and what they proved</small></span></a>
-                        <a class="ts-item" href="billing.html"><span class="ts-dot" style="background:#3B82F6"></span><span><b>ForgeBilling</b><small>Invoices and what is still owed</small></span></a>
-                        <a class="ts-item" href="agreement.html"><span class="ts-dot" style="background:#E879F9"></span><span><b>ForgeAgreement</b><small>Engagement letters and their clauses</small></span></a>
+                            <a class="ts-item" href="index.html"><span class="ts-dot" style="background:#20F6F8"></span><span><b>Client Decision Tools</b><small>Qualify, pick the track, review the account</small></span></a>
+                            <a class="ts-item" href="analyst.html"><span class="ts-dot" style="background:#F6A820"></span><span><b>Growth Analyst</b><small>Turn platform figures into a brief</small></span></a>
+                            <span class="ts-item" aria-current="page"><span class="ts-dot" style="background:#39FF7E"></span><span><b>LeadForge</b><small>The pipeline</small></span></span>
+                            <a class="ts-item" href="forgemarketing.html"><span class="ts-dot" style="background:#FF3D57"></span><span><b>ForgeMarketing</b><small>Copy, the masterbase, collaborators</small></span></a>
+                            <a class="ts-item" href="sprint.html"><span class="ts-dot" style="background:#A855F7"></span><span><b>ForgeSprint</b><small>Thirty-day cycles and what they proved</small></span></a>
+                            <a class="ts-item" href="billing.html"><span class="ts-dot" style="background:#3B82F6"></span><span><b>ForgeBilling</b><small>Invoices and what is still owed</small></span></a>
+                            <a class="ts-item" href="agreement.html"><span class="ts-dot" style="background:#E879F9"></span><span><b>ForgeAgreement</b><small>Engagement letters and their clauses</small></span></a>
                         </div>
                     </div>
                     <button class="btn-logout" id="logout-btn" title="Logout">🚪</button>
@@ -2035,15 +2058,6 @@
             <span class="stat-item"><strong id="stat-overdue">0</strong> <span class="label">Overdue</span></span>
         </div>
 
-        <!-- ─── Owner Filters (above status) ─── -->
-        <div class="filters" id="owner-bar">
-            <span class="filters-label">Owner</span>
-            <button class="own-btn active" data-owner="all">Everyone <span class="count" id="own-count-all">0</span></button>
-            <button class="own-btn" data-owner="haris">Haris <span class="count" id="own-count-haris">0</span></button>
-            <button class="own-btn" data-owner="dq">DQ <span class="count" id="own-count-dq">0</span></button>
-            <button class="own-btn" data-owner="unassigned">Unassigned <span class="count" id="own-count-unassigned">0</span></button>
-        </div>
-
         <!-- ─── Status Filters ─── -->
         <div class="filters" id="filter-bar">
             <button class="filter-btn active" data-filter="all">All <span class="count" id="count-all">0</span></button>
@@ -2056,7 +2070,16 @@
             <button class="filter-btn" data-filter="overdue">Overdue <span class="count" id="count-overdue">0</span></button>
         </div>
 
-        <!-- ─── Action Bar (CSV, Import, Bulk Select) ─── -->
+        <!-- ─── Owner Filters ─── -->
+        <div class="owner-filters" id="owner-bar">
+            <span class="filters-label">Owner</span>
+            <button class="own-btn active" data-owner="all">Everyone <span class="count" id="own-count-all">0</span></button>
+            <button class="own-btn" data-owner="haris">Haris <span class="count" id="own-count-haris">0</span></button>
+            <button class="own-btn" data-owner="dq">DQ <span class="count" id="own-count-dq">0</span></button>
+            <button class="own-btn" data-owner="unassigned">Unassigned <span class="count" id="own-count-unassigned">0</span></button>
+        </div>
+
+        <!-- ─── Action Bar ─── -->
         <div class="action-bar">
             <button class="btn" id="btn-export-csv" title="Export CSV">📊 Export CSV</button>
             <button class="btn" id="btn-import-csv" title="Import CSV">📥 Import CSV</button>
@@ -2075,7 +2098,7 @@
             <button class="btn btn-ghost btn-sm" id="bulk-clear">Clear</button>
         </div>
 
-        <!-- ─── Toolbar (Search + Sort only) ─── -->
+        <!-- ─── Toolbar ─── -->
         <div class="toolbar">
             <div class="search-wrap">
                 <span class="icon">🔍</span>
@@ -2249,7 +2272,7 @@
         <footer>
             <div class="divider"></div>
             <span id="footer-sync">● Synced with IndexedDB</span> · Data stays on this device<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.6
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.7
         </footer>
 
     </div>
@@ -2263,8 +2286,7 @@
     <script>
         /**
          * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v2.6 — Clean UI with action bar, owner filter on top,
-         * removed redundant buttons.
+         * LEADFORGE v2.7 — Fixed tool switcher, cleaner UI, header matched to ForgeMarketing.
          * ═══════════════════════════════════════════════════════════════════
          */
 
@@ -3865,14 +3887,16 @@
                 if (leads.length) await saveLeads();
             }, 30000);
 
-            console.log('LeadForge v2.6 initialized');
+            console.log('LeadForge v2.7 initialized');
             console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
         }
 
-        console.log('LeadForge v2.6 loaded — waiting for authentication...');
+        console.log('LeadForge v2.7 loaded — waiting for authentication...');
 
-        // ── Tool switcher ────────────────────────────────────────────────
-        (function() {
+        // ──────────────────────────────────────────────────────────────────
+        // ── Tool switcher (FIXED: runs after DOM ready, handles click) ──
+        // ──────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
             var btn = document.getElementById('ts-btn');
             var menu = document.getElementById('ts-menu');
             if (!btn || !menu) return;
@@ -3904,10 +3928,14 @@
                 btn.setAttribute('aria-expanded', 'false');
                 if (refocus) btn.focus();
             }
+
+            // Click handler
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 menu.hidden ? open(false) : close(false);
             });
+
+            // Keyboard navigation
             document.addEventListener('keydown', function(e) {
                 if (menu.hidden) {
                     if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault();
@@ -3924,11 +3952,15 @@
                     list[0].focus(); } else if (e.key === 'End' && i >= 0) { e.preventDefault();
                     list[list.length - 1].focus(); } else if (e.key === 'Tab' && i < 0) { close(false); }
             });
+
+            // Click outside
             document.addEventListener('click', function(e) {
                 if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
             });
+
+            // Window resize
             window.addEventListener('resize', function() { if (!menu.hidden) place(); });
-        })();
+        });
     </script>
 </body>
 </html>
