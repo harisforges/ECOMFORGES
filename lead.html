@@ -198,13 +198,21 @@
         .btn-logout:hover { background: var(--red); color: var(--navy); }
 
         /* ── Stats Row ── */
-        .stats-row {
-            background: var(--panel); border-bottom: 1px solid var(--border);
-            padding: 6px 16px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            display: flex; align-items: center; gap: 16px;
-            font-size: 13px; color: var(--text-soft);
-        }
-        .stats-row::-webkit-scrollbar { display: none; }
+       .stats-row {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    display: flex;
+    flex-wrap: nowrap;          /* stay horizontal */
+    align-items: center;
+    justify-content: center;    /* <<< THIS CENTERS THEM */
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-soft);
+}
+.stats-row::-webkit-scrollbar { display: none; }
         .stats-row .stat-item {
             display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; flex-shrink: 0;
         }
