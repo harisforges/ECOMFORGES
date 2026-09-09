@@ -250,7 +250,7 @@
             color: var(--text-soft); cursor: pointer; transition: all var(--transition);
             font-family: inherit; white-space: nowrap; flex-shrink: 0;
             min-height: 32px;
-            min-width: max-content; /* BUG 3 fix */
+            min-width: max-content;
         }
         .own-btn:hover { border-color: var(--green); color: var(--text); }
         .own-btn.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
@@ -370,15 +370,13 @@
             display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700;
         }
 
-        /* ── Card action buttons (BUG 4 fix) ── */
         .lead-card .actions {
             display: flex; gap: 5px; margin-top: 11px;
             flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 11px;
         }
         .lead-card .actions .btn {
             font-size: 12px; padding: 5px 12px; min-height: 32px;
-            border: none; /* BUG 4 */
-            border-radius: 20px; /* BUG 4 */
+            border: none; border-radius: 20px;
         }
         .btn-contact {
             background: var(--cyan-dim); color: var(--cyan);
@@ -1094,7 +1092,7 @@
         <footer>
             <div class="divider"></div>
             <span id="footer-sync">● Synced with IndexedDB</span> · Data stays on this device<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.8
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.9
         </footer>
 
     </div>
@@ -1108,7 +1106,8 @@
     <script>
         /**
          * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v2.8 — All bugs fixed (tool switcher, filters, sync, UI)
+         * LEADFORGE v2.9 — Removed once() listener and 30‑second timer.
+         * Deletions now stick permanently.
          * ═══════════════════════════════════════════════════════════════════
          */
 
@@ -1293,12 +1292,13 @@
                 const db = firebase.database();
                 dbRef = db.ref('leads');
 
-                // ─── FIXED Listener: properly handles deletions AND empty remote ──
+                // ─── Persistent listener: handles all sync (no once() needed) ──
                 dbRef.on('value', async (snapshot) => {
                     if (saving) return;
 
                     const val = snapshot.val();
-                    // If remote is empty and we have local data, push local up (BUG 8 fix)
+
+                    // If remote is empty and we have local data, push local up
                     if ((val === null || (Array.isArray(val) && val.length === 0)) && leads.length > 0) {
                         saving = true;
                         try { await dbRef.set(leads); } catch (e) { /* ignore */ }
@@ -1326,7 +1326,7 @@
                             }
                             newLeads.push(local);
                         } else {
-                            // Deleted remotely
+                            // Deleted remotely → remove locally
                             console.log('🗑️ Deleting local lead:', local.company);
                             changed = true;
                         }
@@ -1363,21 +1363,17 @@
                     syncLabel.textContent = 'Offline';
                 });
 
-                // Initial sync: if remote is empty, upload local
-                dbRef.once('value').then((snapshot) => {
-                    const val = snapshot.val();
-                    if ((!val || !Array.isArray(val) || val.length === 0) && leads.length > 0) {
-                        saving = true;
-                        dbRef.set(leads).finally(() => { saving = false; });
-                    }
-                    firebaseReady = true;
-                    useFirebase = true;
-                    syncDot.className = 'dot';
-                    syncLabel.textContent = 'Live';
-                }).catch(() => {
-                    syncDot.className = 'dot offline';
-                    syncLabel.textContent = 'Offline';
-                });
+                // ═══════════════════════════════════════════════════════════
+                // REMOVED: dbRef.once('value') listener – it restored deleted leads.
+                // The persistent on('value') listener above handles everything.
+                // ═══════════════════════════════════════════════════════════
+
+                // Mark Firebase as ready
+                firebaseReady = true;
+                useFirebase = true;
+                syncDot.className = 'dot';
+                syncLabel.textContent = 'Live';
+
             } catch (e) {
                 console.warn('Firebase DB init error:', e);
                 syncDot.className = 'dot offline';
@@ -1768,7 +1764,6 @@
             const sortFn = getSortFn(sortBy);
             const filtered = leads
                 .filter(lead => {
-                    // BUG 2 fix: correct filter logic
                     let matchFilter = true;
                     if (filter === 'all') matchFilter = true;
                     else if (filter === 'overdue') matchFilter = lead.followup && isOverdue(lead.followup);
@@ -2585,7 +2580,6 @@
         function openAdd() { openModal('Add Lead', null); }
 
         // ─── Quick Add ────────────────────────────────────────────────────
-        // BUG 7: define closeQuickAdd
         function closeQuickAdd() {
             qaOverlay.classList.remove('open');
         }
@@ -3135,8 +3129,13 @@
                 render();
             });
 
-            // ─── Tool switcher (moved here from DOMContentLoaded) ──
-            // BUG 1 fix: run after app-root is shown
+            // ═══════════════════════════════════════════════════════════════
+            // REMOVED: 30‑second auto‑save timer.
+            // Saves now only happen on user actions (add, edit, delete, etc.).
+            // This prevents stale local data from overwriting remote changes.
+            // ═══════════════════════════════════════════════════════════════
+
+            // ─── Tool switcher ──────────────────────────────────────────
             (function initToolSwitcher() {
                 var btn = document.getElementById('ts-btn');
                 var menu = document.getElementById('ts-menu');
@@ -3175,7 +3174,7 @@
                 }
 
                 btn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // keep to prevent double triggers
+                    e.stopPropagation();
                     if (isOpen) close(false);
                     else open(false);
                 });
@@ -3206,15 +3205,11 @@
                 window.addEventListener('resize', function() { if (isOpen) place(); });
             })();
 
-            setInterval(async () => {
-                if (leads.length) await saveLeads();
-            }, 30000);
-
-            console.log('LeadForge v2.8 initialized');
+            console.log('LeadForge v2.9 initialized (no auto‑save, no once listener)');
             console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
         }
 
-        console.log('LeadForge v2.8 loaded — waiting for authentication...');
+        console.log('LeadForge v2.9 loaded — waiting for authentication...');
     </script>
 </body>
 </html>
