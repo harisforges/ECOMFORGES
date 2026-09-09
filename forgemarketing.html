@@ -939,46 +939,46 @@ function fmInit() {
 
         fmDB = firebase.database();
 
-        // Usage listener
-        fmDB.ref('forgemarketing/usage').on('value', s => {
-            if (saving) return;
-            usageMap = s.val() || {};
-            fmSetSyncHint(true);
-        });
+        // 1. Usage listener
+fmDB.ref('forgemarketing/usage').on('value', s => {
+    if (saving) return;   // ← remove this line
+    usageMap = s.val() || {};
+    fmSetSyncHint(true);
+});
 
-        // Collaborators listener
-        fmDB.ref('forgemarketing/collaborators').on('value', snap => {
-            if (saving) return;
-            const data = snap.val() || {};
-            collaborators = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
-            const hint = document.getElementById('collab-sync-hint');
-            if (hint) hint.textContent = 'Shared with everyone signed in.';
-            renderCollaborators();
-        });
+// 2. Collaborators listener
+fmDB.ref('forgemarketing/collaborators').on('value', snap => {
+    if (saving) return;   // ← remove this line
+    const data = snap.val() || {};
+    collaborators = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
+    const hint = document.getElementById('collab-sync-hint');
+    if (hint) hint.textContent = 'Shared with everyone signed in.';
+    renderCollaborators();
+});
 
-        // Conditions listener
-        fmDB.ref('forgemarketing/conditions/current').on('value', s => {
-            if (saving) return;
-            condition = s.val() || null;
-            fmRenderCondition();
-        });
+// 3. Conditions listener
+fmDB.ref('forgemarketing/conditions/current').on('value', s => {
+    if (saving) return;   // ← remove this line
+    condition = s.val() || null;
+    fmRenderCondition();
+});
 
-        // Saved generations listener
-        fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
-            if (saving) return;
-            const data = snapshot.val();
-            savedGenerations = [];
-            if (data) {
-                savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-            }
-            console.log('📦 Saved generations updated:', savedGenerations.length);
-            const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
-            if (isSavedTab) {
-                renderSaved();
-            } else {
-                updateSavedCount();
-            }
-        });
+// 4. Saved generations listener
+fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
+    if (saving) return;   // ← remove this line
+    const data = snapshot.val();
+    savedGenerations = [];
+    if (data) {
+        savedGenerations = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    console.log('📦 Saved generations updated:', savedGenerations.length);
+    const isSavedTab = document.getElementById('panel-saved').classList.contains('active');
+    if (isSavedTab) {
+        renderSaved();
+    } else {
+        updateSavedCount();
+    }
+});
 
         // Default the author to whoever signed in; an explicit choice wins.
         const guessed = authorFromEmail(user.email);
