@@ -63,6 +63,39 @@
         ::-webkit-scrollbar-track { background: var(--navy); }
         ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
 
+        /* ── Loading overlay ── */
+        #loading-overlay {
+            position: fixed; inset: 0;
+            background: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            transition: opacity 0.3s ease;
+        }
+        #loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loading-overlay .loader-box {
+            text-align: center;
+            color: var(--text-soft);
+        }
+        #loading-overlay .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        #loading-overlay p {
+            font-size: 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* ── Login Overlay ── */
         #login-overlay {
             position: fixed; inset: 0; background: var(--navy);
@@ -198,27 +231,23 @@
         .btn-logout:hover { background: var(--red); color: var(--navy); }
 
         /* ── Stats Row ── */
-       .stats-row {
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    padding: 6px 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    display: flex;
-    flex-wrap: nowrap;          /* stay horizontal */
-    align-items: center;
-    justify-content: center;    /* <<< THIS CENTERS THEM */
-    gap: 16px;
-    font-size: 13px;
-    color: var(--text-soft);
-}
-.stats-row::-webkit-scrollbar { display: none; }
+        .stats-row {
+            background: var(--panel); border-bottom: 1px solid var(--border);
+            padding: 6px 16px; overflow-x: auto; scrollbar-width: none;
+            display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 16px;
+            font-size: 13px; color: var(--text-soft);
+        }
+        .stats-row::-webkit-scrollbar { display: none; }
         .stats-row .stat-item {
             display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; flex-shrink: 0;
         }
         .stats-row .stat-item strong { font-weight: 700; color: var(--text); font-size: 15px; }
         .stats-row .stat-item .label { opacity: 0.7; font-size: 11px; }
         .stats-row .divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+        @media (max-width: 480px) {
+            .stats-row { gap: 8px; font-size: 11px; padding: 4px 8px; }
+            .stats-row .stat-item strong { font-size: 13px; }
+        }
 
         /* ── Status Filters ── */
         .filters {
@@ -793,8 +822,16 @@
 </head>
 <body>
 
+    <!-- ─── LOADING OVERLAY ─── -->
+    <div id="loading-overlay">
+        <div class="loader-box">
+            <div class="spinner"></div>
+            <p>Loading LeadForge…</p>
+        </div>
+    </div>
+
     <!-- ─── LOGIN OVERLAY ─── -->
-    <div id="login-overlay">
+    <div id="login-overlay" class="hidden">
         <div class="login-box">
             <div class="login-brand">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" width="958" height="147" style="width:180px;height:auto" role="img" aria-label="EcomForges" focusable="false">
@@ -1163,6 +1200,7 @@
         const togglePasswordBtn = document.getElementById('toggle-password');
         const logoutBtn = document.getElementById('logout-btn');
         const appRoot = document.getElementById('app-root');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         function showLoginError(msg, subnote = '') {
             loginError.innerHTML = msg + (subnote ? `<div class="subnote">${subnote}</div>` : '');
@@ -1170,6 +1208,7 @@
         }
 
         function showApp() {
+            loadingOverlay.classList.add('hidden');
             loginOverlay.classList.add('hidden');
             appRoot.classList.add('show');
             loginAttempts = 0;
@@ -1178,6 +1217,7 @@
         }
 
         function showLogin() {
+            loadingOverlay.classList.add('hidden');
             loginOverlay.classList.remove('hidden');
             appRoot.classList.remove('show');
             loginPassword.value = '';
@@ -1188,6 +1228,16 @@
 
         function isAllowedEmail(email) {
             return typeof email === 'string' && email.toLowerCase().endsWith(ALLOWED_DOMAIN);
+        }
+
+        function showSignInUnavailable() {
+            loadingOverlay.classList.add('hidden');
+            showLogin();
+            loginSubmit.disabled = true;
+            showLoginError(
+                'Cannot reach the sign-in service.',
+                'Check your connection and reload the page. Leads already saved on this device are untouched.'
+            );
         }
 
         togglePasswordBtn.addEventListener('click', () => {
@@ -1252,15 +1302,6 @@
         logoutBtn.addEventListener('click', () => {
             if (firebaseAvailable) firebase.auth().signOut();
         });
-
-        function showSignInUnavailable() {
-            showLogin();
-            loginSubmit.disabled = true;
-            showLoginError(
-                'Cannot reach the sign-in service.',
-                'Check your connection and reload the page. Leads already saved on this device are untouched.'
-            );
-        }
 
         if (!firebaseAvailable) showSignInUnavailable();
 
