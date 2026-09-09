@@ -1422,24 +1422,6 @@
     }
 }
 
-                // ═══════════════════════════════════════════════════════════
-                // REMOVED: dbRef.once('value') listener – it restored deleted leads.
-                // The persistent on('value') listener above handles everything.
-                // ═══════════════════════════════════════════════════════════
-
-                // Mark Firebase as ready
-                firebaseReady = true;
-                useFirebase = true;
-                syncDot.className = 'dot';
-                syncLabel.textContent = 'Live';
-        
-        }     catch (e) {
-                console.warn('Firebase DB init error:', e);
-                syncDot.className = 'dot offline';
-                syncLabel.textContent = 'Local';
-            }
-        }
-
         // ─── Taxonomy ────────────────────────────────────────────────────
         const ASSIGNEES = [
             { value: 'haris', label: 'Haris' },
