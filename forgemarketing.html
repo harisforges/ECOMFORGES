@@ -939,16 +939,14 @@ function fmInit() {
 
         fmDB = firebase.database();
 
-        // 1. Usage listener
+        // Usage listener – no saving guard
 fmDB.ref('forgemarketing/usage').on('value', s => {
-    if (saving) return;   // ← remove this line
     usageMap = s.val() || {};
     fmSetSyncHint(true);
 });
 
-// 2. Collaborators listener
+// Collaborators listener – no saving guard
 fmDB.ref('forgemarketing/collaborators').on('value', snap => {
-    if (saving) return;   // ← remove this line
     const data = snap.val() || {};
     collaborators = Object.keys(data).map(k => Object.assign({ id: k }, data[k]));
     const hint = document.getElementById('collab-sync-hint');
@@ -956,16 +954,14 @@ fmDB.ref('forgemarketing/collaborators').on('value', snap => {
     renderCollaborators();
 });
 
-// 3. Conditions listener
+// Conditions listener – no saving guard
 fmDB.ref('forgemarketing/conditions/current').on('value', s => {
-    if (saving) return;   // ← remove this line
     condition = s.val() || null;
     fmRenderCondition();
 });
 
-// 4. Saved generations listener
+// Saved generations listener – no saving guard
 fmDB.ref('forgemarketing/generations').orderByChild('createdAt').limitToLast(200).on('value', (snapshot) => {
-    if (saving) return;   // ← remove this line
     const data = snapshot.val();
     savedGenerations = [];
     if (data) {
