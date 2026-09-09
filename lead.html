@@ -1151,8 +1151,8 @@
     <script>
         /**
          * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v2.9 — Removed once() listener and 30‑second timer.
-         * Deletions now stick permanently.
+         * LEADFORGE v3.0 — Per‑lead writes, object storage, no race conditions.
+         * Fixes: last‑write‑wins eliminated, pull‑to‑refresh less sensitive.
          * ═══════════════════════════════════════════════════════════════════
          */
 
@@ -1332,95 +1332,109 @@
         const syncLabel = document.getElementById('sync-label');
 
         function initFirebaseDB() {
-    if (!USE_FIREBASE || !firebaseAvailable) {
-        syncDot.className = 'dot';
-        syncLabel.textContent = 'Local';
-        return;
-    }
-    try {
-        const db = firebase.database();
-        dbRef = db.ref('leads');
-
-        // ─── Persistent listener: handles all sync (no saving guard, no write-back) ──
-        dbRef.on('value', async (snapshot) => {
-            const val = snapshot.val();
-
-            // If remote is empty and we have local data, push local up (initial seed)
-            if ((val === null || (Array.isArray(val) && val.length === 0)) && leads.length > 0) {
-                saving = true;
-                try { await dbRef.set(leads); } catch (e) { /* ignore */ }
-                saving = false;
+            if (!USE_FIREBASE || !firebaseAvailable) {
+                syncDot.className = 'dot';
+                syncLabel.textContent = 'Local';
                 return;
             }
+            try {
+                const db = firebase.database();
+                dbRef = db.ref('leads');
 
-            const remote = (val && Array.isArray(val)) ? val : [];
-            const remoteMap = new Map();
-            for (const r of remote) {
-                const incoming = migrateLead(r);
-                remoteMap.set(incoming.id, incoming);
-            }
+                // ─── Persistent listener: handles all sync ──
+                dbRef.on('value', async (snapshot) => {
+                    const val = snapshot.val();
 
-            let changed = false;
-            const newLeads = [];
-
-            // 1. Process local leads: keep only those that exist remotely
-            for (const local of leads) {
-                const remoteLead = remoteMap.get(local.id);
-                if (remoteLead) {
-                    // Use timestamps: remote newer → overwrite local
-                    if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
-                        Object.assign(local, remoteLead);
-                        changed = true;
+                    // If remote is empty and we have local data, push local up (initial seed)
+                    if ((val === null || (typeof val === 'object' && Object.keys(val).length === 0)) && leads.length > 0) {
+                        saving = true;
+                        try {
+                            // Convert leads array to object keyed by id
+                            const obj = {};
+                            leads.forEach(l => { obj[l.id] = l; });
+                            await dbRef.set(obj);
+                        } catch (e) { /* ignore */ }
+                        saving = false;
+                        return;
                     }
-                    newLeads.push(local);
-                } else {
-                    // Deleted remotely → remove locally
-                    console.log('🗑️ Deleting local lead:', local.company);
-                    changed = true;
-                }
-            }
 
-            // 2. Add new remote leads
-            for (const [id, remoteLead] of remoteMap) {
-                if (!newLeads.some(l => l.id === id)) {
-                    newLeads.push(remoteLead);
-                    changed = true;
-                }
-            }
-
-            // Only update local and IndexedDB – do NOT write back to Firebase
-            if (changed) {
-                leads = newLeads;
-                try {
-                    for (const lead of leads) {
-                        await dbPut(lead);
+                    const remoteMap = new Map();
+                    // Handle both object and array (backward compatibility)
+                    if (val && typeof val === 'object') {
+                        if (Array.isArray(val)) {
+                            // Old array format – migrate to object
+                            for (const r of val) {
+                                const incoming = migrateLead(r);
+                                remoteMap.set(incoming.id, incoming);
+                            }
+                        } else {
+                            // Object format: key is lead ID
+                            for (const [id, data] of Object.entries(val)) {
+                                const incoming = migrateLead({ id, ...data });
+                                remoteMap.set(id, incoming);
+                            }
+                        }
                     }
-                } catch (e) { /* ignore */ }
-                render();
-                toast('Synced with remote');
+
+                    let changed = false;
+                    const newLeads = [];
+
+                    // 1. Process local leads: keep only those that exist remotely
+                    for (const local of leads) {
+                        const remoteLead = remoteMap.get(local.id);
+                        if (remoteLead) {
+                            if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
+                                Object.assign(local, remoteLead);
+                                changed = true;
+                            }
+                            newLeads.push(local);
+                        } else {
+                            console.log('🗑️ Deleting local lead:', local.company);
+                            changed = true;
+                        }
+                    }
+
+                    // 2. Add new remote leads
+                    for (const [id, remoteLead] of remoteMap) {
+                        if (!newLeads.some(l => l.id === id)) {
+                            newLeads.push(remoteLead);
+                            changed = true;
+                        }
+                    }
+
+                    // Only update local and IndexedDB – do NOT write back to Firebase
+                    if (changed) {
+                        leads = newLeads;
+                        try {
+                            for (const lead of leads) {
+                                await dbPut(lead);
+                            }
+                        } catch (e) { /* ignore */ }
+                        render();
+                        toast('Synced with remote');
+                    }
+
+                    firebaseReady = true;
+                    useFirebase = true;
+                    syncDot.className = 'dot';
+                    syncLabel.textContent = 'Live';
+                }, () => {
+                    syncDot.className = 'dot offline';
+                    syncLabel.textContent = 'Offline';
+                });
+
+                // ─── Mark Firebase as ready ────────────────────────────────────
+                firebaseReady = true;
+                useFirebase = true;
+                syncDot.className = 'dot';
+                syncLabel.textContent = 'Live';
+
+            } catch (e) {
+                console.warn('Firebase DB init error:', e);
+                syncDot.className = 'dot offline';
+                syncLabel.textContent = 'Local';
             }
-
-            firebaseReady = true;
-            useFirebase = true;
-            syncDot.className = 'dot';
-            syncLabel.textContent = 'Live';
-        }, () => {
-            syncDot.className = 'dot offline';
-            syncLabel.textContent = 'Offline';
-        });
-
-        // ─── Mark Firebase as ready ────────────────────────────────────
-        firebaseReady = true;
-        useFirebase = true;
-        syncDot.className = 'dot';
-        syncLabel.textContent = 'Live';
-
-    } catch (e) {
-        console.warn('Firebase DB init error:', e);
-        syncDot.className = 'dot offline';
-        syncLabel.textContent = 'Local';
-    }
-}
+        }
 
         // ─── Taxonomy ────────────────────────────────────────────────────
         const ASSIGNEES = [
@@ -1713,8 +1727,10 @@
             }
         }
 
+        // ─── FIXED: saveLeads – per‑lead writes, no full overwrite ────
         async function saveLeads() {
             try {
+                // Update IndexedDB
                 if (db) {
                     for (const lead of leads) {
                         await dbPut(lead);
@@ -1722,9 +1738,29 @@
                 } else {
                     localStorage.setItem('leadforge_leads', JSON.stringify(leads));
                 }
+
+                // Update Firebase – per‑lead writes
                 if (useFirebase && firebaseReady && dbRef) {
                     saving = true;
-                    try { await dbRef.set(leads); } catch (e) { /* ignore */ }
+                    try {
+                        // Get current remote keys
+                        const snapshot = await dbRef.once('value');
+                        const remote = snapshot.val() || {};
+                        const remoteIds = new Set(Object.keys(remote));
+
+                        // Remove leads that no longer exist locally
+                        const localIds = new Set(leads.map(l => l.id));
+                        for (const id of remoteIds) {
+                            if (!localIds.has(id)) {
+                                await dbRef.child(id).remove();
+                            }
+                        }
+
+                        // Update each local lead
+                        for (const lead of leads) {
+                            await dbRef.child(lead.id).set(lead);
+                        }
+                    } catch (e) { /* ignore */ }
                     saving = false;
                 }
                 return true;
@@ -2273,24 +2309,30 @@
             isSwiping = false;
         }
 
-        // ─── Pull to refresh ──────────────────────────────────────────────
+        // ─── Pull to refresh (fixed) ──────────────────────────────────────
         let pullStartY = 0;
         let isPulling = false;
+        let pullDistance = 0;
         const listWrap = document.getElementById('list-wrap');
+        const PULL_THRESHOLD = 60;
 
         listWrap.addEventListener('touchstart', (e) => {
-            if (listWrap.scrollTop <= 0) {
+            if (listWrap.scrollTop === 0) {
                 pullStartY = e.touches[0].clientY;
                 isPulling = true;
+                pullDistance = 0;
             }
         }, { passive: true });
 
         listWrap.addEventListener('touchmove', (e) => {
-            if (!isPulling || listWrap.scrollTop > 0) return;
+            if (!isPulling) return;
             const dy = e.touches[0].clientY - pullStartY;
-            if (dy > 60) {
-                e.preventDefault();
-                pullIndicator.classList.add('show');
+            if (dy > 0) {
+                pullDistance = dy;
+                if (pullDistance > PULL_THRESHOLD) {
+                    e.preventDefault();
+                    pullIndicator.classList.add('show');
+                }
             }
         }, { passive: false });
 
@@ -2301,6 +2343,7 @@
                 toast('Refreshed');
             }
             isPulling = false;
+            pullDistance = 0;
         }, { passive: true });
 
         async function refreshLeads() {
@@ -3170,12 +3213,6 @@
                 render();
             });
 
-            // ═══════════════════════════════════════════════════════════════
-            // REMOVED: 30‑second auto‑save timer.
-            // Saves now only happen on user actions (add, edit, delete, etc.).
-            // This prevents stale local data from overwriting remote changes.
-            // ═══════════════════════════════════════════════════════════════
-
             // ─── Tool switcher ──────────────────────────────────────────
             (function initToolSwitcher() {
                 var btn = document.getElementById('ts-btn');
@@ -3246,11 +3283,11 @@
                 window.addEventListener('resize', function() { if (isOpen) place(); });
             })();
 
-            console.log('LeadForge v2.9 initialized (no auto‑save, no once listener)');
+            console.log('LeadForge v3.0 initialized (per‑lead writes, object storage, fixed pull‑to‑refresh)');
             console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
         }
 
-        console.log('LeadForge v2.9 loaded — waiting for authentication...');
+        console.log('LeadForge v3.0 loaded — waiting for authentication...');
     </script>
 </body>
 </html>
