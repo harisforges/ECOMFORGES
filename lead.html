@@ -1332,85 +1332,95 @@
         const syncLabel = document.getElementById('sync-label');
 
         function initFirebaseDB() {
-            if (!USE_FIREBASE || !firebaseAvailable) {
-                syncDot.className = 'dot';
-                syncLabel.textContent = 'Local';
+    if (!USE_FIREBASE || !firebaseAvailable) {
+        syncDot.className = 'dot';
+        syncLabel.textContent = 'Local';
+        return;
+    }
+    try {
+        const db = firebase.database();
+        dbRef = db.ref('leads');
+
+        // ─── Persistent listener: handles all sync (no saving guard, no write-back) ──
+        dbRef.on('value', async (snapshot) => {
+            const val = snapshot.val();
+
+            // If remote is empty and we have local data, push local up (initial seed)
+            if ((val === null || (Array.isArray(val) && val.length === 0)) && leads.length > 0) {
+                saving = true;
+                try { await dbRef.set(leads); } catch (e) { /* ignore */ }
+                saving = false;
                 return;
             }
-            try {
-                const db = firebase.database();
-                dbRef = db.ref('leads');
 
-                // ─── Persistent listener: handles all sync (no once() needed) ──
-                dbRef.on('value', async (snapshot) => {
-                    if (saving) return;
+            const remote = (val && Array.isArray(val)) ? val : [];
+            const remoteMap = new Map();
+            for (const r of remote) {
+                const incoming = migrateLead(r);
+                remoteMap.set(incoming.id, incoming);
+            }
 
-                    const val = snapshot.val();
+            let changed = false;
+            const newLeads = [];
 
-                    // If remote is empty and we have local data, push local up
-                    if ((val === null || (Array.isArray(val) && val.length === 0)) && leads.length > 0) {
-                        saving = true;
-                        try { await dbRef.set(leads); } catch (e) { /* ignore */ }
-                        saving = false;
-                        return;
+            // 1. Process local leads: keep only those that exist remotely
+            for (const local of leads) {
+                const remoteLead = remoteMap.get(local.id);
+                if (remoteLead) {
+                    // Use timestamps: remote newer → overwrite local
+                    if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
+                        Object.assign(local, remoteLead);
+                        changed = true;
                     }
+                    newLeads.push(local);
+                } else {
+                    // Deleted remotely → remove locally
+                    console.log('🗑️ Deleting local lead:', local.company);
+                    changed = true;
+                }
+            }
 
-                    const remote = (val && Array.isArray(val)) ? val : [];
-                    const remoteMap = new Map();
-                    for (const r of remote) {
-                        const incoming = migrateLead(r);
-                        remoteMap.set(incoming.id, incoming);
+            // 2. Add new remote leads
+            for (const [id, remoteLead] of remoteMap) {
+                if (!newLeads.some(l => l.id === id)) {
+                    newLeads.push(remoteLead);
+                    changed = true;
+                }
+            }
+
+            // Only update local and IndexedDB – do NOT write back to Firebase
+            if (changed) {
+                leads = newLeads;
+                try {
+                    for (const lead of leads) {
+                        await dbPut(lead);
                     }
+                } catch (e) { /* ignore */ }
+                render();
+                toast('Synced with remote');
+            }
 
-                    let changed = false;
-                    const newLeads = [];
+            firebaseReady = true;
+            useFirebase = true;
+            syncDot.className = 'dot';
+            syncLabel.textContent = 'Live';
+        }, () => {
+            syncDot.className = 'dot offline';
+            syncLabel.textContent = 'Offline';
+        });
 
-                    // 1. Process local leads: keep only those that exist remotely
-                    for (const local of leads) {
-                        const remoteLead = remoteMap.get(local.id);
-                        if (remoteLead) {
-                            if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
-                                Object.assign(local, remoteLead);
-                                changed = true;
-                            }
-                            newLeads.push(local);
-                        } else {
-                            // Deleted remotely → remove locally
-                            console.log('🗑️ Deleting local lead:', local.company);
-                            changed = true;
-                        }
-                    }
+        // ─── Mark Firebase as ready ────────────────────────────────────
+        firebaseReady = true;
+        useFirebase = true;
+        syncDot.className = 'dot';
+        syncLabel.textContent = 'Live';
 
-                    // 2. Add new remote leads
-                    for (const [id, remoteLead] of remoteMap) {
-                        if (!newLeads.some(l => l.id === id)) {
-                            newLeads.push(remoteLead);
-                            changed = true;
-                        }
-                    }
-
-                    if (changed) {
-                        leads = newLeads;
-                        saving = true;
-                        try {
-                            for (const lead of leads) {
-                                await dbPut(lead);
-                            }
-                            await dbRef.set(leads);
-                        } catch (e) { /* ignore */ }
-                        saving = false;
-                        render();
-                        toast('Synced with remote');
-                    }
-
-                    firebaseReady = true;
-                    useFirebase = true;
-                    syncDot.className = 'dot';
-                    syncLabel.textContent = 'Live';
-                }, () => {
-                    syncDot.className = 'dot offline';
-                    syncLabel.textContent = 'Offline';
-                });
+    } catch (e) {
+        console.warn('Firebase DB init error:', e);
+        syncDot.className = 'dot offline';
+        syncLabel.textContent = 'Local';
+    }
+}
 
                 // ═══════════════════════════════════════════════════════════
                 // REMOVED: dbRef.once('value') listener – it restored deleted leads.
