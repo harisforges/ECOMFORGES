@@ -15,88 +15,46 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <style>
-        /* ── Variables ── */
         :root {
-            --navy: #162840;
-            --main-blue: #1C3350;
-            --panel: #1A2E46;
-            --row-alt: #132238;
-            --border: #1E4060;
-            --border-light: #2A5A7A;
-            --text: #FFFFFF;
-            --text-soft: #708CA8;
-            --text-muted: #4A6A8A;
-            --cyan: #20F6F8;
-            --dark-cyan: #10A5B4;
-            --cyan-dim: rgba(32, 246, 248, 0.12);
-            --cyan-glow: rgba(32, 246, 248, 0.25);
-            --green: #2DD4A0;
-            --green-dim: rgba(45, 212, 160, 0.12);
-            --amber: #F6B83D;
-            --amber-dim: rgba(246, 184, 61, 0.12);
-            --red: #FF6B6B;
-            --red-dim: rgba(255, 107, 107, 0.12);
-            --blue: #60A5FA;
-            --blue-dim: rgba(96, 165, 250, 0.12);
-            --purple: #A78BFA;
-            --purple-dim: rgba(167, 139, 250, 0.12);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-            --transition: 0.2s ease;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --navy: #162840; --main-blue: #1C3350; --panel: #1A2E46; --row-alt: #132238;
+            --border: #1E4060; --border-light: #2A5A7A; --text: #FFFFFF; --text-soft: #708CA8;
+            --text-muted: #4A6A8A; --cyan: #20F6F8; --dark-cyan: #10A5B4;
+            --cyan-dim: rgba(32, 246, 248, 0.12); --cyan-glow: rgba(32, 246, 248, 0.25);
+            --green: #2DD4A0; --green-dim: rgba(45, 212, 160, 0.12);
+            --amber: #F6B83D; --amber-dim: rgba(246, 184, 61, 0.12);
+            --red: #FF6B6B; --red-dim: rgba(255, 107, 107, 0.12);
+            --blue: #60A5FA; --blue-dim: rgba(96, 165, 250, 0.12);
+            --purple: #A78BFA; --purple-dim: rgba(167, 139, 250, 0.12);
+            --radius: 12px; --radius-sm: 8px; --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --transition: 0.2s ease; --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--navy);
-            color: var(--text);
-            line-height: 1.5;
-            padding: 0 0 100px;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
+            background: var(--navy); color: var(--text); line-height: 1.5;
+            padding: 0 0 100px; -webkit-font-smoothing: antialiased; min-height: 100vh;
             overscroll-behavior: none;
         }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: var(--navy); }
         ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
 
-        /* ── Loading overlay ── */
         #loading-overlay {
-            position: fixed; inset: 0;
-            background: var(--navy);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            transition: opacity 0.3s ease;
+            position: fixed; inset: 0; background: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 999; transition: opacity 0.3s ease;
         }
-        #loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #loading-overlay .loader-box {
-            text-align: center;
-            color: var(--text-soft);
-        }
+        #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        #loading-overlay .loader-box { text-align: center; color: var(--text-soft); }
         #loading-overlay .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border);
-            border-top-color: var(--cyan);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
+            display: inline-block; width: 40px; height: 40px;
+            border: 4px solid var(--border); border-top-color: var(--cyan);
+            border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;
         }
-        #loading-overlay p {
-            font-size: 14px;
-        }
+        #loading-overlay p { font-size: 14px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Login Overlay ── */
         #login-overlay {
             position: fixed; inset: 0; background: var(--navy);
             display: flex; align-items: center; justify-content: center;
@@ -116,25 +74,19 @@
         #login-overlay .login-box .login-brand .brand-badge {
             font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
             color: var(--text-soft); background: var(--navy);
-            padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border);
-            margin-left: 6px;
+            padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border); margin-left: 6px;
         }
         #login-overlay .login-box .sub { font-size: 13px; color: var(--text-soft); margin-bottom: 20px; }
         #login-overlay .login-box input {
             width: 100%; padding: 12px 14px; margin-bottom: 12px;
             border-radius: var(--radius-sm); border: 1.5px solid var(--border);
             background: var(--panel); color: var(--text); font-size: 14px;
-            font-family: inherit; outline: none; transition: border-color var(--transition);
-            min-height: 44px;
+            font-family: inherit; outline: none; transition: border-color var(--transition); min-height: 44px;
         }
         #login-overlay .login-box input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
         #login-overlay .login-box input::placeholder { color: var(--text-muted); }
-        #login-overlay .login-box .password-wrapper {
-            position: relative; margin-bottom: 12px;
-        }
-        #login-overlay .login-box .password-wrapper input {
-            margin-bottom: 0; padding-right: 44px;
-        }
+        #login-overlay .login-box .password-wrapper { position: relative; margin-bottom: 12px; }
+        #login-overlay .login-box .password-wrapper input { margin-bottom: 0; padding-right: 44px; }
         #login-overlay .login-box .password-wrapper .toggle-password {
             position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
             background: none; border: none; color: var(--text-muted);
@@ -152,8 +104,7 @@
         #login-overlay .login-box .btn-login {
             width: 100%; padding: 12px; background: var(--cyan); color: var(--navy);
             border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
-            cursor: pointer; font-family: inherit; transition: all var(--transition);
-            min-height: 48px;
+            cursor: pointer; font-family: inherit; transition: all var(--transition); min-height: 48px;
         }
         #login-overlay .login-box .btn-login:hover { background: #4dfbfd; box-shadow: 0 0 24px var(--cyan-glow); }
         #login-overlay .login-box .btn-login:active { transform: scale(0.97); }
@@ -163,11 +114,9 @@
             border-top: 1px solid var(--border); padding-top: 14px;
         }
 
-        /* ── App Root ── */
         #app-root { display: none; }
         #app-root.show { display: block; }
 
-        /* ── Toast ── */
         #toast {
             position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%;
             transform: translateX(-50%) translateY(20px);
@@ -187,18 +136,15 @@
         }
         #toast .undo-btn:active { transform: scale(0.95); }
 
-        /* ── Header (matched to ForgeMarketing) ── */
         header {
             background: linear-gradient(180deg, var(--main-blue) 0%, var(--navy) 100%);
-            border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 50;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
         }
         .top {
-            max-width: 1080px; margin: 0 auto;
-            padding: 12px 16px;
+            max-width: 1080px; margin: 0 auto; padding: 12px 16px;
             display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
         }
-        .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand { display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; user-select: none; -webkit-user-select: none; }
         .brand-lockup { height: 26px; width: auto; display: block; }
         .brand-mark { display: none; height: 26px; width: auto; }
         .brand-rule { width: 1px; height: 22px; background: var(--border-light); flex: none; }
@@ -210,9 +156,7 @@
             background: var(--cyan-dim); color: var(--cyan);
             border: 1px solid rgba(32, 246, 248, 0.3); white-space: nowrap;
         }
-        .header-actions {
-            display: flex; align-items: center; gap: 8px; margin-left: auto;
-        }
+        .header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .sync-badge {
             font-size: 10px; color: var(--text-soft);
             display: flex; align-items: center; gap: 4px;
@@ -225,12 +169,10 @@
         .btn-logout {
             background: var(--red-dim); color: var(--red); border: 1px solid transparent;
             padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm);
-            cursor: pointer; font-family: inherit; transition: all var(--transition);
-            min-height: 34px;
+            cursor: pointer; font-family: inherit; transition: all var(--transition); min-height: 34px;
         }
         .btn-logout:hover { background: var(--red); color: var(--navy); }
 
-        /* ── Stats Row ── */
         .stats-row {
             background: var(--panel); border-bottom: 1px solid var(--border);
             padding: 6px 16px; overflow-x: auto; scrollbar-width: none;
@@ -238,9 +180,7 @@
             font-size: 13px; color: var(--text-soft);
         }
         .stats-row::-webkit-scrollbar { display: none; }
-        .stats-row .stat-item {
-            display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; flex-shrink: 0;
-        }
+        .stats-row .stat-item { display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; flex-shrink: 0; }
         .stats-row .stat-item strong { font-weight: 700; color: var(--text); font-size: 15px; }
         .stats-row .stat-item .label { opacity: 0.7; font-size: 11px; }
         .stats-row .divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
@@ -249,7 +189,6 @@
             .stats-row .stat-item strong { font-size: 13px; }
         }
 
-        /* ── Status Filters ── */
         .filters {
             max-width: 1080px; margin: 10px auto 0; padding: 0 16px;
             display: flex; gap: 5px; flex-wrap: wrap;
@@ -270,7 +209,6 @@
         }
         .filter-btn.active .count { background: var(--cyan); color: var(--navy); }
 
-        /* ── Owner Filters ── */
         .owner-filters {
             max-width: 1080px; margin: 6px auto 0; padding: 0 16px;
             display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
@@ -286,8 +224,7 @@
             border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 500;
             color: var(--text-soft); cursor: pointer; transition: all var(--transition);
             font-family: inherit; white-space: nowrap; flex-shrink: 0;
-            min-height: 32px;
-            min-width: max-content;
+            min-height: 32px; min-width: max-content;
         }
         .own-btn:hover { border-color: var(--green); color: var(--text); }
         .own-btn.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
@@ -297,7 +234,6 @@
         }
         .own-btn.active .count { background: var(--green); color: var(--navy); }
 
-        /* ── Action Bar ── */
         .action-bar {
             max-width: 1080px; margin: 8px auto 0; padding: 0 16px;
             display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
@@ -313,7 +249,6 @@
         .action-bar .btn.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
         .action-bar .spacer { flex: 1; }
 
-        /* ── Bulk actions bar ── */
         .bulk-bar {
             max-width: 1080px; margin: 8px auto 0; padding: 0 16px;
             display: none; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -325,7 +260,6 @@
         .bulk-bar .count strong { color: var(--text); }
         .bulk-bar .btn { min-height: 34px; font-size: 12px; padding: 6px 14px; }
 
-        /* ── Toolbar ── */
         .toolbar {
             max-width: 1080px; margin: 12px auto 0; padding: 0 16px;
             display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
@@ -358,10 +292,8 @@
         .sort-wrap select:focus { border-color: var(--cyan); }
         .sort-wrap select option { background: var(--panel); color: var(--text); }
 
-        /* ── Lead List ── */
         .list-wrap { max-width: 1080px; margin: 14px auto 0; padding: 0 16px; position: relative; }
 
-        /* ── Lead Card ── */
         .lead-card {
             background: var(--main-blue); border-radius: 16px;
             border: 1px solid var(--border); padding: 14px 16px;
@@ -415,9 +347,7 @@
             font-size: 12px; padding: 5px 12px; min-height: 32px;
             border: none; border-radius: 20px;
         }
-        .btn-contact {
-            background: var(--cyan-dim); color: var(--cyan);
-        }
+        .btn-contact { background: var(--cyan-dim); color: var(--cyan); }
         .btn-contact:hover { background: var(--cyan); color: var(--navy); }
         .btn-contact.contacted { background: var(--text-muted); color: var(--navy); }
         .btn-contact.contacted:hover { background: var(--text-soft); }
@@ -458,12 +388,10 @@
         }
         .lead-card .followup-badge.overdue { color: var(--red); border-color: var(--red); background: var(--red-dim); }
 
-        /* ── Swipe feedback ── */
         .lead-card.swiping { transition: transform 0.2s ease; }
         .lead-card.swiped-left { transform: translateX(-80px); }
         .lead-card.swiped-right { transform: translateX(80px); }
 
-        /* ── Detail View ── */
         .detail-overlay {
             position: fixed; inset: 0; background: var(--navy);
             z-index: 300; display: none; flex-direction: column;
@@ -501,7 +429,6 @@
         .detail-overlay .detail-body .activity-full .who { color: var(--cyan); font-weight: 500; min-width: 50px; }
         .detail-overlay .detail-body .activity-full .msg { flex: 1; }
 
-        /* ── Modal ── */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.65);
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -528,9 +455,7 @@
         .modal .form-group { margin-bottom: 14px; }
         .modal .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; }
         .modal .form-group label .req { color: var(--red); }
-        .chip-select {
-            display: flex; flex-wrap: wrap; gap: 6px;
-        }
+        .chip-select { display: flex; flex-wrap: wrap; gap: 6px; }
         .chip-select .chip {
             background: var(--navy); border: 1px solid var(--border);
             border-radius: 20px; padding: 6px 13px; font-size: 12px;
@@ -570,9 +495,7 @@
         }
         .modal .form-group textarea { resize: vertical; min-height: 60px; }
         .modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .modal .form-actions {
-            display: flex; gap: 10px; margin-top: 18px;
-        }
+        .modal .form-actions { display: flex; gap: 10px; margin-top: 18px; }
         .modal .form-actions .btn { flex: 1; padding: 12px; font-size: 14px; min-height: 48px; }
         .modal .form-actions .btn-cancel { background: var(--panel); color: var(--text-soft); border: 1px solid var(--border); }
         .modal .form-actions .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
@@ -588,7 +511,6 @@
             .modal { border-radius: var(--radius); max-height: 85vh; }
         }
 
-        /* ── FAB ── */
         .fab {
             position: fixed; bottom: calc(28px + var(--safe-bottom)); right: 24px;
             width: 60px; height: 60px; border-radius: 50%;
@@ -603,7 +525,6 @@
             .fab { width: 54px; height: 54px; font-size: 26px; bottom: 20px; right: 18px; }
         }
 
-        /* ── Footer ── */
         footer {
             max-width: 1080px; margin: 30px auto 0; padding: 0 20px 20px;
             text-align: center; font-size: 11px; color: var(--text-muted);
@@ -612,10 +533,8 @@
         footer .divider { width: 40px; height: 2px; background: var(--cyan); margin: 0 auto 12px; }
         footer strong { color: var(--text-soft); }
 
-        /* ── Hidden file input ── */
         #file-input { display: none; }
 
-        /* ── Pull to refresh ── */
         .pull-indicator {
             text-align: center; color: var(--text-muted); font-size: 12px;
             padding: 8px 0; opacity: 0; transition: opacity 0.2s; height: 0; overflow: hidden;
@@ -630,8 +549,7 @@
 
         .empty-state {
             text-align: center; padding: 60px 20px; color: var(--text-soft);
-            background: var(--main-blue); border-radius: var(--radius);
-            border: 1px solid var(--border);
+            background: var(--main-blue); border-radius: var(--radius); border: 1px solid var(--border);
         }
         .empty-state .big { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.6; }
         .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 6px; }
@@ -646,29 +564,97 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Print ── */
-        @media print {
-            :root {
-                --navy: #fff; --main-blue: #f8f8f8; --panel: #f0f0f0; --row-alt: #e8e8e8;
-                --border: #ccc; --border-light: #aaa; --text: #111; --text-soft: #444; --text-muted: #777;
-                --cyan: #1a7a5e; --dark-cyan: #0f4a38; --cyan-dim: rgba(26,122,94,0.1);
-            }
-            body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .fab, .action-bar, .filters .filter-btn:not(.active), .filters .own-btn:not(.active),
-            .search-wrap, .header-actions .sync-badge, .lead-card .actions .btn-delete,
-            .lead-card .actions .btn-assign, .lead-card .actions .btn-note, .bulk-bar,
-            .sort-wrap, .detail-overlay, #login-overlay, .btn-logout { display: none !important; }
-            #app-root { display: block !important; }
-            .lead-card { break-inside: avoid; border-color: #ccc !important; }
-            .lead-card .actions .btn-contact, .lead-card .actions .btn-edit {
-                border: 1px solid #ccc !important; background: #f0f0f0 !important; color: #111 !important;
-            }
-            .modal-overlay, .sheet-overlay { display: none !important; }
-            header { border-bottom-color: #1a7a5e !important; }
-            .brand-mark { display: none !important; }
-            .brand-lockup { display: block !important; filter: brightness(0) !important; }
-            .brand-rule { background: #ccc !important; }
-            .status-badge { border: 1px solid #ccc !important; }
+        /* ── Recovery overlay ── */
+        .recovery-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 700; padding: 20px;
+        }
+        .recovery-overlay.open { display: flex; }
+        .recovery-panel {
+            background: var(--main-blue); border-radius: var(--radius);
+            border: 2px solid var(--amber); width: 100%; max-width: 720px;
+            max-height: 88vh; display: flex; flex-direction: column;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+        }
+        .recovery-head {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 20px; border-bottom: 1px solid var(--border);
+        }
+        .recovery-head h2 { font-size: 17px; font-weight: 700; color: var(--amber); }
+        .recovery-head .close {
+            background: none; border: none; font-size: 24px; cursor: pointer;
+            color: var(--text-soft); padding: 0 4px; line-height: 1; font-family: inherit;
+        }
+        .recovery-head .close:hover { color: var(--text); }
+        .recovery-info {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; border-bottom: 1px solid var(--border);
+            font-size: 12px; color: var(--text-soft);
+        }
+        .recovery-info .btn {
+            font-size: 11px; padding: 4px 10px; min-height: 28px;
+            background: var(--panel); color: var(--text-soft);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            cursor: pointer; font-family: inherit;
+        }
+        .recovery-info .btn:hover { border-color: var(--amber); color: var(--amber); }
+        .recovery-list { flex: 1; overflow-y: auto; padding: 12px 16px; }
+        .recovery-item {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 12px 14px; margin-bottom: 10px; background: var(--panel);
+        }
+        .recovery-item.deleted { border-color: var(--red-dim); }
+        .recovery-item .row1 {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 8px; margin-bottom: 4px;
+        }
+        .recovery-item .row1 .company { font-weight: 700; font-size: 14px; color: var(--text); }
+        .recovery-item .row1 .meta { font-size: 10px; color: var(--text-muted); text-align: right; }
+        .recovery-item .pic-line { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }
+        .recovery-item .buttons { display: flex; gap: 6px; }
+        .recovery-item .buttons .btn {
+            font-size: 11px; padding: 4px 12px; min-height: 28px;
+            border: 1px solid var(--border); border-radius: 14px;
+            cursor: pointer; font-family: inherit; background: var(--navy); color: var(--text-soft);
+        }
+        .recovery-item .buttons .btn.restore { border-color: var(--green); color: var(--green); }
+        .recovery-item .buttons .btn.restore:hover { background: var(--green); color: var(--navy); }
+        .recovery-item .buttons .btn.purge { border-color: var(--red); color: var(--red); }
+        .recovery-item .buttons .btn.purge:hover { background: var(--red); color: var(--navy); }
+        .recovery-empty {
+            text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 13px;
+        }
+
+        .sheet-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px); display: none;
+            align-items: flex-end; justify-content: center;
+            z-index: 210; padding: 16px;
+        }
+        .sheet-overlay.open { display: flex; }
+        .sheet {
+            background: var(--main-blue); border-radius: var(--radius) var(--radius) 0 0;
+            max-width: 500px; width: 100%; padding: 22px 18px 24px;
+            border-top: 2px solid var(--cyan);
+        }
+        .sheet h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+        .sheet .sheet-option {
+            display: block; width: 100%; text-align: left;
+            padding: 12px 14px; margin-bottom: 6px;
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-size: 14px; font-family: inherit; cursor: pointer;
+            transition: all var(--transition);
+        }
+        .sheet .sheet-option:hover { border-color: var(--cyan); }
+        .sheet .sheet-option.current { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+        .sheet .btn-cancel {
+            width: 100%; padding: 12px; margin-top: 8px;
+            background: var(--panel); color: var(--text-soft);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 14px; cursor: pointer;
         }
 
         /* ── Quick Add ── */
@@ -680,9 +666,7 @@
             font-family: inherit; white-space: nowrap; min-height: 44px;
         }
         .btn-quick:hover { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
-        .modal .qa-intro {
-            font-size: 12px; line-height: 1.55; color: var(--text-soft); margin-bottom: 14px;
-        }
+        .modal .qa-intro { font-size: 12px; line-height: 1.55; color: var(--text-soft); margin-bottom: 14px; }
         .modal .qa-intro strong { color: var(--text); font-weight: 600; }
         .modal #qa-input { min-height: 130px; font-size: 13px; }
         .qa-result {
@@ -759,7 +743,6 @@
             .ts-menu { right: -4px; }
         }
 
-        /* ── Responsive ── */
         @media (max-width: 720px) {
             .brand-lockup { display: none; }
             .brand-mark { display: block; }
@@ -806,7 +789,6 @@
             .filter-btn { font-size: 10px; padding: 3px 8px; min-height: 24px; }
             .own-btn { font-size: 10px; padding: 3px 8px; min-height: 24px; }
         }
-
         @media (pointer: coarse) {
             .btn, .filter-btn, .own-btn, .fab, .modal .form-group input,
             .modal .form-group select, .modal .form-group textarea,
@@ -822,7 +804,6 @@
 </head>
 <body>
 
-    <!-- ─── LOADING OVERLAY ─── -->
     <div id="loading-overlay">
         <div class="loader-box">
             <div class="spinner"></div>
@@ -830,7 +811,6 @@
         </div>
     </div>
 
-    <!-- ─── LOGIN OVERLAY ─── -->
     <div id="login-overlay" class="hidden">
         <div class="login-box">
             <div class="login-brand">
@@ -858,16 +838,12 @@
         </div>
     </div>
 
-    <!-- ─── APP ROOT ─── -->
     <div id="app-root">
-
-        <!-- ─── Toast ─── -->
         <div id="toast"><span id="toast-msg"></span><button class="undo-btn" id="toast-undo" style="display:none">Undo</button></div>
 
-        <!-- ─── Header ─── -->
         <header>
             <div class="top">
-                <div class="brand">
+                <div class="brand" id="brand-logo">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 958 147" width="958" height="147" class="brand-lockup" role="img" aria-label="EcomForges" focusable="false">
                     <defs><linearGradient id="lf-lockup-g" gradientUnits="userSpaceOnUse" x1="-52.20" y1="58.59" x2="31.79" y2="-35.68"><stop offset="0" stop-color="#0E5C33"/><stop offset="1" stop-color="#39FF7E"/></linearGradient></defs>
                     <path fill="url(#lf-lockup-g)" d="M57.00 8.87c-4.80 0.73 -7.40 1.80 -14.27 5.97c-0.30 0.20 -1.60 0.93 -2.90 1.67c-1.27 0.73 -2.63 1.50 -3.00 1.73c-0.37 0.23 -0.90 0.50 -1.17 0.63c-0.40 0.20 -5.23 3.03 -7.67 4.47c-0.40 0.23 -9.00 5.20 -11.27 6.50c-6.93 4.00 -9.13 5.67 -11.40 8.77c-2.10 2.83 -4.33 7.40 -4.33 8.83c-0.03 0.40 -0.23 1.10 -0.50 1.57c-0.70 1.20 -0.73 49.83 -0.03 50.83c0.23 0.37 0.53 1.20 0.63 1.87c0.73 4.73 6.53 12.13 11.73 14.97c0.73 0.40 1.80 1.00 2.33 1.37c0.57 0.33 1.23 0.73 1.50 0.87c0.60 0.27 5.27 2.97 6.00 3.43c0.27 0.20 0.73 0.43 1.00 0.57c0.27 0.13 1.93 1.07 3.67 2.10c1.73 1.03 3.40 2.00 3.67 2.10c0.27 0.13 0.97 0.53 1.50 0.90c0.57 0.37 1.30 0.80 1.70 0.97c0.40 0.17 1.53 0.87 2.57 1.50c1.03 0.67 2.23 1.37 2.63 1.53c0.43 0.20 1.23 0.63 1.77 1.00c0.57 0.37 1.23 0.77 1.50 0.90c0.27 0.13 1.57 0.87 2.83 1.60c6.10 3.60 9.17 4.50 15.07 4.50c2.83 -0.03 4.70 -0.20 5.60 -0.50c0.73 -0.27 1.60 -0.50 1.93 -0.50c0.37 -0.00 1.03 -0.20 1.50 -0.47c0.50 -0.23 1.50 -0.77 2.23 -1.13c0.73 -0.37 1.80 -0.93 2.40 -1.30c0.60 -0.33 3.37 -1.93 6.17 -3.53c2.80 -1.63 5.33 -3.07 5.60 -3.23c2.43 -1.43 7.27 -4.27 7.67 -4.47c0.27 -0.13 0.80 -0.40 1.17 -0.63c0.37 -0.23 1.73 -1.00 3.00 -1.73c1.30 -0.73 2.60 -1.47 2.93 -1.67c0.30 -0.17 2.47 -1.43 4.80 -2.77c8.97 -5.20 13.07 -10.37 14.73 -18.70c0.53 -2.50 0.53 -48.20 0.00 -50.13c-1.40 -5.37 -2.37 -7.43 -5.03 -10.83c-1.63 -2.13 -5.30 -5.33 -7.07 -6.23c-0.57 -0.27 -1.27 -0.67 -1.53 -0.83c-0.87 -0.53 -5.47 -3.20 -6.00 -3.43c-0.27 -0.13 -0.93 -0.53 -1.50 -0.90c-0.53 -0.37 -1.33 -0.80 -1.77 -1.00c-0.40 -0.17 -1.60 -0.87 -2.63 -1.53c-1.03 -0.63 -2.17 -1.33 -2.57 -1.50c-0.40 -0.17 -1.13 -0.60 -1.70 -0.97c-0.53 -0.37 -1.23 -0.77 -1.50 -0.90c-0.50 -0.23 -6.77 -3.87 -7.67 -4.43c-0.27 -0.20 -0.73 -0.43 -1.00 -0.57c-0.27 -0.13 -1.63 -0.90 -3.00 -1.70c-6.50 -3.87 -9.87 -5.20 -13.83 -5.57c-1.27 -0.10 -2.63 -0.23 -3.00 -0.30c-0.37 -0.07 -1.93 0.10 -3.50 0.33zM61.00 18.90c0.00 0.63 1.00 3.93 1.67 5.60c0.23 0.53 0.60 1.43 0.83 2.00c7.40 17.93 20.00 31.83 37.13 40.90c4.50 2.37 8.17 3.80 15.80 6.20c2.27 0.70 2.47 1.13 0.67 1.47c-5.23 0.93 -15.40 5.33 -22.50 9.73c-4.07 2.57 -13.23 9.90 -14.40 11.57c-0.23 0.33 -1.07 1.33 -1.90 2.23c-3.20 3.50 -6.37 7.77 -9.53 12.90c-0.47 0.73 -5.00 9.93 -5.43 11.00c-0.27 0.57 -2.17 6.50 -2.57 7.80c-0.20 0.77 -0.67 0.03 -1.37 -2.30c-1.37 -4.50 -5.00 -12.67 -7.13 -16.17c-2.03 -3.30 -4.93 -7.47 -6.70 -9.67c-3.33 -4.13 -10.93 -11.57 -13.80 -13.50c-0.37 -0.27 -1.70 -1.20 -2.93 -2.10c-1.20 -0.87 -2.30 -1.57 -2.40 -1.57c-0.13 -0.00 -0.47 -0.23 -0.77 -0.50c-0.83 -0.77 -7.17 -4.07 -11.17 -5.83c-3.50 -1.57 -10.00 -3.67 -11.23 -3.67c-1.30 -0.00 -1.20 -0.90 0.13 -1.17c1.40 -0.33 9.77 -3.07 10.53 -3.47c0.30 -0.17 2.30 -1.13 4.40 -2.17c7.60 -3.63 12.27 -6.80 18.73 -12.67c3.13 -2.83 8.60 -8.70 9.90 -10.63c4.97 -7.33 9.03 -14.20 9.03 -15.27c0.00 -0.13 0.47 -1.23 1.00 -2.40c0.57 -1.20 1.00 -2.33 1.00 -2.53c0.00 -0.20 0.20 -0.83 0.47 -1.43c0.27 -0.60 0.73 -1.97 1.07 -3.03c0.57 -1.80 1.47 -2.60 1.47 -1.33z"/>
@@ -887,8 +863,7 @@
                         <span id="sync-label">Live</span>
                     </span>
                     <div class="tool-switch">
-                        <button type="button" class="ts-btn" id="ts-btn"
-                                aria-expanded="false" aria-controls="ts-menu" title="Switch tool">
+                        <button type="button" class="ts-btn" id="ts-btn" aria-expanded="false" aria-controls="ts-menu" title="Switch tool">
                             <span class="ts-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                             <span class="ts-label">Tools</span><span class="ts-caret" aria-hidden="true">▾</span>
                         </button>
@@ -908,7 +883,6 @@
             </div>
         </header>
 
-        <!-- ─── Stats Row ─── -->
         <div class="stats-row" id="stats-row">
             <span class="stat-item"><strong id="stat-total">0</strong> <span class="label">Total</span></span>
             <span class="divider"></span>
@@ -923,7 +897,6 @@
             <span class="stat-item"><strong id="stat-overdue">0</strong> <span class="label">Overdue</span></span>
         </div>
 
-        <!-- ─── Status Filters ─── -->
         <div class="filters" id="filter-bar">
             <button class="filter-btn active" data-filter="all">All <span class="count" id="count-all">0</span></button>
             <button class="filter-btn" data-filter="new">New <span class="count" id="count-new">0</span></button>
@@ -935,7 +908,6 @@
             <button class="filter-btn" data-filter="overdue">Overdue <span class="count" id="count-overdue">0</span></button>
         </div>
 
-        <!-- ─── Owner Filters ─── -->
         <div class="owner-filters" id="owner-bar">
             <span class="filters-label">Owner</span>
             <button class="own-btn active" data-owner="all">Everyone <span class="count" id="own-count-all">0</span></button>
@@ -944,7 +916,6 @@
             <button class="own-btn" data-owner="unassigned">Unassigned <span class="count" id="own-count-unassigned">0</span></button>
         </div>
 
-        <!-- ─── Action Bar ─── -->
         <div class="action-bar">
             <button class="btn" id="btn-export-csv" title="Export CSV">📊 Export CSV</button>
             <button class="btn" id="btn-import-csv" title="Import CSV">📥 Import CSV</button>
@@ -953,7 +924,6 @@
             <button class="btn" id="btn-bulk-clear" style="display:none;">✕ Clear Selection</button>
         </div>
 
-        <!-- ─── Bulk Actions Bar ─── -->
         <div class="bulk-bar" id="bulk-bar">
             <span class="count"><strong id="bulk-count">0</strong> selected</span>
             <button class="btn btn-primary btn-sm" id="bulk-contact">📞 Contact</button>
@@ -963,7 +933,6 @@
             <button class="btn btn-ghost btn-sm" id="bulk-clear">Clear</button>
         </div>
 
-        <!-- ─── Toolbar ─── -->
         <div class="toolbar">
             <div class="search-wrap">
                 <span class="icon">🔍</span>
@@ -981,7 +950,6 @@
             </div>
         </div>
 
-        <!-- ─── Lead List ─── -->
         <div class="list-wrap" id="list-wrap">
             <div class="pull-indicator" id="pull-indicator"><span class="spinner-sm"></span> Refreshing...</div>
             <div class="loader" id="loader">
@@ -991,10 +959,8 @@
             <div id="lead-list"></div>
         </div>
 
-        <!-- ─── FAB ─── -->
         <button class="fab" id="fab-add" aria-label="Add lead">+</button>
 
-        <!-- ─── Detail View ─── -->
         <div class="detail-overlay" id="detail-overlay">
             <div class="detail-header">
                 <button class="back-btn" id="detail-back">‹</button>
@@ -1004,7 +970,6 @@
             <div class="detail-body" id="detail-body"></div>
         </div>
 
-        <!-- ─── Modal ─── -->
         <div class="modal-overlay" id="modal-overlay">
             <div class="modal" id="modal">
                 <div class="modal-head">
@@ -1091,7 +1056,6 @@
             </div>
         </div>
 
-        <!-- ─── Quick Add ─── -->
         <div class="modal-overlay" id="qa-overlay">
             <div class="modal" id="qa-modal">
                 <div class="modal-head">
@@ -1121,7 +1085,6 @@
             </div>
         </div>
 
-        <!-- ─── Choice sheet ─── -->
         <div class="sheet-overlay" id="sheet-overlay">
             <div class="sheet">
                 <h3 id="sheet-title">Choose</h3>
@@ -1130,33 +1093,42 @@
             </div>
         </div>
 
-        <!-- ─── Hidden file input ─── -->
+        <div class="recovery-overlay" id="recovery-overlay">
+            <div class="recovery-panel">
+                <div class="recovery-head">
+                    <h2>🛟 Recovery Archive</h2>
+                    <button class="close" id="recovery-close">✕</button>
+                </div>
+                <div class="recovery-info">
+                    <span id="recovery-count">0 archived leads</span>
+                    <button class="btn" id="recovery-export">Export CSV</button>
+                </div>
+                <div class="recovery-list" id="recovery-list"></div>
+            </div>
+        </div>
+
         <input type="file" id="file-input" accept=".csv" aria-label="Choose a CSV of leads to import" />
 
-        <!-- ─── Footer ─── -->
         <footer>
             <div class="divider"></div>
-            <span id="footer-sync">● Synced with IndexedDB</span> · Data stays on this device<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v2.9
+            <span id="footer-sync">● Synced</span> · Data synced across devices<br>
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v3.0
         </footer>
-
     </div>
-    <!-- ─── END APP ROOT ─── -->
 
-    <!-- ─── Firebase SDKs ─── -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <script>
-        /**
-         * ═══════════════════════════════════════════════════════════════════
-         * LEADFORGE v3.0 — Per‑lead writes, object storage, no race conditions.
-         * Fixes: last‑write‑wins eliminated, pull‑to‑refresh less sensitive.
-         * ═══════════════════════════════════════════════════════════════════
-         */
+        /* ═══════════════════════════════════════════════════════════════════
+           LEADFORGE v3.0
+           - Firebase = live source of truth
+           - IndexedDB = device-local archive (never auto-deleted)
+           - Per-lead writes, per-child listeners, transactions with updatedAt
+           - 10s undo toast, triple-tap logo → recovery UI
+           ═══════════════════════════════════════════════════════════════════ */
 
-        // ─── Firebase Config ──────────────────────────────────────────────
         const firebaseConfig = {
             apiKey: "AIzaSyDAm72A60sM9ILdiEw3Z1HJJ7P_-viggJ8",
             authDomain: "leadforge-ffeef.firebaseapp.com",
@@ -1169,28 +1141,18 @@
         const USE_FIREBASE = true;
         const ALLOWED_DOMAIN = '@ecomforges.com';
         const MAX_ATTEMPTS = 5;
+        const UNDO_MS = 10000;
 
-        // ─── INITIALIZE FIREBASE FIRST ──────────────────────────────────
         const firebaseAvailable = typeof firebase !== 'undefined' && typeof firebase.auth === 'function';
-
         try {
-            if (firebaseAvailable) {
-                firebase.initializeApp(firebaseConfig);
-                console.log('🔥 Firebase initialized successfully');
-            } else {
-                console.warn('Firebase SDK did not load — sign-in is unavailable.');
-            }
-        } catch (e) {
-            console.warn('Firebase init (maybe already initialized):', e.message);
-        }
+            if (firebaseAvailable) firebase.initializeApp(firebaseConfig);
+        } catch (e) { /* already initialized */ }
 
-        // ─── Auth state ────────────────────────────────────────────────────
         let currentUser = null;
         let appInitialized = false;
         let loginAttempts = 0;
         let isLockedOut = false;
 
-        // ─── DOM refs for auth ─────────────────────────────────────────────
         const loginOverlay = document.getElementById('login-overlay');
         const loginForm = document.getElementById('login-form');
         const loginEmail = document.getElementById('login-email');
@@ -1206,7 +1168,6 @@
             loginError.innerHTML = msg + (subnote ? `<div class="subnote">${subnote}</div>` : '');
             loginError.classList.toggle('show', !!msg);
         }
-
         function showApp() {
             loadingOverlay.classList.add('hidden');
             loginOverlay.classList.add('hidden');
@@ -1215,7 +1176,6 @@
             isLockedOut = false;
             loginSubmit.disabled = false;
         }
-
         function showLogin() {
             loadingOverlay.classList.add('hidden');
             loginOverlay.classList.remove('hidden');
@@ -1225,25 +1185,21 @@
             loginError.innerHTML = '';
             loginSubmit.disabled = isLockedOut;
         }
-
         function isAllowedEmail(email) {
             return typeof email === 'string' && email.toLowerCase().endsWith(ALLOWED_DOMAIN);
         }
-
         function showSignInUnavailable() {
             loadingOverlay.classList.add('hidden');
             showLogin();
             loginSubmit.disabled = true;
-            showLoginError(
-                'Cannot reach the sign-in service.',
-                'Check your connection and reload the page. Leads already saved on this device are untouched.'
-            );
+            showLoginError('Cannot reach the sign-in service.',
+                'Check your connection and reload the page.');
         }
 
         togglePasswordBtn.addEventListener('click', () => {
-            const isPassword = loginPassword.type === 'password';
-            loginPassword.type = isPassword ? 'text' : 'password';
-            togglePasswordBtn.textContent = isPassword ? '🙈' : '👁️';
+            const isPwd = loginPassword.type === 'password';
+            loginPassword.type = isPwd ? 'text' : 'password';
+            togglePasswordBtn.textContent = isPwd ? '🙈' : '👁️';
         });
 
         let shouldClearPassword = false;
@@ -1257,20 +1213,14 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (isLockedOut) {
-                showLoginError('Too many failed attempts. Please contact IT support for help.', 'Support: help@ecomforges.com');
+                showLoginError('Too many failed attempts. Please contact IT support.', 'Support: help@ecomforges.com');
                 return;
             }
             const email = loginEmail.value.trim();
             const password = loginPassword.value;
             showLoginError('');
-            if (!isAllowedEmail(email)) {
-                showLoginError('Only @ecomforges.com accounts are allowed.');
-                return;
-            }
-            if (!password) {
-                showLoginError('Please enter your password.');
-                return;
-            }
+            if (!isAllowedEmail(email)) { showLoginError('Only @ecomforges.com accounts are allowed.'); return; }
+            if (!password) { showLoginError('Please enter your password.'); return; }
             if (!firebaseAvailable) { showSignInUnavailable(); return; }
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -1280,40 +1230,27 @@
                 if (loginAttempts >= MAX_ATTEMPTS) {
                     isLockedOut = true;
                     loginSubmit.disabled = true;
-                    showLoginError('Too many failed attempts. Please contact IT support for help.', 'Support: help@ecomforges.com');
+                    showLoginError('Too many failed attempts. Please contact IT support.', 'Support: help@ecomforges.com');
                     return;
                 }
-                let msg = 'Sign-in failed. ';
-                let sub = '';
-                if (err.code === 'auth/wrong-password') {
-                    msg = 'Incorrect password for this email. Please try again.';
-                    sub = `${remaining} attempt${remaining > 1 ? 's' : ''} remaining before lockout.`;
-                } else if (err.code === 'auth/user-not-found') {
-                    msg = 'No account found with this email. Please check your email.';
-                    sub = 'Please try again or contact support.';
-                } else {
-                    msg = err.message || 'Sign-in failed. Please try again.';
-                }
+                let msg = 'Sign-in failed. ', sub = '';
+                if (err.code === 'auth/wrong-password') { msg = 'Incorrect password.'; sub = `${remaining} attempt${remaining > 1 ? 's' : ''} remaining.`; }
+                else if (err.code === 'auth/user-not-found') { msg = 'No account found with this email.'; }
+                else { msg = err.message || 'Sign-in failed.'; }
                 showLoginError(msg, sub);
                 shouldClearPassword = true;
             }
         });
 
-        logoutBtn.addEventListener('click', () => {
-            if (firebaseAvailable) firebase.auth().signOut();
-        });
+        logoutBtn.addEventListener('click', () => { if (firebaseAvailable) firebase.auth().signOut(); });
 
         if (!firebaseAvailable) showSignInUnavailable();
 
-        // ─── onAuthStateChanged ──────────────────────────────────────────
         if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
             if (user && isAllowedEmail(user.email)) {
                 currentUser = user;
                 showApp();
-                if (!appInitialized) {
-                    appInitialized = true;
-                    initApp();
-                }
+                if (!appInitialized) { appInitialized = true; initApp(); }
             } else if (user && !isAllowedEmail(user.email)) {
                 firebase.auth().signOut();
                 showLoginError('This account is not authorized (must be @ecomforges.com).');
@@ -1323,13 +1260,12 @@
             }
         });
 
-        // ─── Firebase Realtime DB ──────────────────────────────────────────
+        // ─── Firebase DB ─────────────────────────────────────────────────
         let dbRef = null;
         let firebaseReady = false;
-        let useFirebase = false;
-        let saving = false;
         const syncDot = document.getElementById('sync-dot');
         const syncLabel = document.getElementById('sync-label');
+        const pendingDeletes = new Map(); // id -> { lead, timerId, committed }
 
         function initFirebaseDB() {
             if (!USE_FIREBASE || !firebaseAvailable) {
@@ -1341,91 +1277,19 @@
                 const db = firebase.database();
                 dbRef = db.ref('leads');
 
-                // ─── Persistent listener: handles all sync ──
-                dbRef.on('value', async (snapshot) => {
-                    const val = snapshot.val();
-
-                    // If remote is empty and we have local data, push local up (initial seed)
-                    if ((val === null || (typeof val === 'object' && Object.keys(val).length === 0)) && leads.length > 0) {
-                        saving = true;
-                        try {
-                            // Convert leads array to object keyed by id
-                            const obj = {};
-                            leads.forEach(l => { obj[l.id] = l; });
-                            await dbRef.set(obj);
-                        } catch (e) { /* ignore */ }
-                        saving = false;
-                        return;
-                    }
-
-                    const remoteMap = new Map();
-                    // Handle both object and array (backward compatibility)
-                    if (val && typeof val === 'object') {
-                        if (Array.isArray(val)) {
-                            // Old array format – migrate to object
-                            for (const r of val) {
-                                const incoming = migrateLead(r);
-                                remoteMap.set(incoming.id, incoming);
-                            }
-                        } else {
-                            // Object format: key is lead ID
-                            for (const [id, data] of Object.entries(val)) {
-                                const incoming = migrateLead({ id, ...data });
-                                remoteMap.set(id, incoming);
-                            }
-                        }
-                    }
-
-                    let changed = false;
-                    const newLeads = [];
-
-                    // 1. Process local leads: keep only those that exist remotely
-                    for (const local of leads) {
-                        const remoteLead = remoteMap.get(local.id);
-                        if (remoteLead) {
-                            if ((remoteLead.updatedAt || 0) > (local.updatedAt || 0)) {
-                                Object.assign(local, remoteLead);
-                                changed = true;
-                            }
-                            newLeads.push(local);
-                        } else {
-                            console.log('🗑️ Deleting local lead:', local.company);
-                            changed = true;
-                        }
-                    }
-
-                    // 2. Add new remote leads
-                    for (const [id, remoteLead] of remoteMap) {
-                        if (!newLeads.some(l => l.id === id)) {
-                            newLeads.push(remoteLead);
-                            changed = true;
-                        }
-                    }
-
-                    // Only update local and IndexedDB – do NOT write back to Firebase
-                    if (changed) {
-                        leads = newLeads;
-                        try {
-                            for (const lead of leads) {
-                                await dbPut(lead);
-                            }
-                        } catch (e) { /* ignore */ }
-                        render();
-                        toast('Synced with remote');
-                    }
-
-                    firebaseReady = true;
-                    useFirebase = true;
-                    syncDot.className = 'dot';
-                    syncLabel.textContent = 'Live';
-                }, () => {
-                    syncDot.className = 'dot offline';
-                    syncLabel.textContent = 'Offline';
+                dbRef.on('child_added', (snap) => {
+                    const lead = migrateLead({ id: snap.key, ...snap.val() });
+                    applyRemoteLead(lead, 'add');
+                });
+                dbRef.on('child_changed', (snap) => {
+                    const lead = migrateLead({ id: snap.key, ...snap.val() });
+                    applyRemoteLead(lead, 'update');
+                });
+                dbRef.on('child_removed', (snap) => {
+                    applyRemoteLead({ id: snap.key }, 'remove');
                 });
 
-                // ─── Mark Firebase as ready ────────────────────────────────────
                 firebaseReady = true;
-                useFirebase = true;
                 syncDot.className = 'dot';
                 syncLabel.textContent = 'Live';
 
@@ -1433,6 +1297,42 @@
                 console.warn('Firebase DB init error:', e);
                 syncDot.className = 'dot offline';
                 syncLabel.textContent = 'Local';
+            }
+        }
+
+        function applyRemoteLead(lead, kind) {
+            // Never re-add a lead that's pending local deletion
+            if (kind !== 'remove' && pendingDeletes.has(lead.id)) return;
+
+            if (kind === 'remove') {
+                const idx = leads.findIndex(l => l.id === lead.id);
+                if (idx >= 0) {
+                    const [removed] = leads.splice(idx, 1);
+                    archiveLead(removed).then(() => render());
+                }
+                return;
+            }
+
+            const idx = leads.findIndex(l => l.id === lead.id);
+            if (kind === 'add') {
+                if (idx === -1) {
+                    leads.push(lead);
+                    dbPutLive(lead).then(() => archiveLead(lead));
+                    render();
+                }
+            } else if (kind === 'update') {
+                if (idx >= 0) {
+                    if ((lead.updatedAt || 0) >= (leads[idx].updatedAt || 0)) {
+                        leads[idx] = lead;
+                        dbPutLive(lead).then(() => archiveLead(lead));
+                        render();
+                    }
+                } else {
+                    // New to us, treat as add
+                    leads.push(lead);
+                    dbPutLive(lead).then(() => archiveLead(lead));
+                    render();
+                }
             }
         }
 
@@ -1473,9 +1373,9 @@
             { value: 'social', label: 'Instagram / Facebook' },
         ];
         const CADENCE = {
-            cold: { days: 3, note: 'Email 2, three working days after the first send — same thread.' },
-            warm: { days: 1, note: 'Inbound gets answered the same day (WhatsApp A). Next touch tomorrow.' },
-            referral: { days: 1, note: 'Referral introduction goes out the day it lands (WhatsApp B).' },
+            cold: { days: 3, note: 'Email 2, three working days after the first send.' },
+            warm: { days: 1, note: 'Inbound gets answered the same day.' },
+            referral: { days: 1, note: 'Referral introduction goes out the day it lands.' },
         };
 
         function labelOf(list, value) {
@@ -1483,7 +1383,6 @@
             const hit = list.find(o => o.value === value);
             return hit ? hit.label : value;
         }
-
         function coerce(list, raw) {
             const t = String(raw || '').trim();
             if (!t) return '';
@@ -1491,14 +1390,12 @@
             const hit = list.find(o => o.value === k || o.label.toLowerCase() === k);
             return hit ? hit.value : t;
         }
-
         function normalisePlatforms(list) {
             const want = new Set((Array.isArray(list) ? list : []).map(v => coerce(PLATFORMS, v)).filter(Boolean));
             const known = PLATFORMS.filter(pl => want.has(pl.value)).map(pl => pl.value);
             const rest = [...want].filter(v => !PLATFORMS.some(pl => pl.value === v));
             return [...known, ...rest];
         }
-
         function migrateLead(lead) {
             if (!lead || typeof lead !== 'object') return lead;
             lead.industry = coerce(INDUSTRIES, lead.industry);
@@ -1517,12 +1414,8 @@
         let userId = 'user_' + Math.random().toString(36).slice(2, 7);
         let bulkMode = false;
         let selectedIds = new Set();
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isSwiping = false;
-        let currentSwipeId = null;
+        let touchStartX = 0, touchStartY = 0, isSwiping = false, currentSwipeId = null;
 
-        // ─── DOM refs ──────────────────────────────────────────────────
         const $ = (s) => document.querySelector(s);
         const $$ = (s) => document.querySelectorAll(s);
 
@@ -1586,217 +1479,174 @@
         const sheetTitle = document.getElementById('sheet-title');
         const sheetOptions = document.getElementById('sheet-options');
         const sheetCancel = document.getElementById('sheet-cancel');
+        const brandLogo = document.getElementById('brand-logo');
+        const recoveryOverlay = document.getElementById('recovery-overlay');
+        const recoveryClose = document.getElementById('recovery-close');
+        const recoveryCount = document.getElementById('recovery-count');
+        const recoveryList = document.getElementById('recovery-list');
+        const recoveryExport = document.getElementById('recovery-export');
 
         // ─── Toast ──────────────────────────────────────────────────────
         let toastTimer = null;
         let undoCallback = null;
+        let timeoutCallback = null;
 
-        function toast(msg, duration = 2400, undo = null) {
+        function toast(msg, duration = 2400, undo = null, onTimeout = null) {
             toastMsg.textContent = msg;
             toastUndo.style.display = undo ? 'inline-block' : 'none';
             undoCallback = undo;
+            timeoutCallback = onTimeout;
             toastEl.classList.add('show');
             clearTimeout(toastTimer);
-            if (!undo) {
-                toastTimer = setTimeout(() => toastEl.classList.remove('show'), duration);
-            }
+            toastTimer = setTimeout(() => {
+                toastEl.classList.remove('show');
+                if (timeoutCallback) timeoutCallback();
+                undoCallback = null;
+                timeoutCallback = null;
+            }, duration);
         }
 
         toastUndo.addEventListener('click', () => {
-            if (undoCallback) {
-                undoCallback();
-                toast('Undo done', 1500);
-            }
-            toastEl.classList.remove('show');
+            clearTimeout(toastTimer);
+            const cb = undoCallback;
             undoCallback = null;
+            timeoutCallback = null;
+            toastEl.classList.remove('show');
+            if (cb) cb();
         });
 
-        // ─── ID generation ──────────────────────────────────────────────
+        // ─── ID / formatting ────────────────────────────────────────────
         function generateId() { return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
         function now() { return Date.now(); }
-
         function formatDate(ts) {
             if (!ts) return '';
-            const d = new Date(ts);
-            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            return new Date(ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         }
-
-        function formatTime(ts) {
-            if (!ts) return '';
-            const d = new Date(ts);
-            return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        }
-
         function formatDateTime(ts) {
             if (!ts) return '';
-            return formatDate(ts) + ' ' + formatTime(ts);
+            const d = new Date(ts);
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+                d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         }
-
-        function isOverdue(followup) {
-            if (!followup) return false;
-            return new Date(followup) < new Date();
-        }
-
+        function isOverdue(followup) { return followup ? new Date(followup) < new Date() : false; }
         function statusClass(s) {
-            const map = {
-                'new': 'status-new',
-                'contacted': 'status-contacted',
-                'meeting': 'status-meeting',
-                'qualified': 'status-qualified',
-                'not-interested': 'status-not-interested',
-                'converted': 'status-converted'
-            };
+            const map = { 'new': 'status-new', 'contacted': 'status-contacted', 'meeting': 'status-meeting',
+                'qualified': 'status-qualified', 'not-interested': 'status-not-interested', 'converted': 'status-converted' };
             return map[s] || 'status-new';
         }
-
         function statusLabel(s) {
-            const map = {
-                'new': 'New',
-                'contacted': 'Contacted',
-                'meeting': 'Meeting',
-                'qualified': 'Qualified',
-                'not-interested': 'Not Interested',
-                'converted': 'Converted'
-            };
+            const map = { 'new': 'New', 'contacted': 'Contacted', 'meeting': 'Meeting',
+                'qualified': 'Qualified', 'not-interested': 'Not Interested', 'converted': 'Converted' };
             return map[s] || s;
         }
 
-        // ─── IndexedDB ──────────────────────────────────────────────────
+        // ─── IndexedDB (2 stores: live + archive) ───────────────────────
         const DB_NAME = 'LeadForgeDB';
-        const STORE_NAME = 'leads';
+        const STORE_LIVE = 'leads';
+        const STORE_ARCHIVE = 'leads_archive';
         let db = null;
 
         function openDB() {
             return new Promise((resolve, reject) => {
-                const req = indexedDB.open(DB_NAME, 1);
+                const req = indexedDB.open(DB_NAME, 2);
                 req.onupgradeneeded = (e) => {
                     const d = e.target.result;
-                    if (!d.objectStoreNames.contains(STORE_NAME)) {
-                        const store = d.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                        store.createIndex('status', 'status', { unique: false });
-                        store.createIndex('assigned', 'assigned', { unique: false });
-                        store.createIndex('followup', 'followup', { unique: false });
-                        store.createIndex('company', 'company', { unique: false });
-                        store.createIndex('createdAt', 'createdAt', { unique: false });
+                    if (!d.objectStoreNames.contains(STORE_LIVE)) {
+                        const s = d.createObjectStore(STORE_LIVE, { keyPath: 'id' });
+                        s.createIndex('status', 'status', { unique: false });
+                        s.createIndex('assigned', 'assigned', { unique: false });
+                        s.createIndex('followup', 'followup', { unique: false });
+                        s.createIndex('company', 'company', { unique: false });
+                        s.createIndex('createdAt', 'createdAt', { unique: false });
+                    }
+                    if (!d.objectStoreNames.contains(STORE_ARCHIVE)) {
+                        d.createObjectStore(STORE_ARCHIVE, { keyPath: 'id' });
                     }
                 };
-                req.onsuccess = (e) => { db = e.target.result;
-                    resolve(db); };
+                req.onsuccess = (e) => { db = e.target.result; resolve(db); };
                 req.onerror = (e) => reject(e.target.error);
             });
         }
 
-        function dbGetAll() {
+        function tx(store, mode, fn) {
             return new Promise((resolve, reject) => {
                 if (!db) return reject(new Error('DB not open'));
-                const tx = db.transaction(STORE_NAME, 'readonly');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
+                const t = db.transaction(store, mode);
+                const s = t.objectStore(store);
+                const req = fn(s);
+                if (req) {
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                } else {
+                    t.oncomplete = () => resolve();
+                    t.onerror = () => reject(t.error);
+                }
             });
         }
 
-        function dbPut(lead) {
-            return new Promise((resolve, reject) => {
-                if (!db) return reject(new Error('DB not open'));
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.put(lead);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        }
+        const dbGetAllLive = () => tx(STORE_LIVE, 'readonly', s => s.getAll());
+        const dbGetAllArchive = () => tx(STORE_ARCHIVE, 'readonly', s => s.getAll());
+        const dbPutLive = (lead) => tx(STORE_LIVE, 'readwrite', s => s.put(lead));
+        const dbDeleteLive = (id) => tx(STORE_LIVE, 'readwrite', s => s.delete(id));
+        const dbPutArchive = (lead) => tx(STORE_ARCHIVE, 'readwrite', s => s.put(lead));
+        const dbDeleteArchive = (id) => tx(STORE_ARCHIVE, 'readwrite', s => s.delete(id));
 
-        async function loadLeads() {
+        async function loadLiveLeads() {
             try {
                 await openDB();
-                const data = await dbGetAll();
-                leads = (data || []).map(migrateLead);
-                return true;
+                const data = await dbGetAllLive();
+                leads = (data || []).map(migrateLead).filter(l => !l.deletedAt);
             } catch (e) {
                 console.warn('IndexedDB load error:', e);
                 try {
                     const raw = localStorage.getItem('leadforge_leads');
                     if (raw) {
                         const parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) leads = parsed.map(migrateLead);
+                        if (Array.isArray(parsed)) leads = parsed.map(migrateLead).filter(l => !l.deletedAt);
                     }
                 } catch (e2) { /* ignore */ }
-                return false;
             }
         }
 
-        // ─── FIXED: saveLeads – per‑lead writes, no full overwrite ────
-        async function saveLeads() {
+        async function archiveLead(lead) {
             try {
-                // Update IndexedDB
-                if (db) {
-                    for (const lead of leads) {
-                        await dbPut(lead);
-                    }
-                } else {
-                    localStorage.setItem('leadforge_leads', JSON.stringify(leads));
-                }
-
-                // Update Firebase – per‑lead writes
-                if (useFirebase && firebaseReady && dbRef) {
-                    saving = true;
-                    try {
-                        // Get current remote keys
-                        const snapshot = await dbRef.once('value');
-                        const remote = snapshot.val() || {};
-                        const remoteIds = new Set(Object.keys(remote));
-
-                        // Remove leads that no longer exist locally
-                        const localIds = new Set(leads.map(l => l.id));
-                        for (const id of remoteIds) {
-                            if (!localIds.has(id)) {
-                                await dbRef.child(id).remove();
-                            }
-                        }
-
-                        // Update each local lead
-                        for (const lead of leads) {
-                            await dbRef.child(lead.id).set(lead);
-                        }
-                    } catch (e) { /* ignore */ }
-                    saving = false;
-                }
-                return true;
-            } catch (e) {
-                console.warn('Save error:', e);
-                localStorage.setItem('leadforge_leads', JSON.stringify(leads));
-                return false;
-            }
+                const copy = { ...lead };
+                if (!copy.deletedAt) copy.deletedAt = null;
+                await dbPutArchive(copy);
+            } catch (e) { /* ignore */ }
         }
 
-        // ─── Sorting ──────────────────────────────────────────────────
+        async function markArchivedDeleted(id) {
+            try {
+                const list = await dbGetAllArchive();
+                const found = list.find(l => l.id === id);
+                if (found) {
+                    found.deletedAt = Date.now();
+                    await dbPutArchive(found);
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        // ─── Sorting / Stats ────────────────────────────────────────────
         function getSortFn(key) {
             switch (key) {
-                case 'created-desc':
-                    return (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
-                case 'created-asc':
-                    return (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
-                case 'company-asc':
-                    return (a, b) => (a.company || '').localeCompare(b.company || '');
-                case 'company-desc':
-                    return (a, b) => (b.company || '').localeCompare(a.company || '');
-                case 'followup-asc':
-                    return (a, b) => {
-                        const fa = a.followup ? new Date(a.followup).getTime() : Infinity;
-                        const fb = b.followup ? new Date(b.followup).getTime() : Infinity;
-                        return fa - fb;
-                    };
-                case 'status':
-                    const order = { new: 0, contacted: 1, meeting: 2, qualified: 3, converted: 4, 'not-interested': 5 };
-                    return (a, b) => (order[a.status] || 99) - (order[b.status] || 99);
-                default:
-                    return (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
+                case 'created-desc': return (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
+                case 'created-asc': return (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
+                case 'company-asc': return (a, b) => (a.company || '').localeCompare(b.company || '');
+                case 'company-desc': return (a, b) => (b.company || '').localeCompare(a.company || '');
+                case 'followup-asc': return (a, b) => {
+                    const fa = a.followup ? new Date(a.followup).getTime() : Infinity;
+                    const fb = b.followup ? new Date(b.followup).getTime() : Infinity;
+                    return fa - fb;
+                };
+                case 'status': {
+                    const o = { new: 0, contacted: 1, meeting: 2, qualified: 3, converted: 4, 'not-interested': 5 };
+                    return (a, b) => (o[a.status] || 99) - (o[b.status] || 99);
+                }
+                default: return (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
             }
         }
 
-        // ─── Stats ──────────────────────────────────────────────────────
         function updateStats() {
             const total = leads.length;
             const contacted = leads.filter(l => l.status === 'contacted' || l.status === 'meeting').length;
@@ -1836,11 +1686,12 @@
             });
         }
 
-        // ─── Render ──────────────────────────────────────────────────────
+        // ─── Render ─────────────────────────────────────────────────────
         function render() {
             const sortFn = getSortFn(sortBy);
             const filtered = leads
                 .filter(lead => {
+                    if (pendingDeletes.has(lead.id)) return false;
                     let matchFilter = true;
                     if (filter === 'all') matchFilter = true;
                     else if (filter === 'overdue') matchFilter = lead.followup && isOverdue(lead.followup);
@@ -1864,28 +1715,17 @@
                 .sort(sortFn);
 
             if (leads.length === 0) {
-                listEl.innerHTML = `
-              <div class="empty-state">
-                <span class="big">🎯</span>
-                <h3>No leads yet</h3>
-                <p>Tap the <strong>+</strong> button to add your first lead.</p>
-                <button class="btn btn-primary" onclick="document.getElementById('fab-add').click()">+ Add Lead</button>
-              </div>
-            `;
+                listEl.innerHTML = `<div class="empty-state"><span class="big">🎯</span><h3>No leads yet</h3>
+                    <p>Tap the <strong>+</strong> button to add your first lead.</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('fab-add').click()">+ Add Lead</button></div>`;
                 loaderEl.style.display = 'none';
                 updateStats();
                 updateBulkBar();
                 return;
             }
-
             if (filtered.length === 0) {
-                listEl.innerHTML = `
-              <div class="empty-state">
-                <span class="big">🔎</span>
-                <h3>No matches</h3>
-                <p>Try adjusting your search or filter.</p>
-              </div>
-            `;
+                listEl.innerHTML = `<div class="empty-state"><span class="big">🔎</span><h3>No matches</h3>
+                    <p>Try adjusting your search or filter.</p></div>`;
                 loaderEl.style.display = 'none';
                 updateStats();
                 updateBulkBar();
@@ -1907,45 +1747,34 @@
                     const snippet = lead.notes.length > 80 ? lead.notes.slice(0, 80) + '…' : lead.notes;
                     notesHtml = `<div class="notes-preview"><span class="emoji">📝</span> ${esc(snippet)}</div>`;
                 }
-
                 let activityHtml = '';
                 if (lead.history && lead.history.length > 0) {
                     const entries = lead.history.slice(-3).reverse();
                     activityHtml = `<div class="activity-log">${entries.map(e =>
-                    `<div class="entry"><span class="time">${esc(formatDateTime(e.date))}</span><span class="who">${esc(e.who || 'user')}</span><span class="msg">${esc(e.note || 'Activity')}</span></div>`
+                        `<div class="entry"><span class="time">${esc(formatDateTime(e.date))}</span><span class="who">${esc(e.who || 'user')}</span><span class="msg">${esc(e.note || 'Activity')}</span></div>`
                     ).join('')}</div>`;
                 }
-
                 let followupHtml = '';
                 if (lead.followup) {
-                    followupHtml =
-                        `<div class="followup-badge ${overdue ? 'overdue' : ''}">${formatDate(lead.followup)}${overdue ? ' ⚠️ Overdue' : ''}</div>`;
+                    followupHtml = `<div class="followup-badge ${overdue ? 'overdue' : ''}">${formatDate(lead.followup)}${overdue ? ' ⚠️ Overdue' : ''}</div>`;
                 }
-
                 const assignedName = labelOf(ASSIGNEES, lead.assigned);
                 const assignedHtml = assignedName ?
-                    `<div class="assigned"><span class="avatar">${esc(assignedName.charAt(0).toUpperCase())}</span> ${esc(assignedName)}</div>` :
-                    '';
+                    `<div class="assigned"><span class="avatar">${esc(assignedName.charAt(0).toUpperCase())}</span> ${esc(assignedName)}</div>` : '';
                 const sourceOpt = optionOf(SOURCES, lead.source);
                 const sourceHtml = lead.source ?
                     `<span class="item"><span class="emoji">${sourceOpt ? sourceOpt.emoji : '📌'}</span> ${esc(labelOf(SOURCES, lead.source))}</span>` : '';
                 const platformsHtml = (lead.platforms || []).length ?
                     `<span class="item"><span class="emoji">🛒</span> ${esc((lead.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' · '))}</span>` : '';
 
-                const companySafe = esc(lead.company || '');
-                const picSafe = esc(lead.pic || '');
-
                 html += `
               <div class="lead-card ${bulkMode ? 'bulk-mode' : ''}" data-id="${esc(lead.id)}">
-                <div class="checkbox-wrap">
-                  <input type="checkbox" class="lead-checkbox" data-id="${esc(lead.id)}" ${checked} />
-                </div>
+                <div class="checkbox-wrap"><input type="checkbox" class="lead-checkbox" data-id="${esc(lead.id)}" ${checked} /></div>
                 <div class="top-row" data-open="${esc(lead.id)}">
                   <div>
-                    <div class="company">${companySafe}</div>
-                    <div class="pic"><strong>${picSafe}</strong> · ${esc(lead.phone || '—')}</div>
-                    ${assignedHtml}
-                    ${followupHtml}
+                    <div class="company">${esc(lead.company || '')}</div>
+                    <div class="pic"><strong>${esc(lead.pic || '')}</strong> · ${esc(lead.phone || '—')}</div>
+                    ${assignedHtml}${followupHtml}
                   </div>
                   <span class="status-badge ${statusCls}">${statusLbl}</span>
                 </div>
@@ -1953,12 +1782,10 @@
                   ${lead.email ? `<span class="item"><span class="emoji">✉</span> ${esc(lead.email)}</span>` : ''}
                   ${lead.website ? `<span class="item"><span class="emoji">🌐</span> ${esc(lead.website)}</span>` : ''}
                   ${lead.industry ? `<span class="item"><span class="emoji">🏢</span> ${esc(labelOf(INDUSTRIES, lead.industry))}</span>` : ''}
-                  ${sourceHtml}
-                  ${platformsHtml}
+                  ${sourceHtml}${platformsHtml}
                   ${lead.createdAt ? `<span class="item"><span class="emoji">📅</span> ${formatDate(lead.createdAt)}</span>` : ''}
                 </div>
-                ${notesHtml}
-                ${activityHtml}
+                ${notesHtml}${activityHtml}
                 <div class="actions">
                   <button class="btn btn-contact ${isContacted ? 'contacted' : ''}" data-action="contact" data-id="${esc(lead.id)}">${contactLabel}</button>
                   <button class="btn btn-edit" data-action="edit" data-id="${esc(lead.id)}">✎ Edit</button>
@@ -1966,8 +1793,7 @@
                   <button class="btn btn-assign" data-action="assign" data-id="${esc(lead.id)}">👤 Assign</button>
                   <button class="btn btn-delete" data-action="delete" data-id="${esc(lead.id)}">✕</button>
                 </div>
-              </div>
-            `;
+              </div>`;
             });
 
             listEl.innerHTML = html;
@@ -1979,8 +1805,7 @@
                 $$('.lead-checkbox').forEach(cb => {
                     cb.addEventListener('change', (e) => {
                         const id = e.target.dataset.id;
-                        if (e.target.checked) selectedIds.add(id);
-                        else selectedIds.delete(id);
+                        if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
                         updateBulkBar();
                     });
                 });
@@ -1990,7 +1815,6 @@
                 btnBulkToggle.classList.remove('active');
                 btnBulkClear.style.display = 'none';
             }
-
             if (!bulkMode) {
                 $$('.lead-card').forEach(card => {
                     card.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -2000,22 +1824,12 @@
             }
         }
 
-        // ─── Bulk bar ──────────────────────────────────────────────────
         function updateBulkBar() {
             const count = selectedIds.size;
             bulkCount.textContent = count;
-            if (count > 0) {
-                bulkBar.classList.add('show');
-            } else {
-                bulkBar.classList.remove('show');
-            }
+            bulkBar.classList.toggle('show', count > 0);
         }
-
-        function clearBulk() {
-            selectedIds.clear();
-            updateBulkBar();
-            render();
-        }
+        function clearBulk() { selectedIds.clear(); updateBulkBar(); render(); }
 
         async function bulkAction(status) {
             const ids = Array.from(selectedIds);
@@ -2028,40 +1842,30 @@
                 lead.status = status;
                 lead.updatedAt = now();
                 lead.history = lead.history || [];
-                lead.history.push({
-                    date: now(),
-                    who: userId,
-                    note: `Bulk status: ${statusLabel(oldStatus)} → ${label}`
-                });
+                lead.history.push({ date: now(), who: userId, note: `Bulk status: ${statusLabel(oldStatus)} → ${label}` });
+                await commitLead(lead);
             }
-            await saveLeads();
             selectedIds.clear();
             render();
-            toast(`Bulk updated ${ids.length} leads to ${label}`);
+            toast('Synced');
         }
 
-        async function bulkDeleteAction() {
-            const ids = Array.from(selectedIds);
-            if (ids.length === 0) return;
-            if (!confirm(`Delete ${ids.length} leads? This cannot be undone.`)) return;
-            const deleted = ids.map(id => getLead(id)).filter(Boolean);
-            leads = leads.filter(l => !ids.includes(l.id));
-            selectedIds.clear();
-            await saveLeads();
-            render();
-            toast(`Deleted ${deleted.length} leads`, 3000, () => {
-                for (const lead of deleted) {
-                    if (!leads.find(l => l.id === lead.id)) {
-                        leads.push(lead);
-                    }
-                }
-                saveLeads();
-                render();
-            });
-        }
-
-        // ─── CRUD ──────────────────────────────────────────────────────
+        // ─── CRUD ───────────────────────────────────────────────────────
         function getLead(id) { return leads.find(l => l.id === id); }
+
+        // Write a lead to Firebase via transaction (server-decided winner)
+        async function commitLead(lead) {
+            await dbPutLive(lead);
+            await archiveLead(lead);
+            if (firebaseReady && dbRef) {
+                try {
+                    await dbRef.child(lead.id).transaction(current => {
+                        if (current && current.updatedAt > lead.updatedAt) return; // abort: remote newer
+                        return lead;
+                    });
+                } catch (e) { /* offline queue handles retry */ }
+            }
+        }
 
         async function addLead(data) {
             const newLead = {
@@ -2080,12 +1884,13 @@
                 notes: (data.notes || '').trim(),
                 createdAt: now(),
                 updatedAt: now(),
-                history: []
+                history: [],
+                deletedAt: null
             };
             leads.unshift(newLead);
-            await saveLeads();
+            await commitLead(newLead);
             render();
-            toast('Lead added!');
+            toast('Synced');
         }
 
         async function updateLead(id, data) {
@@ -2109,15 +1914,11 @@
             });
             if (oldStatus !== lead.status) {
                 lead.history = lead.history || [];
-                lead.history.push({
-                    date: now(),
-                    who: userId,
-                    note: `Status changed: ${statusLabel(oldStatus)} → ${statusLabel(lead.status)}`
-                });
+                lead.history.push({ date: now(), who: userId, note: `Status changed: ${statusLabel(oldStatus)} → ${statusLabel(lead.status)}` });
             }
-            await saveLeads();
+            await commitLead(lead);
             render();
-            toast('Lead updated!');
+            toast('Synced');
         }
 
         async function toggleContact(id) {
@@ -2125,7 +1926,6 @@
             if (!lead) return;
             const isContacted = lead.status === 'contacted' || lead.status === 'meeting' ||
                 lead.status === 'qualified' || lead.status === 'converted';
-
             if (isContacted) {
                 lead.status = 'new';
                 lead.history = lead.history || [];
@@ -2136,9 +1936,9 @@
                 lead.history.push({ date: now(), who: userId, note: 'Initial contact made' });
             }
             lead.updatedAt = now();
-            await saveLeads();
+            await commitLead(lead);
             render();
-            toast(isContacted ? 'Marked as new' : 'Marked as contacted ✓');
+            toast('Synced');
         }
 
         async function addNoteToLead(id, note) {
@@ -2147,9 +1947,9 @@
             lead.history = lead.history || [];
             lead.history.push({ date: now(), who: userId, note: note.trim() });
             lead.updatedAt = now();
-            await saveLeads();
+            await commitLead(lead);
             render();
-            toast('Note added!');
+            toast('Synced');
         }
 
         async function assignLead(id, name) {
@@ -2160,42 +1960,76 @@
             if (old === lead.assigned) return;
             lead.history = lead.history || [];
             const to = labelOf(ASSIGNEES, lead.assigned) || 'unassigned';
-            lead.history.push({
-                date: now(),
-                who: userId,
-                note: old ? `Assigned: ${labelOf(ASSIGNEES, old)} → ${to}` : `Assigned to ${to}`
-            });
+            lead.history.push({ date: now(), who: userId, note: old ? `Assigned: ${labelOf(ASSIGNEES, old)} → ${to}` : `Assigned to ${to}` });
             lead.updatedAt = now();
-            await saveLeads();
+            await commitLead(lead);
             render();
-            toast('Assignment updated');
+            toast('Synced');
         }
 
-        async function deleteLead(id) {
+        // ─── Delete with 10s undo ───────────────────────────────────────
+        function requestDelete(id) {
             const lead = getLead(id);
             if (!lead) return;
-            const deleted = { ...lead };
-            leads = leads.filter(l => l.id !== id);
-            await saveLeads();
-            render();
-            toast(`Deleted "${deleted.company}"`, 4000, () => {
-                if (!leads.find(l => l.id === deleted.id)) {
-                    leads.push(deleted);
-                    saveLeads();
-                    render();
-                }
+            commitDelete([id], `Deleted "${lead.company}"`);
+        }
+
+        function requestBulkDelete() {
+            const ids = Array.from(selectedIds);
+            if (ids.length === 0) return;
+            if (!confirm(`Delete ${ids.length} leads?`)) return;
+            commitDelete(ids, `Deleted ${ids.length} leads`);
+            selectedIds.clear();
+            updateBulkBar();
+        }
+
+        function commitDelete(ids, msg) {
+            const deleted = ids.map(id => getLead(id)).filter(Boolean);
+            if (deleted.length === 0) return;
+
+            deleted.forEach(lead => {
+                lead.pendingDelete = true;
+                pendingDeletes.set(lead.id, { lead });
             });
+            render();
+
+            const undo = () => {
+                deleted.forEach(lead => {
+                    lead.pendingDelete = false;
+                    const p = pendingDeletes.get(lead.id);
+                    if (p && p.timerId) clearTimeout(p.timerId);
+                    pendingDeletes.delete(lead.id);
+                });
+                render();
+            };
+
+            const finish = async () => {
+                for (const lead of deleted) {
+                    const idx = leads.findIndex(l => l.id === lead.id);
+                    if (idx >= 0) leads.splice(idx, 1);
+                    await dbDeleteLive(lead.id);
+                    await markArchivedDeleted(lead.id);
+                    if (firebaseReady && dbRef) {
+                        try {
+                            await dbRef.child(lead.id).transaction(current => {
+                                if (!current) return;
+                                if (current.updatedAt > lead.updatedAt) return; // abort: edited after delete
+                                return null;
+                            });
+                        } catch (e) { /* offline queue */ }
+                    }
+                    pendingDeletes.delete(lead.id);
+                }
+                render();
+                toast('Synced');
+            };
+
+            toast(msg, UNDO_MS, undo, finish);
         }
 
-        function confirmDelete(id) {
-            const lead = getLead(id);
-            if (!lead) return;
-            if (confirm(`Delete "${lead.company}"?`)) {
-                deleteLead(id);
-            }
-        }
+        function confirmDelete(id) { requestDelete(id); }
 
-        // ─── Detail View ──────────────────────────────────────────────
+        // ─── Detail View ────────────────────────────────────────────────
         function openDetail(id) {
             const lead = getLead(id);
             if (!lead) return;
@@ -2217,52 +2051,40 @@
             ${lead.followup ? `<div class="field-row"><div class="label">Follow-up</div><div class="value">${formatDate(lead.followup)}${isOverdue(lead.followup) ? ' ⚠️ Overdue' : ''}</div></div>` : ''}
             ${lead.notes ? `<div class="field-row"><div class="label">Notes</div><div class="value" style="white-space:pre-wrap">${esc(lead.notes)}</div></div>` : ''}
             <div class="field-row"><div class="label">Created</div><div class="value">${formatDateTime(lead.createdAt)}</div></div>
-            <div class="field-row"><div class="label">Updated</div><div class="value">${formatDateTime(lead.updatedAt)}</div></div>
-          `;
+            <div class="field-row"><div class="label">Updated</div><div class="value">${formatDateTime(lead.updatedAt)}</div></div>`;
 
             if (lead.history && lead.history.length > 0) {
                 html += `<div class="section-title">Activity Log</div><div class="activity-full">`;
                 const entries = [...lead.history].reverse();
                 for (const e of entries) {
-                    html += `<div class="entry">
-                <span class="time">${esc(formatDateTime(e.date))}</span>
-                <span class="who">${esc(e.who || 'user')}</span>
-                <span class="msg">${esc(e.note || 'Activity')}</span>
-              </div>`;
+                    html += `<div class="entry"><span class="time">${esc(formatDateTime(e.date))}</span>
+                        <span class="who">${esc(e.who || 'user')}</span>
+                        <span class="msg">${esc(e.note || 'Activity')}</span></div>`;
                 }
                 html += `</div>`;
             }
-
             detailBody.innerHTML = html;
             detailOverlay.classList.add('open');
             document.body.style.overflow = 'hidden';
         }
-
         function closeDetail() {
             detailOverlay.classList.remove('open');
             document.body.style.overflow = '';
         }
-
         detailBack.addEventListener('click', closeDetail);
-        detailOverlay.addEventListener('click', (e) => {
-            if (e.target === detailOverlay) closeDetail();
-        });
+        detailOverlay.addEventListener('click', (e) => { if (e.target === detailOverlay) closeDetail(); });
 
-        // ─── Swipe gestures ──────────────────────────────────────────────
+        // ─── Swipe ──────────────────────────────────────────────────────
         function onTouchStart(e) {
             if (bulkMode) return;
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            isSwiping = false;
-            currentSwipeId = e.currentTarget.dataset.id;
+            const t = e.touches[0];
+            touchStartX = t.clientX; touchStartY = t.clientY;
+            isSwiping = false; currentSwipeId = e.currentTarget.dataset.id;
         }
-
         function onTouchMove(e) {
             if (bulkMode || !currentSwipeId) return;
-            const touch = e.touches[0];
-            const dx = touch.clientX - touchStartX;
-            const dy = touch.clientY - touchStartY;
+            const t = e.touches[0];
+            const dx = t.clientX - touchStartX, dy = t.clientY - touchStartY;
             if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
             if (Math.abs(dx) < Math.abs(dy)) { isSwiping = false; return; }
             e.preventDefault();
@@ -2273,15 +2095,10 @@
             card.style.transform = `translateX(${offset}px)`;
             card.style.transition = 'none';
         }
-
         function onTouchEnd(e) {
             if (bulkMode || !currentSwipeId) return;
             const card = e.currentTarget;
-            if (!isSwiping) {
-                card.style.transform = '';
-                card.style.transition = '';
-                return;
-            }
+            if (!isSwiping) { card.style.transform = ''; card.style.transition = ''; return; }
             const rect = card.getBoundingClientRect();
             const dx = rect.left - card.parentElement.getBoundingClientRect().left;
             const limit = 40;
@@ -2290,84 +2107,74 @@
                 card.style.transition = 'transform 0.2s ease';
                 setTimeout(() => {
                     toggleContact(currentSwipeId);
-                    card.style.transform = '';
-                    card.style.transition = '';
+                    card.style.transform = ''; card.style.transition = '';
                 }, 250);
             } else if (dx > limit) {
                 card.style.transform = `translateX(80px)`;
                 card.style.transition = 'transform 0.2s ease';
                 setTimeout(() => {
                     confirmDelete(currentSwipeId);
-                    card.style.transform = '';
-                    card.style.transition = '';
+                    card.style.transform = ''; card.style.transition = '';
                 }, 250);
             } else {
-                card.style.transform = '';
-                card.style.transition = '';
+                card.style.transform = ''; card.style.transition = '';
             }
-            currentSwipeId = null;
-            isSwiping = false;
+            currentSwipeId = null; isSwiping = false;
         }
 
-        // ─── Pull to refresh (fixed) ──────────────────────────────────────
-        let pullStartY = 0;
-        let isPulling = false;
-        let pullDistance = 0;
+        // ─── Pull-to-refresh (strict) ───────────────────────────────────
+        const PULL_THRESHOLD = 100;
         const listWrap = document.getElementById('list-wrap');
-        const PULL_THRESHOLD = 60;
+        let pullStartY = 0, isPulling = false, pullActive = false;
 
-        listWrap.addEventListener('touchstart', (e) => {
-            if (listWrap.scrollTop === 0) {
-                pullStartY = e.touches[0].clientY;
-                isPulling = true;
-                pullDistance = 0;
+        function scrollTop() {
+            return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        }
+
+        document.addEventListener('touchstart', (e) => {
+            if (scrollTop() > 0) { isPulling = false; pullActive = false; return; }
+            pullStartY = e.touches[0].clientY;
+            isPulling = true;
+            pullActive = false;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isPulling) return;
+            if (scrollTop() > 0) { isPulling = false; pullIndicator.classList.remove('show'); pullActive = false; return; }
+            const dy = e.touches[0].clientY - pullStartY;
+            if (dy > PULL_THRESHOLD) {
+                pullActive = true;
+                pullIndicator.classList.add('show');
+            } else if (dy < 10) {
+                pullActive = false;
+                pullIndicator.classList.remove('show');
             }
         }, { passive: true });
 
-        listWrap.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-            const dy = e.touches[0].clientY - pullStartY;
-            if (dy > 0) {
-                pullDistance = dy;
-                if (pullDistance > PULL_THRESHOLD) {
-                    e.preventDefault();
-                    pullIndicator.classList.add('show');
-                }
-            }
-        }, { passive: false });
-
-        listWrap.addEventListener('touchend', async () => {
-            if (pullIndicator.classList.contains('show')) {
+        document.addEventListener('touchend', () => {
+            if (pullActive && scrollTop() === 0) {
                 pullIndicator.classList.remove('show');
-                await refreshLeads();
-                toast('Refreshed');
+                toast('Synced');
+            } else {
+                pullIndicator.classList.remove('show');
             }
             isPulling = false;
-            pullDistance = 0;
+            pullActive = false;
         }, { passive: true });
 
-        async function refreshLeads() {
-            await loadLeads();
-            render();
-        }
-
-        // ─── CSV Export ──────────────────────────────────────────────────
+        // ─── CSV ────────────────────────────────────────────────────────
         function csvCell(v) {
             let t = v == null ? '' : String(v);
             if (/^[=+\-@]/.test(t)) t = "'" + t;
             return '"' + t.replace(/"/g, '""') + '"';
         }
-
         function parseCSV(text) {
-            const rows = [];
-            let row = [], cell = '', quoted = false;
+            const rows = []; let row = [], cell = '', quoted = false;
             for (let i = 0; i < text.length; i++) {
                 const ch = text[i];
                 if (quoted) {
-                    if (ch === '"') {
-                        if (text[i + 1] === '"') { cell += '"'; i++; }
-                        else quoted = false;
-                    } else cell += ch;
+                    if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false; }
+                    else cell += ch;
                 } else if (ch === '"') quoted = true;
                 else if (ch === ',') { row.push(cell); cell = ''; }
                 else if (ch === '\n' || ch === '\r') {
@@ -2381,44 +2188,27 @@
             if (row.some(c => c !== '')) rows.push(row);
             return rows;
         }
-
-        function unguard(v) {
-            return /^'[=+\-@]/.test(v) ? v.slice(1) : v;
-        }
+        function unguard(v) { return /^'[=+\-@]/.test(v) ? v.slice(1) : v; }
 
         function exportCSV() {
             if (leads.length === 0) { toast('No leads to export'); return; }
-            const headers = ['Company', 'PIC', 'Phone', 'Email', 'Website', 'Industry', 'Source', 'Platforms',
-                'Status', 'Assigned', 'Follow-up', 'Notes', 'Created'
-            ];
+            const headers = ['Company','PIC','Phone','Email','Website','Industry','Source','Platforms','Status','Assigned','Follow-up','Notes','Created'];
             const rows = leads.map(l => [
-                l.company || '',
-                l.pic || '',
-                l.phone || '',
-                l.email || '',
-                l.website || '',
-                labelOf(INDUSTRIES, l.industry),
-                labelOf(SOURCES, l.source),
+                l.company || '', l.pic || '', l.phone || '', l.email || '', l.website || '',
+                labelOf(INDUSTRIES, l.industry), labelOf(SOURCES, l.source),
                 (l.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' | '),
-                statusLabel(l.status),
-                labelOf(ASSIGNEES, l.assigned),
-                l.followup || '',
-                l.notes || '',
+                statusLabel(l.status), labelOf(ASSIGNEES, l.assigned), l.followup || '', l.notes || '',
                 l.createdAt ? new Date(l.createdAt).toISOString().slice(0, 10) : ''
             ]);
             const csv = [headers, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            a.href = url; a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
             URL.revokeObjectURL(url);
-            toast('CSV exported');
+            toast('Exported');
         }
-
         function toISODate(raw) {
             const t = String(raw || '').trim();
             if (!t) return null;
@@ -2426,24 +2216,16 @@
             const d = new Date(t.replace(/Sept\b/gi, 'Sep'));
             return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
         }
-
         function importCSV(file) {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const text = e.target.result;
                     const lines = parseCSV(text.replace(/^\uFEFF/, ''));
-                    if (lines.length < 2) { toast('CSV must have a header row and data rows'); return; }
+                    if (lines.length < 2) { toast('CSV must have header + rows'); return; }
                     const headers = lines[0].map(h => h.trim().toLowerCase());
-                    const statusMap = {
-                        'new': 'new',
-                        'contacted': 'contacted',
-                        'meeting': 'meeting',
-                        'qualified': 'qualified',
-                        'converted': 'converted',
-                        'not interested': 'not-interested',
-                        'not-interested': 'not-interested',
-                    };
+                    const statusMap = { 'new':'new','contacted':'contacted','meeting':'meeting','qualified':'qualified','converted':'converted',
+                        'not interested':'not-interested','not-interested':'not-interested' };
                     let count = 0;
                     for (let i = 1; i < lines.length; i++) {
                         const cols = lines[i].map(c => unguard(c.trim()));
@@ -2457,35 +2239,25 @@
                             else if (key === 'website') data.website = cols[j];
                             else if (key === 'industry') data.industry = coerce(INDUSTRIES, cols[j]);
                             else if (key === 'source') data.source = coerce(SOURCES, cols[j]);
-                            else if (key === 'platforms' || key === 'sells on') {
-                                data.platforms = cols[j].split('|').map(v => v.trim()).filter(Boolean);
-                            } else if (key === 'status') data.status = statusMap[cols[j].toLowerCase()] || 'new';
+                            else if (key === 'platforms' || key === 'sells on') data.platforms = cols[j].split('|').map(v => v.trim()).filter(Boolean);
+                            else if (key === 'status') data.status = statusMap[cols[j].toLowerCase()] || 'new';
                             else if (key === 'assigned') data.assigned = coerce(ASSIGNEES, cols[j]);
                             else if (key === 'follow-up' || key === 'followup') data.followup = toISODate(cols[j]);
                             else if (key === 'notes') data.notes = cols[j];
                         }
-                        if (data.company && data.pic && data.phone) {
-                            await addLead(data);
-                            count++;
-                        }
+                        if (data.company && data.pic && data.phone) { await addLead(data); count++; }
                     }
-                    toast(`Imported ${count} leads`);
-                } catch (err) {
-                    toast('Import failed: ' + err.message, 3000);
-                }
+                    toast(`Imported ${count}`);
+                } catch (err) { toast('Import failed: ' + err.message, 3000); }
             };
             reader.readAsText(file);
         }
-
         btnImportCsv.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                importCSV(e.target.files[0]);
-                fileInput.value = '';
-            }
+            if (e.target.files.length) { importCSV(e.target.files[0]); fileInput.value = ''; }
         });
 
-        // ─── Choice sheet ─────────────────────────────────────────────
+        // ─── Choice sheet ───────────────────────────────────────────────
         function openChoiceSheet(title, options, current, onPick) {
             sheetTitle.textContent = title;
             sheetOptions.innerHTML = options.map((o, i) =>
@@ -2499,22 +2271,16 @@
             });
             sheetOverlay.classList.add('open');
         }
-
         function closeChoiceSheet() { sheetOverlay.classList.remove('open'); }
-
         sheetCancel.addEventListener('click', closeChoiceSheet);
-        sheetOverlay.addEventListener('click', (e) => {
-            if (e.target === sheetOverlay) closeChoiceSheet();
-        });
+        sheetOverlay.addEventListener('click', (e) => { if (e.target === sheetOverlay) closeChoiceSheet(); });
 
-        // ─── Dialogs ──────────────────────────────────────────────────
         function openNoteDialog(id) {
             const lead = getLead(id);
             if (!lead) return;
             const note = prompt(`Add a note for "${lead.company}":`);
             if (note !== null) addNoteToLead(id, note);
         }
-
         function openAssignDialog(id) {
             const lead = getLead(id);
             if (!lead) return;
@@ -2524,47 +2290,38 @@
                 (value) => assignLead(id, value));
         }
 
-        // ─── Form helpers ──────────────────────────────────────────────
+        // ─── Form helpers ───────────────────────────────────────────────
         function esc(s) {
             return String(s == null ? '' : s)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
-
         function fillSelect(sel, list, placeholder) {
             sel.innerHTML = `<option value="">${placeholder}</option>` +
                 list.map(o => `<option value="${o.value}">${o.emoji ? o.emoji + ' ' : ''}${o.label}</option>`).join('');
         }
-
         function selectValue(sel, list, value) {
             if (value && !list.some(o => o.value === value)) {
                 sel.insertAdjacentHTML('beforeend', `<option value="${esc(value)}">${esc(value)} (imported)</option>`);
             }
             sel.value = value || '';
         }
-
-        function optionOf(list, value) {
-            return value ? list.find(o => o.value === value) || null : null;
-        }
+        function optionOf(list, value) { return value ? list.find(o => o.value === value) || null : null; }
 
         function cadenceDate(source) {
             const rule = CADENCE[source];
             if (!rule) return '';
             const d = new Date();
             let left = rule.days;
-            while (left > 0) {
-                d.setDate(d.getDate() + 1);
-                if (d.getDay() !== 0 && d.getDay() !== 6) left--;
-            }
+            while (left > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) left--; }
             return d.toISOString().slice(0, 10);
         }
-
         function openerFor(platforms) {
             const n = (platforms || []).length;
             if (n === 0) return null;
             return n >= 2 ?
-                { label: 'Email 1', text: `Multi-channel (${n}) — open with the ${labelOf(PLATFORMS, platforms[0])} vs ${labelOf(PLATFORMS, platforms[1])} conversion gap (Email 1).` } :
-                { label: 'Email 1b', text: 'Single channel — the conversion-gap hook does not apply. Use Email 1b.' };
+                { label: 'Email 1', text: `Multi-channel (${n}) — open with the ${labelOf(PLATFORMS, platforms[0])} vs ${labelOf(PLATFORMS, platforms[1])} conversion gap.` } :
+                { label: 'Email 1b', text: 'Single channel — use Email 1b.' };
         }
 
         let formPlatforms = new Set();
@@ -2578,14 +2335,12 @@
             fPlatforms.querySelectorAll('.chip').forEach(chip => {
                 chip.addEventListener('click', () => {
                     const v = chip.dataset.platform;
-                    if (formPlatforms.has(v)) formPlatforms.delete(v);
-                    else formPlatforms.add(v);
+                    if (formPlatforms.has(v)) formPlatforms.delete(v); else formPlatforms.add(v);
                     chip.classList.toggle('on', formPlatforms.has(v));
                     updateOpenerHint();
                 });
             });
         }
-
         function setFormPlatforms(list) {
             formPlatforms = new Set(Array.isArray(list) ? list : []);
             fPlatforms.querySelectorAll('.chip').forEach(chip => {
@@ -2593,25 +2348,21 @@
             });
             updateOpenerHint();
         }
-
         function updateOpenerHint() {
             const opener = openerFor([...formPlatforms]);
             openerHint.textContent = opener ? opener.text : 'Pick every channel they sell on.';
             openerHint.classList.toggle('on', !!opener);
         }
-
         function updateCadenceHint() {
             const rule = CADENCE[fSource.value];
             cadenceHint.textContent = rule ? rule.note : 'Pick a lead source for the house cadence.';
             cadenceHint.classList.toggle('on', !!rule);
             followupSuggest.style.display = rule ? '' : 'none';
         }
-
         fSource.addEventListener('change', () => {
             updateCadenceHint();
             if (!fFollowup.value) fFollowup.value = cadenceDate(fSource.value);
         });
-
         followupSuggest.addEventListener('click', () => {
             const d = cadenceDate(fSource.value);
             if (!d) { toast('Pick a lead source first'); return; }
@@ -2637,103 +2388,52 @@
                 setFormPlatforms(data.platforms);
             } else {
                 editIdInput.value = '';
-                fCompany.value = '';
-                fPic.value = '';
-                fPhone.value = '';
-                fEmail.value = '';
-                fWebsite.value = '';
+                fCompany.value = ''; fPic.value = ''; fPhone.value = '';
+                fEmail.value = ''; fWebsite.value = '';
                 buildForm();
-                fStatus.value = 'new';
-                fFollowup.value = '';
-                fNotes.value = '';
+                fStatus.value = 'new'; fFollowup.value = ''; fNotes.value = '';
                 setFormPlatforms([]);
             }
             updateCadenceHint();
             modalOverlay.classList.add('open');
             setTimeout(() => fCompany.focus(), 200);
         }
-
         function closeModal() { modalOverlay.classList.remove('open'); }
-
-        function openEdit(id) {
-            const lead = getLead(id);
-            if (!lead) return;
-            openModal('Edit Lead', lead);
-        }
-
+        function openEdit(id) { const lead = getLead(id); if (!lead) return; openModal('Edit Lead', lead); }
         function openAdd() { openModal('Add Lead', null); }
 
-        // ─── Quick Add ────────────────────────────────────────────────────
-        function closeQuickAdd() {
-            qaOverlay.classList.remove('open');
-        }
-
+        function closeQuickAdd() { qaOverlay.classList.remove('open'); }
         function openQuickAdd() {
-            qaInput.value = '';
-            qaParsed = null;
-            qaResult.classList.remove('on');
+            qaInput.value = ''; qaParsed = null; qaResult.classList.remove('on');
             qaOverlay.classList.add('open');
             setTimeout(() => qaInput.focus(), 200);
         }
 
-        // ─── Quick Add helpers ──────────────────────────────────────────
-        const QA_FB_RESERVED = new Set([
-            'profile.php', 'people', 'pages', 'pg', 'groups', 'marketplace', 'watch',
-            'events', 'share', 'permalink.php', 'story.php', 'photo', 'photo.php',
-            'reel', 'reels', 'videos', 'media', 'posts', 'login', 'help', 'search',
-            'hashtag', 'notes', 'settings', 'privacy', 'policies',
-        ]);
-        const QA_IG_RESERVED = new Set([
-            'p', 'reel', 'reels', 'tv', 'stories', 'explore', 'accounts', 'directory',
-        ]);
-        const QA_WORD_CASE = {
-            my: 'MY', hq: 'HQ', co: 'Co', sdn: 'Sdn', bhd: 'Bhd', plt: 'PLT',
-            enterprise: 'Enterprise', official: 'Official', kl: 'KL', jb: 'JB',
-        };
-        const QA_STATES = [
-            'johor', 'kedah', 'kelantan', 'melaka', 'malacca', 'negeri sembilan',
-            'pahang', 'perak', 'perlis', 'penang', 'pulau pinang', 'sabah', 'sarawak',
-            'selangor', 'terengganu', 'kuala lumpur', 'labuan', 'putrajaya',
-        ];
+        // ─── Quick Add parser ───────────────────────────────────────────
+        const QA_FB_RESERVED = new Set(['profile.php','people','pages','pg','groups','marketplace','watch','events','share','permalink.php','story.php','photo','photo.php','reel','reels','videos','media','posts','login','help','search','hashtag','notes','settings','privacy','policies']);
+        const QA_IG_RESERVED = new Set(['p','reel','reels','tv','stories','explore','accounts','directory']);
+        const QA_WORD_CASE = { my:'MY',hq:'HQ',co:'Co',sdn:'Sdn',bhd:'Bhd',plt:'PLT',enterprise:'Enterprise',official:'Official',kl:'KL',jb:'JB' };
+        const QA_STATES = ['johor','kedah','kelantan','melaka','malacca','negeri sembilan','pahang','perak','perlis','penang','pulau pinang','sabah','sarawak','selangor','terengganu','kuala lumpur','labuan','putrajaya'];
         const QA_INDUSTRY_HINTS = {
-            beauty: ['beauty', 'skincare', 'skin care', 'cosmetic', 'makeup', 'serum', 'facial', 'haircare', 'hair care',
-                'perfume', 'fragrance', 'kecantikan', 'solek'
-            ],
-            health: ['supplement', 'vitamin', 'health', 'herbal', 'wellness', 'nutrition', 'pharmacy', 'farmasi',
-                'kesihatan', 'organic'
-            ],
-            fashion: ['fashion', 'apparel', 'clothing', 'boutique', 'baju', 'tudung', 'hijab', 'muslimah', 'streetwear',
-                'tshirt', 't-shirt', 'dress', 'pakaian', 'kurung'
-            ],
-            jewellery: ['jewellery', 'jewelry', 'emas', 'gold', 'silver', 'necklace', 'earring', 'bracelet', 'watches',
-                'barang kemas'
-            ],
-            home: ['homeware', 'household', 'kitchen', 'bedding', 'cleaning', 'home essentials', 'home decor',
-                'home & living', 'home and living', 'peralatan rumah'
-            ],
-            furniture: ['furniture', 'decor', 'sofa', 'interior', 'perabot', 'mattress'],
-            electronics: ['electronic', 'gadget', 'laptop', 'camera', 'audio', 'smart home', 'appliance', 'elektrik'],
-            'mobile-accessories': ['phone case', 'casing', 'mobile accessor', 'charger', 'powerbank', 'power bank',
-                'screen protector', 'earbud'
-            ],
-            baby: ['baby', 'infant', 'diaper', 'stroller', 'maternity', 'bayi', 'ibu dan anak'],
-            toys: ['toy', 'hobby', 'puzzle', 'lego', 'collectible', 'figurine', 'board game', 'permainan'],
-            sports: ['sport', 'fitness', 'gym', 'outdoor', 'cycling', 'running', 'hiking', 'yoga', 'sukan'],
-            pet: ['pet ', 'pets', 'dog', 'cat food', 'aquarium', 'haiwan', 'grooming'],
-            fnb: ['food', 'beverage', 'snack', 'cafe', 'restaurant', 'kuih', 'coffee', 'bakery', 'catering', 'makanan',
-                'frozen', 'minuman', 'sambal'
-            ],
-            automotive: ['automotive', 'motorcycle', 'tyre', 'vehicle', 'workshop', 'kereta', 'motosikal',
-                'car accessor'
-            ],
-            books: ['bookstore', 'stationery', 'buku', 'printing', 'notebook', 'alat tulis'],
-            digital: ['software', 'saas', 'agency', 'online course', 'ebook', 'consulting', 'digital marketing',
-                'web design'
-            ],
+            beauty: ['beauty','skincare','skin care','cosmetic','makeup','serum','facial','haircare','hair care','perfume','fragrance','kecantikan','solek'],
+            health: ['supplement','vitamin','health','herbal','wellness','nutrition','pharmacy','farmasi','kesihatan','organic'],
+            fashion: ['fashion','apparel','clothing','boutique','baju','tudung','hijab','muslimah','streetwear','tshirt','t-shirt','dress','pakaian','kurung'],
+            jewellery: ['jewellery','jewelry','emas','gold','silver','necklace','earring','bracelet','watches','barang kemas'],
+            home: ['homeware','household','kitchen','bedding','cleaning','home essentials','home decor','home & living','home and living','peralatan rumah'],
+            furniture: ['furniture','decor','sofa','interior','perabot','mattress'],
+            electronics: ['electronic','gadget','laptop','camera','audio','smart home','appliance','elektrik'],
+            'mobile-accessories': ['phone case','casing','mobile accessor','charger','powerbank','power bank','screen protector','earbud'],
+            baby: ['baby','infant','diaper','stroller','maternity','bayi','ibu dan anak'],
+            toys: ['toy','hobby','puzzle','lego','collectible','figurine','board game','permainan'],
+            sports: ['sport','fitness','gym','outdoor','cycling','running','hiking','yoga','sukan'],
+            pet: ['pet ','pets','dog','cat food','aquarium','haiwan','grooming'],
+            fnb: ['food','beverage','snack','cafe','restaurant','kuih','coffee','bakery','catering','makanan','frozen','minuman','sambal'],
+            automotive: ['automotive','motorcycle','tyre','vehicle','workshop','kereta','motosikal','car accessor'],
+            books: ['bookstore','stationery','buku','printing','notebook','alat tulis'],
+            digital: ['software','saas','agency','online course','ebook','consulting','digital marketing','web design'],
         };
 
-        let qaParsed = null;
-        let qaTimer = null;
+        let qaParsed = null, qaTimer = null;
 
         function qaCleanName(s) {
             let t = String(s || '').replace(/\s+/g, ' ').trim();
@@ -2744,23 +2444,12 @@
             t = t.replace(/^[@\s]+/, '');
             return t.trim();
         }
-
         function qaTitleCase(handle) {
-            return String(handle || '')
-                .replace(/[-_.+]+/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .split(' ')
-                .filter(w => w && !/^\d{3,}$/.test(w))
-                .map(w => {
-                    const low = w.toLowerCase();
-                    if (QA_WORD_CASE[low]) return QA_WORD_CASE[low];
-                    return w.charAt(0).toUpperCase() + w.slice(1);
-                })
-                .join(' ')
-                .trim();
+            return String(handle || '').replace(/[-_.+]+/g, ' ').replace(/\s+/g, ' ').trim()
+                .split(' ').filter(w => w && !/^\d{3,}$/.test(w))
+                .map(w => { const low = w.toLowerCase(); if (QA_WORD_CASE[low]) return QA_WORD_CASE[low]; return w.charAt(0).toUpperCase() + w.slice(1); })
+                .join(' ').trim();
         }
-
         function qaNormalisePhone(raw) {
             let d = String(raw).replace(/\D/g, '');
             if (d.startsWith('60')) d = d.slice(2);
@@ -2768,176 +2457,120 @@
             else return String(raw).replace(/\s+/g, ' ').trim();
             if (!d) return '';
             if (d[0] === '1') {
-                if (d.length === 9) return `+60 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}`;
-                if (d.length === 10) return `+60 ${d.slice(0, 2)} ${d.slice(2, 6)} ${d.slice(6)}`;
+                if (d.length === 9) return `+60 ${d.slice(0,2)} ${d.slice(2,5)} ${d.slice(5)}`;
+                if (d.length === 10) return `+60 ${d.slice(0,2)} ${d.slice(2,6)} ${d.slice(6)}`;
             } else {
-                if (d.length === 9) return `+60 ${d.slice(0, 1)} ${d.slice(1, 5)} ${d.slice(5)}`;
-                if (d.length === 8) return `+60 ${d.slice(0, 1)} ${d.slice(1, 4)} ${d.slice(4)}`;
+                if (d.length === 9) return `+60 ${d.slice(0,1)} ${d.slice(1,5)} ${d.slice(5)}`;
+                if (d.length === 8) return `+60 ${d.slice(0,1)} ${d.slice(1,4)} ${d.slice(4)}`;
             }
             return '+60 ' + d;
         }
-
         function qaFindPhones(text) {
-            const out = [];
-            const re = /(?:\+?60|0)[\d \t().\-]{7,16}\d/g;
-            let m;
+            const out = []; const re = /(?:\+?60|0)[\d \t().\-]{7,16}\d/g; let m;
             while ((m = re.exec(text))) {
                 const before = m.index > 0 ? text[m.index - 1] : '';
                 if (/[\d]/.test(before)) continue;
                 const digits = m[0].replace(/\D/g, '');
                 if (digits.length < 9 || digits.length > 12) continue;
-                const norm = qaNormalisePhone(m[0]);
-                if (norm) out.push(norm);
+                const norm = qaNormalisePhone(m[0]); if (norm) out.push(norm);
             }
             return [...new Set(out)];
         }
-
         function qaFindEmails(text) {
             const re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-            const hits = (text.match(re) || [])
-                .map(e => e.toLowerCase().replace(/[.,;:]+$/, ''))
-                .filter(e => !/\.(png|jpe?g|gif|webp|svg)$/i.test(e));
-            return [...new Set(hits)];
+            return [...new Set((text.match(re) || []).map(e => e.toLowerCase().replace(/[.,;:]+$/, '')).filter(e => !/\.(png|jpe?g|gif|webp|svg)$/i.test(e)))];
         }
-
         function qaFindUrls(text) {
             const out = [];
-            const full = text.match(/\bhttps?:\/\/[^\s<>"')\]]+/gi) || [];
-            for (const u of full) out.push(u.replace(/[.,;:)\]]+$/, ''));
+            (text.match(/\bhttps?:\/\/[^\s<>"')\]]+/gi) || []).forEach(u => out.push(u.replace(/[.,;:)\]]+$/, '')));
             const bareRe = /(?:^|[\s(,;:|])((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|net|org|my|co|shop|store|biz|io|me|asia)(?:\.[a-z]{2})?(?:\/[^\s<>"')\]]*)?)/gi;
             let bm;
             while ((bm = bareRe.exec(text))) {
                 const clean = bm[1].replace(/[.,;:)\]]+$/, '');
-                if (!out.some(u => u.toLowerCase().includes(clean.toLowerCase()))) {
-                    out.push('https://' + clean);
-                }
+                if (!out.some(u => u.toLowerCase().includes(clean.toLowerCase()))) out.push('https://' + clean);
             }
             return [...new Set(out)];
         }
-
         function qaParseUrl(raw) {
-            let u;
-            try { u = new URL(raw); } catch (e) { return null; }
+            let u; try { u = new URL(raw); } catch (e) { return null; }
             if (!/^https?:$/.test(u.protocol)) return null;
             const host = u.hostname.toLowerCase().replace(/^(www|m|web|mobile)\./, '');
-            const segs = u.pathname.split('/').filter(Boolean).map(s => {
-                try { return decodeURIComponent(s); } catch (e) { return s; }
-            });
+            const segs = u.pathname.split('/').filter(Boolean).map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } });
             const out = { url: raw, host, platform: '', company: '', website: '', label: host, shortLink: false };
-
-            if (/(^|\.)(goo\.gl|bit\.ly|tinyurl\.com|t\.co|s\.shopee\.|invol\.co|vt\.tiktok\.com)/.test(host) ||
-                host === 'maps.app.goo.gl') {
-                out.shortLink = true;
-                out.label = 'shortened link';
-                return out;
-            }
-
+            if (/(^|\.)(goo\.gl|bit\.ly|tinyurl\.com|t\.co|s\.shopee\.|invol\.co|vt\.tiktok\.com)/.test(host) || host === 'maps.app.goo.gl') { out.shortLink = true; out.label = 'shortened link'; return out; }
             if (/(^|\.)google\./.test(host)) {
                 out.label = 'Google Maps';
                 const i = segs.indexOf('place');
-                if (i >= 0 && segs[i + 1]) {
-                    out.company = qaCleanName(segs[i + 1].replace(/\+/g, ' '));
-                    return out;
-                }
+                if (i >= 0 && segs[i + 1]) { out.company = qaCleanName(segs[i + 1].replace(/\+/g, ' ')); return out; }
                 const q = u.searchParams.get('q') || u.searchParams.get('query') || '';
                 if (q && !/^[\d.,\s-]+$/.test(q)) out.company = qaCleanName(q.replace(/\+/g, ' '));
                 return out;
             }
-
             if (/(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(host)) {
-                out.platform = 'social';
-                out.label = 'Facebook';
-                let seg = segs[0] || '';
-                if (seg === 'p' && segs[1]) seg = segs[1];
+                out.platform = 'social'; out.label = 'Facebook';
+                let seg = segs[0] || ''; if (seg === 'p' && segs[1]) seg = segs[1];
                 if (seg && !QA_FB_RESERVED.has(seg.toLowerCase())) out.company = qaTitleCase(seg);
                 return out;
             }
-
             if (/(^|\.)instagram\.com$/.test(host)) {
-                out.platform = 'social';
-                out.label = 'Instagram';
+                out.platform = 'social'; out.label = 'Instagram';
                 const seg = segs[0] || '';
                 if (seg && !QA_IG_RESERVED.has(seg.toLowerCase())) out.company = qaTitleCase(seg);
                 return out;
             }
-
             if (/(^|\.)tiktok\.com$/.test(host)) {
-                out.platform = 'tiktok';
-                out.label = 'TikTok';
+                out.platform = 'tiktok'; out.label = 'TikTok';
                 const at = segs.find(s => s.startsWith('@'));
                 if (at) out.company = qaTitleCase(at.slice(1));
                 return out;
             }
-
             if (/(^|\.)shopee\./.test(host)) {
-                out.platform = 'shopee';
-                out.label = 'Shopee';
-                let seg = segs[0] || '';
-                if (seg === 'shop' && segs[1]) seg = segs[1];
+                out.platform = 'shopee'; out.label = 'Shopee';
+                let seg = segs[0] || ''; if (seg === 'shop' && segs[1]) seg = segs[1];
                 seg = seg.replace(/-i\.\d+.*$/, '').replace(/-cat\..*$/, '');
                 if (seg && !/^(search|mall|daily-discover|buyer|user)$/i.test(seg)) out.company = qaTitleCase(seg);
                 return out;
             }
-
             if (/(^|\.)lazada\./.test(host)) {
-                out.platform = 'lazada';
-                out.label = 'Lazada';
-                let seg = segs[0] || '';
-                if (seg === 'shop' && segs[1]) seg = segs[1];
+                out.platform = 'lazada'; out.label = 'Lazada';
+                let seg = segs[0] || ''; if (seg === 'shop' && segs[1]) seg = segs[1];
                 seg = seg.replace(/-i\d+.*$/, '').replace(/\.html$/, '');
                 if (seg && !/^(catalog|products|search)$/i.test(seg)) out.company = qaTitleCase(seg);
                 return out;
             }
-
             out.platform = 'own';
             out.website = u.origin + (u.pathname === '/' ? '' : u.pathname);
             out.company = qaTitleCase(host.replace(/\.(com|net|org|my|co|shop|store|biz|io|me|asia)(\.[a-z]{2})?$/, ''));
-            out.weakCompany = true;
-            out.label = host;
+            out.weakCompany = true; out.label = host;
             return out;
         }
-
         function qaGuessIndustry(text) {
-            const hay = ' ' + text.toLowerCase() + ' ';
-            let best = '',
-                bestScore = 0;
+            const hay = ' ' + text.toLowerCase() + ' '; let best = '', bestScore = 0;
             for (const [key, words] of Object.entries(QA_INDUSTRY_HINTS)) {
                 let score = 0;
-                for (const w of words) {
-                    let from = 0,
-                        i;
-                    while ((i = hay.indexOf(w, from)) !== -1) { score++;
-                        from = i + w.length; }
-                }
-                if (score > bestScore) { bestScore = score;
-                    best = key; }
+                for (const w of words) { let from = 0, i; while ((i = hay.indexOf(w, from)) !== -1) { score++; from = i + w.length; } }
+                if (score > bestScore) { bestScore = score; best = key; }
             }
             return bestScore > 0 ? best : '';
         }
-
         function qaGuessPic(text) {
-            const re = /\b(?:pic|person in charge|contact person|contact|owner|founder|manager|attn|nama)\s*[:\-]\s*([^\n\r,|]{2,60})/i;
-            const m = text.match(re);
+            const m = text.match(/\b(?:pic|person in charge|contact person|contact|owner|founder|manager|attn|nama)\s*[:\-]\s*([^\n\r,|]{2,60})/i);
             if (!m) return '';
             let name = m[1].trim().replace(/[.;:]+$/, '');
             if (/[@\d]/.test(name)) return '';
             if (/^(us|me|form|below|whatsapp|dm)$/i.test(name)) return '';
-            const words = name.split(/\s+/);
-            if (words.length > 5) return '';
+            if (name.split(/\s+/).length > 5) return '';
             return name;
         }
-
         function qaGuessAddress(text) {
             for (const line of text.split(/[\n\r]+/)) {
                 const t = line.trim();
                 if (t.length < 12 || t.length > 160) continue;
                 if (!/\b\d{5}\b/.test(t)) continue;
-                const low = t.toLowerCase();
-                if (QA_STATES.some(s => low.includes(s))) return t.replace(/\s+/g, ' ');
+                if (QA_STATES.some(s => t.toLowerCase().includes(s))) return t.replace(/\s+/g, ' ');
             }
             return '';
         }
-
         function qaGuessCompanyFromText(text) {
             const candidates = [];
             for (const line of text.split(/[\n\r]+/)) {
@@ -2952,48 +2585,32 @@
                 if (candidates.length >= 3) break;
             }
             if (!candidates.length) return '';
-            const named = candidates.find(c => /\s/.test(c) && !/^@/.test(c));
-            return named || candidates[0];
+            return candidates.find(c => /\s/.test(c) && !/^@/.test(c)) || candidates[0];
         }
-
         function parseLeadPaste(raw) {
             const text = String(raw || '').replace(/\u00A0/g, ' ').trim();
-            const result = {
-                company: '', pic: '', phone: '', email: '', website: '',
-                industry: '', source: 'cold', status: 'new', assigned: '',
-                platforms: [], followup: '', notes: '',
-                found: [], links: [], shortLinks: [],
-            };
+            const result = { company:'',pic:'',phone:'',email:'',website:'',industry:'',source:'cold',status:'new',assigned:'',
+                platforms:[],followup:'',notes:'',found:[],links:[],shortLinks:[] };
             if (!text) return result;
-
             const urls = qaFindUrls(text);
             const parsedUrls = urls.map(qaParseUrl).filter(Boolean);
             const platforms = new Set();
-            let urlCompany = '',
-                weakCompany = '',
-                website = '';
-
+            let urlCompany = '', weakCompany = '', website = '';
             for (const p of parsedUrls) {
                 if (p.shortLink) { result.shortLinks.push(p.url); continue; }
                 if (p.platform) platforms.add(p.platform);
-                if (p.company) {
-                    if (p.weakCompany) { if (!weakCompany) weakCompany = p.company; } else if (!urlCompany) urlCompany = p
-                        .company;
-                }
+                if (p.company) { if (p.weakCompany) { if (!weakCompany) weakCompany = p.company; } else if (!urlCompany) urlCompany = p.company; }
                 if (p.website && !website) website = p.website;
                 result.links.push({ url: p.url, label: p.label });
             }
-
             const low = text.toLowerCase();
             if (/\bshopee\b/.test(low)) platforms.add('shopee');
             if (/\blazada\b/.test(low)) platforms.add('lazada');
             if (/\btiktok\b/.test(low)) platforms.add('tiktok');
             if (/\b(instagram|facebook)\b/.test(low)) platforms.add('social');
-
             const phones = qaFindPhones(text);
             const emails = qaFindEmails(text);
             const isLinkOnly = urls.length > 0 && text.replace(/\bhttps?:\/\/[^\s]+/gi, '').trim().length < 12;
-
             const textCompany = isLinkOnly ? '' : qaGuessCompanyFromText(text);
             const textReadsBetter = textCompany && /\s/.test(textCompany) && urlCompany && !/\s/.test(urlCompany);
             result.company = textReadsBetter ? textCompany : (urlCompany || textCompany || weakCompany);
@@ -3003,12 +2620,8 @@
             result.website = website;
             result.industry = qaGuessIndustry(isLinkOnly ? (urlCompany + ' ' + urls.join(' ')) : text);
             result.platforms = normalisePlatforms([...platforms]);
-
             const notes = [];
-            if (result.links.length) {
-                notes.push('Source links:');
-                for (const l of result.links) notes.push(`• ${l.label}: ${l.url}`);
-            }
+            if (result.links.length) { notes.push('Source links:'); for (const l of result.links) notes.push(`• ${l.label}: ${l.url}`); }
             for (const s of result.shortLinks) notes.push(`• Shortened link (open it and paste the full URL): ${s}`);
             const address = isLinkOnly ? '' : qaGuessAddress(text);
             if (address) notes.push(`Address: ${address}`);
@@ -3016,135 +2629,82 @@
             if (emails.length > 1) notes.push(`Other emails: ${emails.slice(1).join(', ')}`);
             notes.push(`Captured via Quick Add on ${new Date().toISOString().slice(0, 10)}.`);
             result.notes = notes.join('\n');
-
             result.followup = cadenceDate(result.source);
-            result.found = ['company', 'pic', 'phone', 'email', 'website', 'industry']
-                .filter(k => !!result[k]);
+            result.found = ['company','pic','phone','email','website','industry'].filter(k => !!result[k]);
             if (result.platforms.length) result.found.push('platforms');
             return result;
         }
-
         function qaRenderPreview(p) {
             const rows = [
-                ['Company', p.company],
-                ['PIC', p.pic],
-                ['Phone', p.phone],
-                ['Email', p.email],
-                ['Website', p.website],
-                ['Industry', labelOf(INDUSTRIES, p.industry)],
+                ['Company', p.company],['PIC', p.pic],['Phone', p.phone],['Email', p.email],
+                ['Website', p.website],['Industry', labelOf(INDUSTRIES, p.industry)],
                 ['Sells On', p.platforms.map(v => labelOf(PLATFORMS, v)).join(', ')],
             ];
             const filled = rows.filter(r => r[1]).length;
             qaScore.textContent = `${filled} of ${rows.length} filled`;
             qaRows.innerHTML = rows.map(([label, value]) => `
-                <div class="qa-row">
-                    <div class="qa-label">${esc(label)}</div>
+                <div class="qa-row"><div class="qa-label">${esc(label)}</div>
                     <div class="qa-value${value ? '' : ' qa-miss'}">${value ? esc(value) : 'not found — add it yourself'}</div>
                 </div>`).join('');
             if (p.shortLinks.length) {
-                qaRows.innerHTML += `<div class="qa-empty">That is a shortened link, so there is nothing in it to read.
-                    Open it in your browser and paste the full address instead.</div>`;
+                qaRows.innerHTML += `<div class="qa-empty">That is a shortened link, so there is nothing in it to read.</div>`;
             }
             qaResult.classList.add('on');
         }
-
         function qaHandleInput() {
             const text = qaInput.value.trim();
-            if (!text) {
-                qaParsed = null;
-                qaResult.classList.remove('on');
-                return;
-            }
+            if (!text) { qaParsed = null; qaResult.classList.remove('on'); return; }
             qaParsed = parseLeadPaste(text);
             qaRenderPreview(qaParsed);
         }
 
-        // ─── Form submit ──────────────────────────────────────────────
+        // ─── Form submit ────────────────────────────────────────────────
         leadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
-                company: fCompany.value,
-                pic: fPic.value,
-                phone: fPhone.value,
-                email: fEmail.value,
-                website: fWebsite.value,
-                industry: fIndustry.value,
-                source: fSource.value,
-                status: fStatus.value,
-                assigned: fAssigned.value,
-                platforms: [...formPlatforms],
-                followup: fFollowup.value || null,
-                notes: fNotes.value
+                company: fCompany.value, pic: fPic.value, phone: fPhone.value,
+                email: fEmail.value, website: fWebsite.value, industry: fIndustry.value,
+                source: fSource.value, status: fStatus.value, assigned: fAssigned.value,
+                platforms: [...formPlatforms], followup: fFollowup.value || null, notes: fNotes.value
             };
             if (!data.company || !data.pic || !data.phone) {
                 toast('Company, PIC, and Phone are required', 2500);
                 return;
             }
             const editId = editIdInput.value;
-            if (editId) {
-                await updateLead(editId, data);
-            } else {
-                await addLead(data);
-            }
+            if (editId) await updateLead(editId, data);
+            else await addLead(data);
             closeModal();
         });
 
-        // ─── Modal controls ────────────────────────────────────────────
         modalClose.addEventListener('click', closeModal);
         modalCancel.addEventListener('click', closeModal);
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) closeModal();
-        });
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeModal();
-                closeQuickAdd();
-                closeChoiceSheet();
-                closeDetail();
+                closeModal(); closeQuickAdd(); closeChoiceSheet(); closeDetail(); closeRecovery();
             }
         });
-
         fabAdd.addEventListener('click', openAdd);
 
-        // ─── Quick Add wiring ────────────────────────────────────────────
         qaCloseBtn.addEventListener('click', closeQuickAdd);
         qaCancelBtn.addEventListener('click', closeQuickAdd);
-        qaUseBtn.addEventListener('click', function() {
+        qaUseBtn.addEventListener('click', function () {
             const text = qaInput.value.trim();
             if (!text) { toast('Paste a link or some page text first'); return; }
             if (!qaParsed) qaParsed = parseLeadPaste(text);
             const p = qaParsed;
-            if (!p.found.length) {
-                toast('Nothing recognisable in that paste — filling what I can', 3000);
-            }
             closeQuickAdd();
             openModal('Add Lead', p);
             const missing = ['company', 'pic', 'phone'].filter(k => !p[k]);
-            if (missing.length) {
-                toast(`Still needs: ${missing.join(', ')}`, 3500);
-            }
+            if (missing.length) toast(`Still needs: ${missing.join(', ')}`, 3500);
         });
-        qaInput.addEventListener('input', () => {
-            clearTimeout(qaTimer);
-            qaTimer = setTimeout(qaHandleInput, 180);
-        });
-        qaOverlay.addEventListener('click', (e) => {
-            if (e.target === qaOverlay) closeQuickAdd();
-        });
+        qaInput.addEventListener('input', () => { clearTimeout(qaTimer); qaTimer = setTimeout(qaHandleInput, 180); });
+        qaOverlay.addEventListener('click', (e) => { if (e.target === qaOverlay) closeQuickAdd(); });
 
-        // ─── Search ──────────────────────────────────────────────────
-        searchInput.addEventListener('input', () => {
-            searchTerm = searchInput.value;
-            render();
-        });
+        searchInput.addEventListener('input', () => { searchTerm = searchInput.value; render(); });
+        sortSelect.addEventListener('change', () => { sortBy = sortSelect.value; render(); });
 
-        // ─── Sort ──────────────────────────────────────────────────
-        sortSelect.addEventListener('change', () => {
-            sortBy = sortSelect.value;
-            render();
-        });
-
-        // ─── Filters ──────────────────────────────────────────────────
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 filterBtns.forEach(b => b.classList.remove('active'));
@@ -3153,7 +2713,6 @@
                 render();
             });
         });
-
         ownBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 ownBtns.forEach(b => b.classList.remove('active'));
@@ -3163,39 +2722,28 @@
             });
         });
 
-        // ─── Bulk controls ──────────────────────────────────────────────
         btnBulkToggle.addEventListener('click', () => {
             bulkMode = !bulkMode;
-            if (!bulkMode) { selectedIds.clear();
-                updateBulkBar(); }
+            if (!bulkMode) { selectedIds.clear(); updateBulkBar(); }
             render();
         });
-
-        btnBulkClear.addEventListener('click', () => {
-            selectedIds.clear();
-            updateBulkBar();
-            render();
-        });
-
+        btnBulkClear.addEventListener('click', () => { selectedIds.clear(); updateBulkBar(); render(); });
         bulkContact.addEventListener('click', () => bulkAction('contacted'));
         bulkQualify.addEventListener('click', () => bulkAction('qualified'));
         bulkConvert.addEventListener('click', () => bulkAction('converted'));
-        bulkDelete.addEventListener('click', bulkDeleteAction);
+        bulkDelete.addEventListener('click', requestBulkDelete);
         bulkClear.addEventListener('click', clearBulk);
 
-        // ─── Export ──────────────────────────────────────────────────
         btnExportCsv.addEventListener('click', exportCSV);
 
-        // ─── Event delegation ──────────────────────────────────────────
+        // ─── Card listeners ─────────────────────────────────────────────
         function setupCardListeners() {
             listEl.addEventListener('click', (e) => {
                 const opener = e.target.closest('[data-open]');
                 if (opener && !e.target.closest('button')) { openDetail(opener.dataset.open); return; }
                 const btn = e.target.closest('button[data-action]');
                 if (!btn) return;
-                const id = btn.dataset.id;
-                const action = btn.dataset.action;
-
+                const id = btn.dataset.id, action = btn.dataset.action;
                 if (action === 'contact') toggleContact(id);
                 else if (action === 'edit') openEdit(id);
                 else if (action === 'delete') confirmDelete(id);
@@ -3204,87 +2752,195 @@
             });
         }
 
-        // ─── Init app ──────────────────────────────────────────────────
+        // ─── Triple-tap logo → recovery ─────────────────────────────────
+        let tapCount = 0, tapTimer = null;
+        brandLogo.addEventListener('click', () => {
+            tapCount++;
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => { tapCount = 0; }, 700);
+            if (tapCount >= 3) { tapCount = 0; openRecovery(); }
+        });
+
+        function openRecovery() {
+            recoveryOverlay.classList.add('open');
+            renderRecovery();
+        }
+        function closeRecovery() { recoveryOverlay.classList.remove('open'); }
+        recoveryClose.addEventListener('click', closeRecovery);
+        recoveryOverlay.addEventListener('click', (e) => { if (e.target === recoveryOverlay) closeRecovery(); });
+
+        async function renderRecovery() {
+            let items = [];
+            try { items = await dbGetAllArchive(); } catch (e) { items = []; }
+            items.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            recoveryCount.textContent = `${items.length} archived lead${items.length !== 1 ? 's' : ''}`;
+
+            if (items.length === 0) {
+                recoveryList.innerHTML = `<div class="recovery-empty">No archived leads yet.<br>Leads are archived automatically once you sync them.</div>`;
+                return;
+            }
+
+            recoveryList.innerHTML = items.map(lead => {
+                const isDeleted = !!lead.deletedAt;
+                const isLive = leads.some(l => l.id === lead.id) && !isDeleted;
+                return `
+                <div class="recovery-item ${isDeleted ? 'deleted' : ''}" data-id="${esc(lead.id)}">
+                    <div class="row1">
+                        <div class="company">${esc(lead.company || 'Untitled')}</div>
+                        <div class="meta">
+                            ${isDeleted ? `Deleted ${formatDate(lead.deletedAt)}` : (isLive ? 'Live' : `Updated ${formatDate(lead.updatedAt)}`)}
+                        </div>
+                    </div>
+                    <div class="pic-line">${esc(lead.pic || '—')} · ${esc(lead.phone || '—')}</div>
+                    <div class="buttons">
+                        ${!isLive ? `<button class="btn restore" data-action="restore" data-id="${esc(lead.id)}">Restore</button>` : ''}
+                        <button class="btn purge" data-action="purge" data-id="${esc(lead.id)}">Purge</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            recoveryList.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    const action = btn.dataset.action;
+                    if (action === 'restore') await restoreArchivedLead(id);
+                    else if (action === 'purge') await purgeArchivedLead(id);
+                });
+            });
+        }
+
+        async function restoreArchivedLead(id) {
+            let items = [];
+            try { items = await dbGetAllArchive(); } catch (e) { return; }
+            const found = items.find(l => l.id === id);
+            if (!found) return;
+            const restored = { ...found, deletedAt: null, updatedAt: now() };
+            delete restored.pendingDelete;
+
+            const existing = leads.findIndex(l => l.id === id);
+            if (existing >= 0) leads[existing] = restored;
+            else leads.push(restored);
+
+            await commitLead(restored);
+            render();
+            renderRecovery();
+            toast('Restored');
+        }
+
+        async function purgeArchivedLead(id) {
+            if (!confirm('Permanently delete this lead from the archive? This cannot be undone.')) return;
+            await dbDeleteArchive(id);
+            renderRecovery();
+            toast('Purged');
+        }
+
+        recoveryExport.addEventListener('click', async () => {
+            let items = [];
+            try { items = await dbGetAllArchive(); } catch (e) { return; }
+            if (items.length === 0) { toast('Archive is empty'); return; }
+            const headers = ['Company','PIC','Phone','Email','Website','Industry','Status','Deleted At','Created At'];
+            const rows = items.map(l => [
+                l.company || '', l.pic || '', l.phone || '', l.email || '', l.website || '',
+                labelOf(INDUSTRIES, l.industry), statusLabel(l.status),
+                l.deletedAt ? new Date(l.deletedAt).toISOString().slice(0, 10) : '',
+                l.createdAt ? new Date(l.createdAt).toISOString().slice(0, 10) : ''
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `leadforge-archive-${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+            toast('Archive exported');
+        });
+
+        // ─── Global console helpers ─────────────────────────────────────
+        window.LeadForge = {
+            restore: async () => {
+                let items = [];
+                try { items = await dbGetAllArchive(); } catch (e) { return; }
+                const missing = items.filter(l => !leads.some(x => x.id === l.id));
+                if (missing.length === 0) { console.log('Nothing to restore'); return; }
+                for (const lead of missing) {
+                    const restored = { ...lead, deletedAt: null, updatedAt: now() };
+                    delete restored.pendingDelete;
+                    leads.push(restored);
+                    await commitLead(restored);
+                }
+                render();
+                console.log(`Restored ${missing.length} leads`);
+            },
+            purge: async (id) => { await dbDeleteArchive(id); console.log('Purged', id); },
+            exportArchive: async () => {
+                let items = [];
+                try { items = await dbGetAllArchive(); } catch (e) { return; }
+                console.log(`${items.length} archived leads`, items);
+            },
+            list: () => leads,
+            archive: () => dbGetAllArchive(),
+        };
+
+        // ─── Init ───────────────────────────────────────────────────────
         function initApp() {
             buildForm();
             initFirebaseDB();
-            loadLeads().then(() => {
+            loadLiveLeads().then(() => {
                 setupCardListeners();
                 render();
+                // Sync local-only leads (never synced before) to Firebase
+                if (firebaseReady && dbRef) {
+                    leads.forEach(lead => { if (!lead.deletedAt) commitLead(lead); });
+                }
             });
 
-            // ─── Tool switcher ──────────────────────────────────────────
             (function initToolSwitcher() {
                 var btn = document.getElementById('ts-btn');
                 var menu = document.getElementById('ts-menu');
                 if (!btn || !menu) return;
-
                 var isOpen = false;
-
                 function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
-
                 function place() {
-                    menu.style.left = 'auto';
-                    menu.style.right = '0';
-                    menu.style.transform = '';
+                    menu.style.left = 'auto'; menu.style.right = '0'; menu.style.transform = '';
                     var r = menu.getBoundingClientRect();
-                    if (r.left < 8) { menu.style.left = '0';
-                        menu.style.right = 'auto';
-                        r = menu.getBoundingClientRect(); }
+                    if (r.left < 8) { menu.style.left = '0'; menu.style.right = 'auto'; r = menu.getBoundingClientRect(); }
                     var over = r.right - (window.innerWidth - 8);
                     if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
                     else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
                 }
-
                 function open(focusFirst) {
-                    menu.hidden = false;
-                    btn.setAttribute('aria-expanded', 'true');
-                    isOpen = true;
-                    place();
+                    menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); isOpen = true; place();
                     if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
                 }
-
                 function close(refocus) {
-                    menu.hidden = true;
-                    btn.setAttribute('aria-expanded', 'false');
-                    isOpen = false;
+                    menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); isOpen = false;
                     if (refocus) btn.focus();
                 }
-
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     e.stopPropagation();
-                    if (isOpen) close(false);
-                    else open(false);
+                    if (isOpen) close(false); else open(false);
                 });
-
-                document.addEventListener('keydown', function(e) {
+                document.addEventListener('keydown', function (e) {
                     if (!isOpen) {
-                        if (document.activeElement === btn && e.key === 'ArrowDown') {
-                            e.preventDefault();
-                            open(true);
-                        }
+                        if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault(); open(true); }
                         return;
                     }
-                    var list = items(),
-                        i = list.indexOf(document.activeElement);
-                    if (e.key === 'Escape') { e.preventDefault();
-                        close(true); } else if (e.key === 'ArrowDown') { e.preventDefault();
-                        list[i < 0 ? 0 : (i + 1) % list.length].focus(); } else if (e.key === 'ArrowUp') { e.preventDefault();
-                        list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); } else if (e.key ===
-                        'Home' && i >= 0) { e.preventDefault();
-                        list[0].focus(); } else if (e.key === 'End' && i >= 0) { e.preventDefault();
-                        list[list.length - 1].focus(); } else if (e.key === 'Tab' && i < 0) { close(false); }
+                    var list = items(), i = list.indexOf(document.activeElement);
+                    if (e.key === 'Escape') { e.preventDefault(); close(true); }
+                    else if (e.key === 'ArrowDown') { e.preventDefault(); list[i < 0 ? 0 : (i + 1) % list.length].focus(); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); }
+                    else if (e.key === 'Home' && i >= 0) { e.preventDefault(); list[0].focus(); }
+                    else if (e.key === 'End' && i >= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+                    else if (e.key === 'Tab' && i < 0) { close(false); }
                 });
-
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     if (isOpen && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
                 });
-
-                window.addEventListener('resize', function() { if (isOpen) place(); });
+                window.addEventListener('resize', function () { if (isOpen) place(); });
             })();
 
-            console.log('LeadForge v3.0 initialized (per‑lead writes, object storage, fixed pull‑to‑refresh)');
-            console.log('👤 User:', currentUser ? currentUser.email : 'unknown');
+            console.log('LeadForge v3.0 initialized');
+            console.log('Try: LeadForge.list(), LeadForge.archive(), LeadForge.restore()');
         }
 
         console.log('LeadForge v3.0 loaded — waiting for authentication...');
