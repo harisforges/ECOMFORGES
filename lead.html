@@ -564,7 +564,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Recovery overlay ── */
         .recovery-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.75);
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -657,7 +656,6 @@
             font-family: inherit; font-size: 14px; cursor: pointer;
         }
 
-        /* ── Quick Add ── */
         .btn-quick {
             background: var(--panel); color: var(--cyan);
             border: 1.5px solid var(--border-light); border-radius: var(--radius-sm);
@@ -693,7 +691,6 @@
         .qa-row .qa-value.qa-miss { color: var(--text-muted); font-style: italic; }
         .qa-empty { padding: 14px 12px; font-size: 12.5px; line-height: 1.55; color: var(--text-muted); }
 
-        /* ── Tool switcher ── */
         .tool-switch { position: relative; display: inline-flex; }
         .ts-btn {
             display: inline-flex; align-items: center; gap: 7px;
@@ -917,6 +914,7 @@
         </div>
 
         <div class="action-bar">
+            <button class="btn" id="btn-refresh" title="Refresh from server">🔄 Refresh</button>
             <button class="btn" id="btn-export-csv" title="Export CSV">📊 Export CSV</button>
             <button class="btn" id="btn-import-csv" title="Import CSV">📥 Import CSV</button>
             <button class="btn" id="btn-bulk-toggle" title="Bulk select">☑ Select</button>
@@ -1112,7 +1110,7 @@
         <footer>
             <div class="divider"></div>
             <span id="footer-sync">● Synced</span> · Data synced across devices<br>
-            <strong>EcomForges LeadForge</strong> — Acquisition Hub v3.0
+            <strong>EcomForges LeadForge</strong> — Acquisition Hub v3.1
         </footer>
     </div>
 
@@ -1122,11 +1120,11 @@
 
     <script>
         /* ═══════════════════════════════════════════════════════════════════
-           LEADFORGE v3.0
-           - Firebase = live source of truth
+           LEADFORGE v3.1
+           - Firebase = live source of truth (per-lead transactions)
            - IndexedDB = device-local archive (never auto-deleted)
-           - Per-lead writes, per-child listeners, transactions with updatedAt
-           - 10s undo toast, triple-tap logo → recovery UI
+           - Pull-to-refresh (mobile), 🔄 Refresh button (desktop)
+           - 10s undo, triple-tap logo → recovery UI
            ═══════════════════════════════════════════════════════════════════ */
 
         const firebaseConfig = {
@@ -1144,9 +1142,7 @@
         const UNDO_MS = 10000;
 
         const firebaseAvailable = typeof firebase !== 'undefined' && typeof firebase.auth === 'function';
-        try {
-            if (firebaseAvailable) firebase.initializeApp(firebaseConfig);
-        } catch (e) { /* already initialized */ }
+        try { if (firebaseAvailable) firebase.initializeApp(firebaseConfig); } catch (e) { /* already initialized */ }
 
         let currentUser = null;
         let appInitialized = false;
@@ -1163,6 +1159,7 @@
         const logoutBtn = document.getElementById('logout-btn');
         const appRoot = document.getElementById('app-root');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const recoveryOverlay = document.getElementById('recovery-overlay');
 
         function showLoginError(msg, subnote = '') {
             loginError.innerHTML = msg + (subnote ? `<div class="subnote">${subnote}</div>` : '');
@@ -1192,8 +1189,7 @@
             loadingOverlay.classList.add('hidden');
             showLogin();
             loginSubmit.disabled = true;
-            showLoginError('Cannot reach the sign-in service.',
-                'Check your connection and reload the page.');
+            showLoginError('Cannot reach the sign-in service.', 'Check your connection and reload the page.');
         }
 
         togglePasswordBtn.addEventListener('click', () => {
@@ -1204,27 +1200,20 @@
 
         let shouldClearPassword = false;
         loginPassword.addEventListener('focus', () => {
-            if (shouldClearPassword) {
-                loginPassword.value = '';
-                shouldClearPassword = false;
-            }
+            if (shouldClearPassword) { loginPassword.value = ''; shouldClearPassword = false; }
         });
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (isLockedOut) {
-                showLoginError('Too many failed attempts. Please contact IT support.', 'Support: help@ecomforges.com');
-                return;
-            }
+            if (isLockedOut) { showLoginError('Too many failed attempts. Please contact IT support.', 'Support: help@ecomforges.com'); return; }
             const email = loginEmail.value.trim();
             const password = loginPassword.value;
             showLoginError('');
             if (!isAllowedEmail(email)) { showLoginError('Only @ecomforges.com accounts are allowed.'); return; }
             if (!password) { showLoginError('Please enter your password.'); return; }
             if (!firebaseAvailable) { showSignInUnavailable(); return; }
-            try {
-                await firebase.auth().signInWithEmailAndPassword(email, password);
-            } catch (err) {
+            try { await firebase.auth().signInWithEmailAndPassword(email, password); }
+            catch (err) {
                 loginAttempts++;
                 const remaining = MAX_ATTEMPTS - loginAttempts;
                 if (loginAttempts >= MAX_ATTEMPTS) {
@@ -1243,7 +1232,6 @@
         });
 
         logoutBtn.addEventListener('click', () => { if (firebaseAvailable) firebase.auth().signOut(); });
-
         if (!firebaseAvailable) showSignInUnavailable();
 
         if (firebaseAvailable) firebase.auth().onAuthStateChanged((user) => {
@@ -1265,7 +1253,7 @@
         let firebaseReady = false;
         const syncDot = document.getElementById('sync-dot');
         const syncLabel = document.getElementById('sync-label');
-        const pendingDeletes = new Map(); // id -> { lead, timerId, committed }
+        const pendingDeletes = new Map();
 
         function initFirebaseDB() {
             if (!USE_FIREBASE || !firebaseAvailable) {
@@ -1292,7 +1280,6 @@
                 firebaseReady = true;
                 syncDot.className = 'dot';
                 syncLabel.textContent = 'Live';
-
             } catch (e) {
                 console.warn('Firebase DB init error:', e);
                 syncDot.className = 'dot offline';
@@ -1301,7 +1288,6 @@
         }
 
         function applyRemoteLead(lead, kind) {
-            // Never re-add a lead that's pending local deletion
             if (kind !== 'remove' && pendingDeletes.has(lead.id)) return;
 
             if (kind === 'remove') {
@@ -1328,7 +1314,6 @@
                         render();
                     }
                 } else {
-                    // New to us, treat as add
                     leads.push(lead);
                     dbPutLive(lead).then(() => archiveLead(lead));
                     render();
@@ -1337,10 +1322,7 @@
         }
 
         // ─── Taxonomy ────────────────────────────────────────────────────
-        const ASSIGNEES = [
-            { value: 'haris', label: 'Haris' },
-            { value: 'dq', label: 'DQ' },
-        ];
+        const ASSIGNEES = [{ value: 'haris', label: 'Haris' }, { value: 'dq', label: 'DQ' }];
         const SOURCES = [
             { value: 'cold', label: 'Cold lead', emoji: '❄️' },
             { value: 'warm', label: 'Warm lead', emoji: '🔥' },
@@ -1457,6 +1439,7 @@
         const toastEl = document.getElementById('toast');
         const toastMsg = document.getElementById('toast-msg');
         const toastUndo = document.getElementById('toast-undo');
+        const btnRefresh = document.getElementById('btn-refresh');
         const btnExportCsv = document.getElementById('btn-export-csv');
         const btnImportCsv = document.getElementById('btn-import-csv');
         const fileInput = document.getElementById('file-input');
@@ -1480,7 +1463,6 @@
         const sheetOptions = document.getElementById('sheet-options');
         const sheetCancel = document.getElementById('sheet-cancel');
         const brandLogo = document.getElementById('brand-logo');
-        const recoveryOverlay = document.getElementById('recovery-overlay');
         const recoveryClose = document.getElementById('recovery-close');
         const recoveryCount = document.getElementById('recovery-count');
         const recoveryList = document.getElementById('recovery-list');
@@ -1540,7 +1522,7 @@
             return map[s] || s;
         }
 
-        // ─── IndexedDB (2 stores: live + archive) ───────────────────────
+        // ─── IndexedDB ──────────────────────────────────────────────────
         const DB_NAME = 'LeadForgeDB';
         const STORE_LIVE = 'leads';
         const STORE_ARCHIVE = 'leads_archive';
@@ -1847,23 +1829,21 @@
             }
             selectedIds.clear();
             render();
-            toast('Synced');
         }
 
         // ─── CRUD ───────────────────────────────────────────────────────
         function getLead(id) { return leads.find(l => l.id === id); }
 
-        // Write a lead to Firebase via transaction (server-decided winner)
         async function commitLead(lead) {
             await dbPutLive(lead);
             await archiveLead(lead);
             if (firebaseReady && dbRef) {
                 try {
                     await dbRef.child(lead.id).transaction(current => {
-                        if (current && current.updatedAt > lead.updatedAt) return; // abort: remote newer
+                        if (current && current.updatedAt > lead.updatedAt) return;
                         return lead;
                     });
-                } catch (e) { /* offline queue handles retry */ }
+                } catch (e) { /* offline queue */ }
             }
         }
 
@@ -1890,7 +1870,6 @@
             leads.unshift(newLead);
             await commitLead(newLead);
             render();
-            toast('Synced');
         }
 
         async function updateLead(id, data) {
@@ -1918,7 +1897,6 @@
             }
             await commitLead(lead);
             render();
-            toast('Synced');
         }
 
         async function toggleContact(id) {
@@ -1938,7 +1916,6 @@
             lead.updatedAt = now();
             await commitLead(lead);
             render();
-            toast('Synced');
         }
 
         async function addNoteToLead(id, note) {
@@ -1949,7 +1926,6 @@
             lead.updatedAt = now();
             await commitLead(lead);
             render();
-            toast('Synced');
         }
 
         async function assignLead(id, name) {
@@ -1964,7 +1940,6 @@
             lead.updatedAt = now();
             await commitLead(lead);
             render();
-            toast('Synced');
         }
 
         // ─── Delete with 10s undo ───────────────────────────────────────
@@ -2013,7 +1988,7 @@
                         try {
                             await dbRef.child(lead.id).transaction(current => {
                                 if (!current) return;
-                                if (current.updatedAt > lead.updatedAt) return; // abort: edited after delete
+                                if (current.updatedAt > lead.updatedAt) return;
                                 return null;
                             });
                         } catch (e) { /* offline queue */ }
@@ -2021,7 +1996,6 @@
                     pendingDeletes.delete(lead.id);
                 }
                 render();
-                toast('Synced');
             };
 
             toast(msg, UNDO_MS, undo, finish);
@@ -2122,37 +2096,40 @@
             currentSwipeId = null; isSwiping = false;
         }
 
-        // ─── Pull-to-refresh (strict) ───────────────────────────────────
-        const PULL_THRESHOLD = 100;
-        const listWrap = document.getElementById('list-wrap');
+        // ─── Pull-to-refresh ────────────────────────────────────────────
+        const PULL_THRESHOLD = 70;
         let pullStartY = 0, isPulling = false, pullActive = false;
 
         function scrollTop() {
-            return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            return window.pageYOffset
+                || document.documentElement.scrollTop
+                || document.body.scrollTop
+                || 0;
         }
 
-        document.addEventListener('touchstart', (e) => {
-            if (scrollTop() > 0) { isPulling = false; pullActive = false; return; }
+        window.addEventListener('touchstart', (e) => {
+            if (recoveryOverlay.classList.contains('open')) { isPulling = false; pullActive = false; return; }
+            if (scrollTop() > 2) { isPulling = false; pullActive = false; return; }
+            if (e.touches.length !== 1) { isPulling = false; pullActive = false; return; }
             pullStartY = e.touches[0].clientY;
             isPulling = true;
             pullActive = false;
-        }, { passive: true });
+        }, { passive: true, capture: true });
 
-        document.addEventListener('touchmove', (e) => {
+        window.addEventListener('touchmove', (e) => {
             if (!isPulling) return;
-            if (scrollTop() > 0) { isPulling = false; pullIndicator.classList.remove('show'); pullActive = false; return; }
             const dy = e.touches[0].clientY - pullStartY;
             if (dy > PULL_THRESHOLD) {
                 pullActive = true;
                 pullIndicator.classList.add('show');
-            } else if (dy < 10) {
+            } else if (dy < 15) {
                 pullActive = false;
                 pullIndicator.classList.remove('show');
             }
-        }, { passive: true });
+        }, { passive: true, capture: true });
 
-        document.addEventListener('touchend', () => {
-            if (pullActive && scrollTop() === 0) {
+        window.addEventListener('touchend', () => {
+            if (isPulling && pullActive) {
                 pullIndicator.classList.remove('show');
                 toast('Synced');
             } else {
@@ -2160,7 +2137,7 @@
             }
             isPulling = false;
             pullActive = false;
-        }, { passive: true });
+        }, { passive: true, capture: true });
 
         // ─── CSV ────────────────────────────────────────────────────────
         function csvCell(v) {
@@ -2736,6 +2713,35 @@
 
         btnExportCsv.addEventListener('click', exportCSV);
 
+        // ─── Refresh button (desktop) ───────────────────────────────────
+        btnRefresh.addEventListener('click', async () => {
+            if (!firebaseReady || !dbRef) { toast('Not connected'); return; }
+            try {
+                const snap = await dbRef.once('value');
+                const remote = snap.val() || {};
+                const remoteIds = new Set(Object.keys(remote));
+                for (let i = leads.length - 1; i >= 0; i--) {
+                    if (!remoteIds.has(leads[i].id)) {
+                        await dbDeleteLive(leads[i].id);
+                        await markArchivedDeleted(leads[i].id);
+                        leads.splice(i, 1);
+                    }
+                }
+                for (const [id, data] of Object.entries(remote)) {
+                    const incoming = migrateLead({ id, ...data });
+                    const idx = leads.findIndex(l => l.id === id);
+                    if (idx >= 0) leads[idx] = incoming;
+                    else leads.push(incoming);
+                    await dbPutLive(incoming);
+                    await archiveLead(incoming);
+                }
+                render();
+                toast('Synced');
+            } catch (e) {
+                toast('Refresh failed');
+            }
+        });
+
         // ─── Card listeners ─────────────────────────────────────────────
         function setupCardListeners() {
             listEl.addEventListener('click', (e) => {
@@ -2888,10 +2894,11 @@
             loadLiveLeads().then(() => {
                 setupCardListeners();
                 render();
-                // Sync local-only leads (never synced before) to Firebase
                 if (firebaseReady && dbRef) {
                     leads.forEach(lead => { if (!lead.deletedAt) commitLead(lead); });
                 }
+                // One-time "Synced" toast after initial load
+                setTimeout(() => toast('Synced'), 800);
             });
 
             (function initToolSwitcher() {
@@ -2939,11 +2946,11 @@
                 window.addEventListener('resize', function () { if (isOpen) place(); });
             })();
 
-            console.log('LeadForge v3.0 initialized');
+            console.log('LeadForge v3.1 initialized');
             console.log('Try: LeadForge.list(), LeadForge.archive(), LeadForge.restore()');
         }
 
-        console.log('LeadForge v3.0 loaded — waiting for authentication...');
+        console.log('LeadForge v3.1 loaded — waiting for authentication...');
     </script>
 </body>
 </html>
