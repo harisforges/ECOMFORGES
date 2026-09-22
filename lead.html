@@ -1471,20 +1471,19 @@
         // ─── Toast ──────────────────────────────────────────────────────
         let toastTimer = null;
         let undoCallback = null;
-        let timeoutCallback = null;
 
-        function toast(msg, duration = 2400, undo = null, onTimeout = null) {
+        /* Shows a message, and an Undo when one is offered. It deliberately owns
+           no work: a toast is replaced by the next one, and anything it was
+           holding would be lost with it. */
+        function toast(msg, duration = 2400, undo = null) {
             toastMsg.textContent = msg;
             toastUndo.style.display = undo ? 'inline-block' : 'none';
             undoCallback = undo;
-            timeoutCallback = onTimeout;
             toastEl.classList.add('show');
             clearTimeout(toastTimer);
             toastTimer = setTimeout(() => {
                 toastEl.classList.remove('show');
-                if (timeoutCallback) timeoutCallback();
                 undoCallback = null;
-                timeoutCallback = null;
             }, duration);
         }
 
@@ -1492,7 +1491,6 @@
             clearTimeout(toastTimer);
             const cb = undoCallback;
             undoCallback = null;
-            timeoutCallback = null;
             toastEl.classList.remove('show');
             if (cb) cb();
         });
@@ -1958,13 +1956,37 @@
             updateBulkBar();
         }
 
+        /* Removes one lead for good: out of the live store, tombstoned in the
+           archive, and out of Firebase unless someone else edited it first. */
+        async function purgeLead(lead) {
+            const idx = leads.findIndex(l => l.id === lead.id);
+            if (idx >= 0) leads.splice(idx, 1);
+            await dbDeleteLive(lead.id);
+            await markArchivedDeleted(lead.id);
+            if (firebaseReady && dbRef) {
+                try {
+                    await dbRef.child(lead.id).transaction(current => {
+                        if (!current) return;
+                        if (current.updatedAt > lead.updatedAt) return;
+                        return null;
+                    });
+                } catch (e) { /* offline queue */ }
+            }
+            pendingDeletes.delete(lead.id);
+        }
+
         function commitDelete(ids, msg) {
             const deleted = ids.map(id => getLead(id)).filter(Boolean);
             if (deleted.length === 0) return;
 
+            /* The record is marked deleted on disk now, not when the window
+               closes. Until then it is only hidden, so Undo can still bring it
+               back — but closing the tab mid-window cannot resurrect it, and
+               the next start finishes the job. */
             deleted.forEach(lead => {
                 lead.pendingDelete = true;
                 pendingDeletes.set(lead.id, { lead });
+                dbPutLive({ ...lead, deletedAt: Date.now() });
             });
             render();
 
@@ -1974,31 +1996,45 @@
                     const p = pendingDeletes.get(lead.id);
                     if (p && p.timerId) clearTimeout(p.timerId);
                     pendingDeletes.delete(lead.id);
+                    const restored = { ...lead };
+                    delete restored.deletedAt;
+                    delete restored.pendingDelete;
+                    dbPutLive(restored);
                 });
                 render();
             };
 
             const finish = async () => {
-                for (const lead of deleted) {
-                    const idx = leads.findIndex(l => l.id === lead.id);
-                    if (idx >= 0) leads.splice(idx, 1);
-                    await dbDeleteLive(lead.id);
-                    await markArchivedDeleted(lead.id);
-                    if (firebaseReady && dbRef) {
-                        try {
-                            await dbRef.child(lead.id).transaction(current => {
-                                if (!current) return;
-                                if (current.updatedAt > lead.updatedAt) return;
-                                return null;
-                            });
-                        } catch (e) { /* offline queue */ }
-                    }
-                    pendingDeletes.delete(lead.id);
-                }
+                for (const lead of deleted) await purgeLead(lead);
                 render();
             };
 
-            toast(msg, UNDO_MS, undo, finish);
+            /* Each batch holds its own timer. The toast is only the UI for the
+               most recent one — it used to be the thing that ran the delete, so
+               deleting two leads inside the window, or anything else that
+               raised a toast, cancelled the first delete and the lead came back
+               on the next reload. */
+            const timerId = setTimeout(() => {
+                if (undoCallback === undo) undoCallback = null;
+                finish();
+            }, UNDO_MS);
+            deleted.forEach(lead => {
+                const p = pendingDeletes.get(lead.id);
+                if (p) p.timerId = timerId;
+            });
+
+            toast(msg, UNDO_MS, undo);
+        }
+
+        /* A tab closed inside the undo window leaves a record marked deleted but
+           still present. Finish those on the next start so the deletion is not
+           stranded — above all so it still reaches Firebase. */
+        async function resumeInterruptedDeletes() {
+            try {
+                const all = await dbGetAllLive();
+                const stranded = (all || []).filter(l => l.deletedAt);
+                for (const lead of stranded) await purgeLead(migrateLead(lead));
+            } catch (e) { /* ignore */ }
         }
 
         function confirmDelete(id) { requestDelete(id); }
@@ -2891,9 +2927,10 @@
         function initApp() {
             buildForm();
             initFirebaseDB();
-            loadLiveLeads().then(() => {
+            loadLiveLeads().then(async () => {
                 setupCardListeners();
                 render();
+                await resumeInterruptedDeletes();
                 if (firebaseReady && dbRef) {
                     leads.forEach(lead => { if (!lead.deletedAt) commitLead(lead); });
                 }
