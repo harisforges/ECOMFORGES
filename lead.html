@@ -1838,6 +1838,32 @@
         // ─── CRUD ───────────────────────────────────────────────────────
         function getLead(id) { return leads.find(l => l.id === id); }
 
+        /* Two people working the same list will add the same shop twice. Phone
+           numbers are written every which way, so compare only the digits, and
+           for Malaysian mobiles compare the last nine so 012-345 6789,
+           +60123456789 and 60123456789 count as one number. Company names are
+           compared with punctuation and the Sdn Bhd / Enterprise style suffixes
+           dropped, because that is the part people type differently. */
+        function phoneKey(v) {
+            const d = String(v || '').replace(/\D/g, '');
+            return d.length > 9 ? d.slice(-9) : d;
+        }
+        function companyKey(v) {
+            return String(v || '').toLowerCase()
+                .replace(/\b(sdn\.? ?bhd\.?|bhd\.?|enterprise|ent\.?|trading|resources|holdings?)\b/g, '')
+                .replace(/[^a-z0-9]/g, '');
+        }
+        function findDuplicate(data, skipId) {
+            const phone = phoneKey(data.phone);
+            const company = companyKey(data.company);
+            for (const lead of liveLeads()) {
+                if (lead.id === skipId) continue;
+                if (phone && phoneKey(lead.phone) === phone) return { lead, reason: 'phone' };
+                if (company && companyKey(lead.company) === company) return { lead, reason: 'company' };
+            }
+            return null;
+        }
+
         async function commitLead(lead) {
             await dbPutLive(lead);
             await archiveLead(lead);
@@ -2692,6 +2718,18 @@
                 return;
             }
             const editId = editIdInput.value;
+            const clash = findDuplicate(data, editId);
+            if (clash) {
+                const why = clash.reason === 'phone'
+                    ? `${clash.lead.company} is already on the list with that phone number`
+                    : `${clash.lead.company} is already on the list`;
+                if (!confirm(`${why} (${labelOf(ASSIGNEES, clash.lead.assigned) || 'unassigned'}, `
+                    + `${statusLabel(clash.lead.status)}).\n\nAdd this one anyway?`)) {
+                    closeModal();
+                    openDetail(clash.lead.id);
+                    return;
+                }
+            }
             if (editId) await updateLead(editId, data);
             else await addLead(data);
             closeModal();
