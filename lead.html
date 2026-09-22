@@ -1628,11 +1628,12 @@
         }
 
         function updateStats() {
-            const total = leads.length;
-            const contacted = leads.filter(l => l.status === 'contacted' || l.status === 'meeting').length;
-            const qualified = leads.filter(l => l.status === 'qualified').length;
-            const converted = leads.filter(l => l.status === 'converted').length;
-            const overdue = leads.filter(l => l.followup && isOverdue(l.followup)).length;
+            const visible = liveLeads();
+            const total = visible.length;
+            const contacted = visible.filter(l => l.status === 'contacted' || l.status === 'meeting').length;
+            const qualified = visible.filter(l => l.status === 'qualified').length;
+            const converted = visible.filter(l => l.status === 'converted').length;
+            const overdue = visible.filter(l => l.followup && isOverdue(l.followup)).length;
             const rate = total ? Math.round((converted / total) * 100) : 0;
 
             document.getElementById('stat-total').textContent = total;
@@ -1644,12 +1645,12 @@
 
             const counts = {
                 all: total,
-                new: leads.filter(l => l.status === 'new').length,
-                contacted: leads.filter(l => l.status === 'contacted').length,
-                meeting: leads.filter(l => l.status === 'meeting').length,
-                qualified: leads.filter(l => l.status === 'qualified').length,
-                converted: leads.filter(l => l.status === 'converted').length,
-                'not-interested': leads.filter(l => l.status === 'not-interested').length,
+                new: visible.filter(l => l.status === 'new').length,
+                contacted: visible.filter(l => l.status === 'contacted').length,
+                meeting: visible.filter(l => l.status === 'meeting').length,
+                qualified: visible.filter(l => l.status === 'qualified').length,
+                converted: visible.filter(l => l.status === 'converted').length,
+                'not-interested': visible.filter(l => l.status === 'not-interested').length,
                 overdue: overdue,
             };
             Object.keys(counts).forEach(k => {
@@ -1657,7 +1658,7 @@
                 if (el) el.textContent = counts[k];
             });
 
-            const open = leads.filter(l => l.status !== 'converted' && l.status !== 'not-interested');
+            const open = visible.filter(l => l.status !== 'converted' && l.status !== 'not-interested');
             const ownCounts = { all: open.length, unassigned: open.filter(l => !l.assigned).length };
             for (const a of ASSIGNEES) ownCounts[a.value] = open.filter(l => l.assigned === a.value).length;
             Object.keys(ownCounts).forEach(k => {
@@ -1667,6 +1668,11 @@
         }
 
         // ─── Render ─────────────────────────────────────────────────────
+        /* A lead inside its undo window is gone as far as the person is
+           concerned: off the list, out of the counts, out of the export. It is
+           still in `leads` only so Undo can put it back. */
+        function liveLeads() { return leads.filter(l => !pendingDeletes.has(l.id)); }
+
         function render() {
             const sortFn = getSortFn(sortBy);
             const filtered = leads
@@ -2204,9 +2210,10 @@
         function unguard(v) { return /^'[=+\-@]/.test(v) ? v.slice(1) : v; }
 
         function exportCSV() {
-            if (leads.length === 0) { toast('No leads to export'); return; }
+            const exportable = liveLeads();
+            if (exportable.length === 0) { toast('No leads to export'); return; }
             const headers = ['Company','PIC','Phone','Email','Website','Industry','Source','Platforms','Status','Assigned','Follow-up','Notes','Created'];
-            const rows = leads.map(l => [
+            const rows = exportable.map(l => [
                 l.company || '', l.pic || '', l.phone || '', l.email || '', l.website || '',
                 labelOf(INDUSTRIES, l.industry), labelOf(SOURCES, l.source),
                 (l.platforms || []).map(v => labelOf(PLATFORMS, v)).join(' | '),
@@ -2938,54 +2945,58 @@
                 setTimeout(() => toast('Synced'), 800);
             });
 
-            (function initToolSwitcher() {
-                var btn = document.getElementById('ts-btn');
-                var menu = document.getElementById('ts-menu');
-                if (!btn || !menu) return;
-                var isOpen = false;
-                function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
-                function place() {
-                    menu.style.left = 'auto'; menu.style.right = '0'; menu.style.transform = '';
-                    var r = menu.getBoundingClientRect();
-                    if (r.left < 8) { menu.style.left = '0'; menu.style.right = 'auto'; r = menu.getBoundingClientRect(); }
-                    var over = r.right - (window.innerWidth - 8);
-                    if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
-                    else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
-                }
-                function open(focusFirst) {
-                    menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); isOpen = true; place();
-                    if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
-                }
-                function close(refocus) {
-                    menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); isOpen = false;
-                    if (refocus) btn.focus();
-                }
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    if (isOpen) close(false); else open(false);
-                });
-                document.addEventListener('keydown', function (e) {
-                    if (!isOpen) {
-                        if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault(); open(true); }
-                        return;
-                    }
-                    var list = items(), i = list.indexOf(document.activeElement);
-                    if (e.key === 'Escape') { e.preventDefault(); close(true); }
-                    else if (e.key === 'ArrowDown') { e.preventDefault(); list[i < 0 ? 0 : (i + 1) % list.length].focus(); }
-                    else if (e.key === 'ArrowUp') { e.preventDefault(); list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); }
-                    else if (e.key === 'Home' && i >= 0) { e.preventDefault(); list[0].focus(); }
-                    else if (e.key === 'End' && i >= 0) { e.preventDefault(); list[list.length - 1].focus(); }
-                    else if (e.key === 'Tab' && i < 0) { close(false); }
-                });
-                document.addEventListener('click', function (e) {
-                    if (isOpen && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
-                });
-                window.addEventListener('resize', function () { if (isOpen) place(); });
-            })();
 
             console.log('LeadForge v3.1 initialized');
             console.log('Try: LeadForge.list(), LeadForge.archive(), LeadForge.restore()');
         }
+
+        /* The switcher belongs to the page, not to the signed-in app — the
+           other six tools wire it at load, and someone stuck on the sign-in
+           screen is exactly who needs a way over to another tool. */
+        (function initToolSwitcher() {
+            var btn = document.getElementById('ts-btn');
+            var menu = document.getElementById('ts-menu');
+            if (!btn || !menu) return;
+            var isOpen = false;
+            function items() { return [].slice.call(menu.querySelectorAll('.ts-item[href]')); }
+            function place() {
+                menu.style.left = 'auto'; menu.style.right = '0'; menu.style.transform = '';
+                var r = menu.getBoundingClientRect();
+                if (r.left < 8) { menu.style.left = '0'; menu.style.right = 'auto'; r = menu.getBoundingClientRect(); }
+                var over = r.right - (window.innerWidth - 8);
+                if (over > 0) menu.style.transform = 'translateX(' + (-over) + 'px)';
+                else if (r.left < 8) menu.style.transform = 'translateX(' + (8 - r.left) + 'px)';
+            }
+            function open(focusFirst) {
+                menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); isOpen = true; place();
+                if (focusFirst) { var i = items(); if (i.length) i[0].focus(); }
+            }
+            function close(refocus) {
+                menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); isOpen = false;
+                if (refocus) btn.focus();
+            }
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (isOpen) close(false); else open(false);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (!isOpen) {
+                    if (document.activeElement === btn && e.key === 'ArrowDown') { e.preventDefault(); open(true); }
+                    return;
+                }
+                var list = items(), i = list.indexOf(document.activeElement);
+                if (e.key === 'Escape') { e.preventDefault(); close(true); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); list[i < 0 ? 0 : (i + 1) % list.length].focus(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); list[i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length].focus(); }
+                else if (e.key === 'Home' && i >= 0) { e.preventDefault(); list[0].focus(); }
+                else if (e.key === 'End' && i >= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+                else if (e.key === 'Tab' && i < 0) { close(false); }
+            });
+            document.addEventListener('click', function (e) {
+                if (isOpen && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
+            });
+            window.addEventListener('resize', function () { if (isOpen) place(); });
+        })();
 
         console.log('LeadForge v3.1 loaded — waiting for authentication...');
     </script>
