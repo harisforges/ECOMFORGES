@@ -2831,7 +2831,7 @@
 
             recoveryList.innerHTML = items.map(lead => {
                 const isDeleted = !!lead.deletedAt;
-                const isLive = leads.some(l => l.id === lead.id) && !isDeleted;
+                const isLive = liveLeads().some(l => l.id === lead.id) && !isDeleted;
                 return `
                 <div class="recovery-item ${isDeleted ? 'deleted' : ''}" data-id="${esc(lead.id)}">
                     <div class="row1">
@@ -2859,6 +2859,16 @@
         }
 
         async function restoreArchivedLead(id) {
+            /* Restoring something still inside its undo window has to call that
+               window off, or the timer would delete it again a moment later. */
+            const pending = pendingDeletes.get(id);
+            if (pending) {
+                if (pending.timerId) clearTimeout(pending.timerId);
+                pendingDeletes.delete(id);
+                const live = leads.find(l => l.id === id);
+                if (live) delete live.pendingDelete;
+            }
+
             let items = [];
             try { items = await dbGetAllArchive(); } catch (e) { return; }
             const found = items.find(l => l.id === id);
