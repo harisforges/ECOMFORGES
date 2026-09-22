@@ -72,6 +72,30 @@ Qualified → Converted, and see the conversion rate and the overdue follow-ups 
 It stores leads in IndexedDB on the device, with an optional Firebase sync, and exports and
 imports CSV so a pipeline can move between phones.
 
+### Deleting a lead, and getting it back
+
+Delete hides the lead and gives you ten seconds to press Undo. The record is marked deleted
+on disk the moment you press delete, not when the window closes, so closing the tab in that
+gap cannot bring it back — and anything left half-deleted is finished on the next start,
+which is what carries the removal through to Firebase.
+
+Each delete holds its own timer. It used to hang off the toast, which meant the next toast
+cancelled it: deleting two leads in a row left the first one gone from the screen but still
+in the database, and back again on the next reload.
+
+Every lead that syncs is also copied to an archive store. **Recovery** lists it, marks what
+is live and what is deleted, and restores or purges one at a time. Restoring a lead that is
+still inside its undo window calls that window off, so it does not get deleted a moment later.
+
+### It asks before adding the same shop twice
+
+Two people working one pipeline add the same lead twice. Saving checks the list first: phone
+numbers are compared on digits alone, last nine for anything longer, so `012-345 6789`,
+`+60123456789` and `60123456789` are one number; company names are compared with punctuation
+and the Sdn Bhd / Bhd / Enterprise / Trading suffixes dropped, because that is the part people
+write differently. Saying no opens the lead you already have. Saying yes adds it, because two
+branches really can share a number.
+
 It wears the EcomForges logo: the lockup on a wide screen, and the mark alone below 620px,
 where the header has to share its row with the sync badge and the action buttons.
 
