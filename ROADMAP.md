@@ -113,6 +113,68 @@ written here, under the right heading, and is subject to the same gate: verified
 against its spec, double-checked against what is already here, dropped if it
 fails either. A record that cannot pass is not parked in the roadmap either.
 
+### Records
+
+Everything fed to the brain, newest last. Each carries who supplied it and what
+still needs checking, because a figure quoted without that is how a store goes
+quietly wrong.
+
+#### Malaysian ecommerce spend — share of income, and AOV by category
+
+*Supplied by HarisForge. Passed the gate with two caveats, both recorded below
+and both to be settled before any of this reaches a client.*
+
+**The headline ratio**
+
+| | |
+|---|---|
+| Average monthly household income, Klang Valley | RM13,985 |
+| Average Malaysian monthly spend on online purchases | RM1,735 |
+| Spend as a share of income | **12.4%** (1,735 / 13,985 = 0.1241) |
+
+**The read:** Malaysians, and Klang Valley especially, put at least 12.4% of
+monthly income into online shopping across all categories. A product or service
+that answers that 12.4% — on quality or on need — is one that sells. That is the
+working position, and it is an assumption, not a measurement.
+
+**Where the 12.4% goes, by average order value**
+
+| Category | AOV per purchase | Purchases if the whole RM1,735 went here |
+|---|---|---|
+| Electronics (EL) | RM640 | 2.7 |
+| General merchandise — home & living (GM) | RM285 | 6.1 |
+| Fashion | RM118 | 14.7 |
+| Health, beauty, personal care | RM96 | 18.1 |
+| Food, beverage, groceries | RM74 | 23.4 |
+
+The right-hand column is a sanity check, not a claim: no one spends the whole
+RM1,735 in one category, but it shows the AOVs are the right order of magnitude
+against the monthly figure rather than contradicting it.
+
+**Caveat one — the two figures have different denominators.** RM13,985 is
+*household* income and *Klang Valley only*. RM1,735 is *average Malaysian* spend,
+and the record does not say whether that is per person or per household, or
+whether it is national. Dividing one by the other mixes the two. If the spend is
+per person and the income per household, the true share of household income is
+lower than 12.4%; if the spend is national and the income is Klang Valley — which
+sits above the national average — the national share is higher. **12.4% is
+directional, not measured.** Settling which is which is the single thing that
+would turn this from a working assumption into a figure worth quoting.
+
+**Caveat two — neither figure carries a source.** "From HarisForge" is who
+compiled it, not where it came from. Both numbers need their origin recorded
+before this appears in a deck, on the site, or in anything a client reads. This
+is the same standard that stripped the unverifiable claims off the live homepage.
+
+**Not yet broken down.** Demographics — age, gender, race, religion, location —
+and platform market share, meaning how much of this runs through TikTok Shop
+versus Shopee versus the rest. Both were named as next, neither is here yet.
+
+**Where it is relevant when the fan-out exists:** the analyst, for benchmarking a
+client's AOV against its category; the calculator, for sizing what a Forge Track
+is worth; ForgeMarketing, as the ground for a claim about what Malaysians spend.
+Not relevant to billing, agreements or the sprint tracker.
+
 ### Building it
 
 The store is `leadforge-ffeef` — the tools already share that project and its
