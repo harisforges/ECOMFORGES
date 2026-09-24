@@ -16,14 +16,16 @@ When it happens, the work is mostly:
 
 | Piece | Why it matters at merge time |
 |---|---|
-| One client record | Today each tool holds its own slice — LeadForge has leads, the analyst has client codes, the portal has nothing. Nothing joins them. This is the real work, and the longer it waits the more reconciling it needs. |
+| One client record | Today each tool holds its own slice — LeadForge has leads, the analyst has client codes, the portal has nothing. Nothing joins them. This is the real work, and it is being done first, as the brain below. |
 | One sign-in | LeadForge and ForgeMarketing already share the `leadforge-ffeef` Firebase project and its `@ecomforges.com` gate. The calculator and analyst have none. |
 | One shell | Header, tabs, theme and the four accent colours already follow one pattern; they were built to converge. |
 | One data layer | Firebase for what syncs, `localStorage` for per-device convenience, with the offline fallback each tool already has. |
 
-Nothing here needs doing yet. It is written down so the next tool is built in a
-way that does not make the merge harder: same theme tokens, same header pattern,
-same auth, and a client identifier that means the same thing everywhere.
+The shell and the sign-in wait for merge day. The client record does not — it is
+the brain below, and it is built first. The rest is written down so the next tool
+is built in a way that does not make the merge harder: same theme tokens, same
+header pattern, same auth, and a client identifier that means the same thing
+everywhere.
 
 ### Done in the meantime: one shared switcher
 
@@ -35,6 +37,76 @@ just stops anyone having to remember seven file names.
 Being one identical block in seven files, it is also a small rehearsal of the
 merge — when the shell becomes real this markup becomes its navigation and the
 `href`s go away.
+
+## Decided: one brain, built before the super app
+
+**A single store every tool reads from, instead of seven tools each holding
+their own slice.** Not a tool of its own and never a page you open — the tools
+keep their own screens, they just stop being the place the truth lives.
+
+Building it first is the point. The super app's hardest piece is the one client
+record (see the table above); doing it as the brain now means the merge inherits
+a store that already works instead of starting that job on merge day.
+
+### Data goes in by hand, on purpose
+
+Records are gathered and entered manually. Automated ingestion was considered and
+rejected: a scraper drops fields it does not recognise and drifts from the spec
+without saying so, and a store that is quietly wrong is worse than one that is
+empty. Slow and correct beats fast and unverified — the brain is the thing
+everything else will trust.
+
+### The write path
+
+    gather (manual) -> feed -> verify -> double-check -> PASS -> commit to brain
+                                                      -> FAIL -> abort, forget
+
+**Verify then double-check are two passes, not one.** Verify is the record
+against its spec: required fields present, types and formats right, values in
+their allowed set. Double-check is the record against the brain: does this client
+already exist under another spelling, does this contradict something already
+stored, is this a duplicate of what is there.
+
+**A failed record is dropped, not parked.** Nothing half-written, no "fix it
+later" rows, no quarantine table. The brain has no invalid state, so nothing
+reading it has to defend against one. Re-gather and feed it again.
+
+### The fan-out
+
+On commit, the record is pushed to every tool it is relevant to. Tools it does
+not concern ignore it — relevance is decided at the brain, not by each tool
+filtering a firehose.
+
+    committed record --> related tools   (sync)
+                     --> unrelated tools (ignored)
+
+### What it will hold
+
+The join already half-exists and is worth keeping: `clientCode` is the shared
+identifier in ForgeSprint, ForgeBilling, ForgeAgreement and the analyst.
+LeadForge keys on `company` and the calculator on a typed name, and those two are
+the reconciling work. ForgeAgreement already reads `forgebilling/clients` for its
+client picker — the first cross-tool read, done ad hoc; the brain is that move
+made general.
+
+| Entity | Lives in the brain because | Read by |
+|---|---|---|
+| Client | Every tool holds a different slice of the same company under a different key | all |
+| Engagement | Tier, package, fee and session count are agreed once and restated in three places | agreement, billing, sprint, calculator |
+| Cycle | Track, constraint, metric and the three moves are the calculator's output and ForgeSprint's input | calculator, sprint, analyst |
+| Marketing reference | The playbook is canonical and currently sits as files nothing reads | forgemarketing |
+| People | Collaborators, assignees and authors are one roster typed separately today | lead, forgemarketing, billing, agreement |
+
+The analyst's rule stands and the brain does not relax it: it is fed client
+**codes**, never business names.
+
+### Building it
+
+The store is `leadforge-ffeef` — the tools already share that project and its
+`@ecomforges.com` gate. A tool reads the brain and writes its own working state;
+it does not write another tool's slice.
+
+Enough is written down here to build from without this conversation.
 
 ## Built: the sprint tracker
 
