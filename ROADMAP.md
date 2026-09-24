@@ -100,6 +100,19 @@ made general.
 The analyst's rule stands and the brain does not relax it: it is fed client
 **codes**, never business names.
 
+### It has no name yet
+
+It is called "the brain" everywhere because nothing better has been chosen. That
+is deliberate, not an oversight — when it is named, the name replaces this one in
+every place at once. Do not invent one in the meantime.
+
+### Feeding it, before the store exists
+
+Until the store is built, **this section is the brain**. Anything fed to it is
+written here, under the right heading, and is subject to the same gate: verified
+against its spec, double-checked against what is already here, dropped if it
+fails either. A record that cannot pass is not parked in the roadmap either.
+
 ### Building it
 
 The store is `leadforge-ffeef` — the tools already share that project and its
